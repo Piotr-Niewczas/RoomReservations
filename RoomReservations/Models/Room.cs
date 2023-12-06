@@ -11,6 +11,7 @@ namespace RoomReservations.Models
         [Required]
         public int Capacity { get; set; }
         [Required]
+        [DataType(DataType.Currency)]
         public decimal PricePerNight { get; set; }
         public string? Location { get; set; }
         
