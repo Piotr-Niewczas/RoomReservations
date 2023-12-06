@@ -14,9 +14,6 @@ namespace RoomReservations.Models
         [DataType(DataType.Currency)]
         public decimal PricePerNight { get; set; }
         public string? Location { get; set; }
-        
         public string? ImageUrl { get; set; }
-
-
     }
 }
