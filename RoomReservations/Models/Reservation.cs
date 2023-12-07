@@ -6,7 +6,7 @@
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public bool IsPaid { get; set; } = false;
-        public ICollection<Room>? Rooms { get; set; }
-        public ICollection<Transaction>? transactions { get; set; }
+        public List<Room> Rooms { get; set; } = [];
+        public List<Transaction> Transactions { get; set; } = [];
     }
 }
