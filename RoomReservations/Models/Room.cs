@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RoomReservations.Models
 {
@@ -9,7 +10,7 @@ namespace RoomReservations.Models
         public string Name { get; set; } = String.Empty;
         public string Description { get; set; } = String.Empty;
         public int Capacity { get; set; }
-        [DataType(DataType.Currency)]
+        [Column(TypeName = "decimal(18,2)")]
         public decimal PricePerNight { get; set; }
         public string Location { get; set; } = String.Empty;
         public string ImageUrl { get; set; } = "img/rooms/notfound.jpg";
