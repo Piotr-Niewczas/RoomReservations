@@ -1,7 +1,8 @@
 ﻿@page "/rooms"
 @attribute [StreamRendering]
+@using RoomReservations.Data
 @using RoomReservations.Models
-
+@inject IRoomService RoomService
 
 <h3>Our beautiful rooms</h3>
 
@@ -36,20 +37,9 @@ else
 
 
 @code {
-	private IEnumerable<Room>? rooms;
-	protected override async Task OnInitializedAsync()
-	{
-		//rooms = await Http.GetFromJsonAsync<IEnumerable<Room>>("api/rooms");
-
-        // some mock data with data loading delay
-		await Task.Delay(500);
-		rooms = new List<Room>
-		{
-			new Room { Name = "Room 1", Description = "Room 1 Description", PricePerNight = 1.0M },
-			new Room { Name = "Room 2", Description = "Room 2 Description", PricePerNight = 2.0M },
-			new Room { Name = "Room 3", Description = "Room 3 Description", PricePerNight = 3.0M },
-			new Room { Name = "Room 4", Description = "Room 4 Description", PricePerNight = 4.0M },
-			new Room { Name = "Room 5", Description = "Room 5 Description", PricePerNight = 5.0M }
-		};
-	}
+    private List<Room> rooms = [];
+    protected override async Task OnInitializedAsync()
+    {
+        rooms = await RoomService.GetRoomsAsync();
+    }
 }
