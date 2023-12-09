@@ -1,0 +1,52 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+
+namespace RoomReservations.Tests.Models.Transaction
+{
+    [TestClass]
+    public class Add_Transaction_to_db_Test
+    {
+        private RRDbContext _context = null!;
+
+        [TestInitialize]
+        public void Initialize()
+        {
+            _context = new RRDbContext(RRDbContext.DefaultOptions);
+        }
+
+        [TestMethod]
+        public async Task Add_transaction_to_db()
+        {
+            var transaction = new RoomReservations.Models.Transaction
+            {
+                Id = 999,
+                Amount = 123.45M,
+                EntryDate = DateTime.Now,
+                AccountingDate = DateTime.Now.AddDays(3)
+            };
+
+            _context.Transactions.Add(transaction);
+            await _context.SaveChangesAsync();
+
+            var transactionFromDb = await _context.Transactions.FirstOrDefaultAsync(t => t.Id == transaction.Id);
+
+            Assert.IsNotNull(transactionFromDb);
+
+            Assert.AreEqual(transaction.Amount, transactionFromDb.Amount);
+            Assert.AreEqual(transaction.EntryDate, transactionFromDb.EntryDate);
+            Assert.AreEqual(transaction.AccountingDate, transactionFromDb.AccountingDate);
+
+        }
+
+        [TestCleanup]
+        public void Cleanup()
+        {
+            _context.Dispose();
+        }
+    }
+}
