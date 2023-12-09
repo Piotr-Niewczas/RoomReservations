@@ -40,6 +40,7 @@ namespace RoomReservations
                 .AddDefaultTokenProviders();
 
             builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
+            builder.Services.AddScoped<IRoomService, RoomService>();
 
             var app = builder.Build();
 
@@ -59,6 +60,12 @@ namespace RoomReservations
 
             app.UseStaticFiles();
             app.UseAntiforgery();
+
+            using (var scope = app.Services.CreateScope())
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                MockData.AddMockDataIfNonePresent(dbContext); // Add mock data if none exists
+            }
 
             app.MapRazorComponents<App>()
                 .AddInteractiveServerRenderMode();
