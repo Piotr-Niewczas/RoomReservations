@@ -5,18 +5,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using RoomReservations.Data;
 
 namespace RoomReservations.Tests.Models.Transaction
 {
     [TestClass]
     public class Add_Transaction_to_db_Test
     {
-        private RRDbContext _context = null!;
-
+        private ApplicationDbContext _context = null!;
         [TestInitialize]
         public void Initialize()
         {
-            _context = new RRDbContext(RRDbContext.DefaultOptions);
+            _context = TestsContextOptions.TestingContext;
         }
 
         [TestMethod]
