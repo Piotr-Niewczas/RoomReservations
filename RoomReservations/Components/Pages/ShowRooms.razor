@@ -1,0 +1,45 @@
+﻿@page "/rooms"
+@attribute [StreamRendering]
+@using RoomReservations.Data
+@using RoomReservations.Models
+@inject IRoomService RoomService
+
+<h3>Our beautiful rooms</h3>
+
+@if (rooms == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Picture</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Price Per Night</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var room in rooms)
+            {
+                <tr>
+                    <td><img src=@room.ImageUrl alt="No picture"/></td>
+                    <td>@room.Name</td>
+                    <td>@room.Description</td>
+                    <td>@room.PricePerNight</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+
+@code {
+    private List<Room> rooms = [];
+    protected override async Task OnInitializedAsync()
+    {
+        rooms = await RoomService.GetRoomsAsync();
+    }
+}

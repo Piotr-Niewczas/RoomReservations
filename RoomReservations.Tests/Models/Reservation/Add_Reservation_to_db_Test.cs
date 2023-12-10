@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RoomReservations.Data;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,11 +10,11 @@ namespace RoomReservations.Tests.Models.Reservation
     [TestClass]
     public class Add_Reservation_to_db_Test
     {
-        private RRDbContext _context = null!;
+        private ApplicationDbContext _context = null!;
         [TestInitialize]
         public void Initialize()
         {
-            _context = new RRDbContext(RRDbContext.DefaultOptions);
+            _context = TestsContextOptions.TestingContext;
         }
 
         [TestMethod]
