@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using RoomReservations.Components;
 using RoomReservations.Components.Account;
 using RoomReservations.Data;
+using MudBlazor.Services;
 
 namespace RoomReservations
 {
@@ -16,6 +17,8 @@ namespace RoomReservations
             // Add services to the container.
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
+
+            builder.Services.AddMudServices();
 
             builder.Services.AddCascadingAuthenticationState();
             builder.Services.AddScoped<IdentityUserAccessor>();
