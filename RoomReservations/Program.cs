@@ -43,7 +43,10 @@ namespace RoomReservations
                 .AddDefaultTokenProviders();
 
             builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
+
             builder.Services.AddScoped<IRoomService, RoomService>();
+            builder.Services.AddScoped<IAvailableRoomService, AvailableRoomService>();
+            builder.Services.AddScoped<IReservationService, ReservationService>();
 
             var app = builder.Build();
 
