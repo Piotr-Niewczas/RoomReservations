@@ -1,0 +1,74 @@
+﻿@page "/mr"
+@using RoomReservations.Data
+@using RoomReservations.Models
+@inject IAvailableRoomService AvailableRoomService
+@inject IReservationService ReservationService
+@rendermode InteractiveServer
+<h3>MakeReservation</h3>
+
+Formularz tworzenia rezerwacji
+
+<EditForm Model="@reservation" OnSubmit="Submit" FormName="ReservationForm">
+	<label for="room">Room</label>
+	<InputSelect id="room" @bind-Value="@selectedRoomId">
+		<option value="">Select Room</option>
+		@foreach (var room in rooms)
+		{
+			<option value="@room.Id">@room.Name</option>
+		}
+	</InputSelect>
+	<br/>
+	<button class="btn btn-primary" @onclick="AddSelectedRoom">Add Room</button>
+	<br/>
+	<label>Added rooms count: @reservation.Rooms.Count</label>
+	@foreach (var selectedRoom in reservation.Rooms)
+	{
+		<p>@selectedRoom.Name</p>
+	}
+	<br/>
+	<label for="from">From</label>
+	<InputDate id="from" @bind-Value="@reservation.StartDate" @onchange="ReloadAvailableRoomsAtDates" ></InputDate>
+	<br />
+	<label for="to">To</label>
+	<InputDate id="to" @bind-Value="@reservation.EndDate" @onchange="ReloadAvailableRoomsAtDates"></InputDate>
+	<br />
+	<button type="submit">Submit</button>
+</EditForm>
+
+@code {
+	Reservation reservation = new() { StartDate = DateTime.Today, EndDate = DateTime.Today.AddDays(7)};
+	List<Room> rooms = new();
+	private int selectedRoomId;
+
+	protected override Task OnInitializedAsync()
+	{
+		ReloadAvailableRoomsAtDates();
+		return base.OnInitializedAsync();
+	}
+
+	private void AddSelectedRoom()
+	{
+		// Find the selected room by its ID
+		var selectedRoom = rooms.FirstOrDefault(room => room.Id == selectedRoomId);
+
+		// Add the selected room to the reservation if it's not already added
+		if (selectedRoom != null && !reservation.Rooms.Contains(selectedRoom))
+		{
+			reservation.Rooms.Add(selectedRoom);
+		}
+
+		// Clear the selection
+		selectedRoomId = 0;
+	}
+
+	private async void ReloadAvailableRoomsAtDates()
+	{
+		rooms = await AvailableRoomService.GetAvailableRoomsAsync(reservation.StartDate, reservation.EndDate);
+	}
+
+	public void Submit(EditContext context)
+	{
+		ReservationService.AddReservationAsync(reservation);
+	}
+
+}
