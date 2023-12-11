@@ -5,7 +5,7 @@ namespace RoomReservations.Data
 {
     public interface IReservationService
     {
-        Task<Reservation> AddReservationAsync(Reservation reservation);
+        Task<bool> AddReservationAsync(Reservation reservation);
         Task<List<Reservation>> GetReservationsAsync();
         Task<List<Reservation>> GetReservationsBetweenAsync(DateTime startDate, DateTime endDate);
     }
@@ -31,11 +31,27 @@ namespace RoomReservations.Data
                 .ToListAsync();
         }
 
-        public async Task<Reservation> AddReservationAsync(Reservation reservation)
+        /// <summary>
+        /// Adds Reservation to the database, if it is valid
+        /// </summary>
+        /// <param name="reservation"></param>
+        /// <returns>True if added</returns>
+        public async Task<bool> AddReservationAsync(Reservation reservation)
         {
+            if (reservation == null)
+            {
+                return false;
+            }
+
+            if (reservation.Rooms == null || reservation.Rooms.Count == 0)
+            {
+                return false;
+            }
+
             _context.Reservations.Add(reservation);
             await _context.SaveChangesAsync();
-            return reservation;
+            return true;
+
         }
         public async Task DeleteAllReservations()
         {
