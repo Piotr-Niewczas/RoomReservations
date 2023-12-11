@@ -61,14 +61,15 @@ Formularz tworzenia rezerwacji
 		selectedRoomId = 0;
 	}
 
-	private async void ReloadAvailableRoomsAtDates()
+	private async Task ReloadAvailableRoomsAtDates()
 	{
 		rooms = await AvailableRoomService.GetAvailableRoomsAsync(reservation.StartDate, reservation.EndDate);
 	}
 
-	public void Submit(EditContext context)
+	public async void Submit(EditContext context)
 	{
-		ReservationService.AddReservationAsync(reservation);
+		bool result = await ReservationService.AddReservationAsync(reservation);
+		await ReloadAvailableRoomsAtDates();
 	}
 
 }
