@@ -15,12 +15,18 @@ namespace RoomReservations.Data.Tests
     public class RoomServiceTests
     {
         private ApplicationDbContext _context = null!;
+        private RoomService _roomService = null!;
         private List<Room> _rooms = [];
         [TestInitialize]
         public void Initialize()
         {
-
             _context = TestsContextOptions.TestingContext;
+            _roomService = new RoomService(_context);
+        }
+
+        [TestMethod()]
+        public void GetRoomsAsyncTest()
+        {
             _rooms.Add(new Room
             {
                 Name = "Test Room",
@@ -41,13 +47,9 @@ namespace RoomReservations.Data.Tests
             });
             _context.Rooms.AddRange(_rooms);
             _context.SaveChanges();
-        }
 
-        [TestMethod()]
-        public void GetRoomsAsyncTest()
-        {
-            var roomService = new RoomService(_context);
-            var rooms = roomService.GetRoomsAsync().Result;
+            var rooms = _roomService.GetRoomsAsync().Result;
+
             Assert.IsNotNull(rooms);
 
             Assert.AreEqual(2, _rooms.Count);
