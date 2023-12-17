@@ -85,5 +85,32 @@ namespace RoomReservations.Data
                 .ToListAsync();
             return reservations.Any();
         }
+
+        public List<Reservation> SearchReservations(DateTime? startDate, DateTime? endDate, bool? isPaid, List<Room>? rooms)
+        {
+            var query = _context.Reservations.AsQueryable();
+
+            if (startDate.HasValue)
+            {
+                query = query.Where(reservation => reservation.StartDate == startDate.Value);
+            }
+
+            if (endDate.HasValue)
+            {
+                query = query.Where(reservation => reservation.EndDate == endDate.Value);
+            }
+
+            if (isPaid.HasValue)
+            {
+                query = query.Where(reservation => reservation.IsPaid == isPaid.Value);
+            }
+
+            if (rooms != null && rooms.Count > 0)
+            {
+                query = query.Where(reservation => reservation.Rooms.Any(room => rooms.Contains(room)));
+            }
+
+            return query.ToList();
+        }
     }
 }
