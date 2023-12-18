@@ -44,6 +44,12 @@ namespace RoomReservations.Data.Tests
             _reservationService = new ReservationService(_context);
         }
 
+        [TestCleanup]
+        public void Cleanup()
+        {
+            _context.Dispose();
+        }
+
         [TestMethod()]
         public async Task GetReservationsAsync_TwoReservationsInDb_ReturnsTwoReservations()
         {
@@ -285,10 +291,6 @@ namespace RoomReservations.Data.Tests
             Assert.IsFalse(result);
         }
 
-        [TestCleanup]
-        public void Cleanup()
-        {
-            _context.Dispose();
-        }
+
     }
 }
