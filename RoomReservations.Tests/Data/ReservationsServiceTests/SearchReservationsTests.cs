@@ -123,45 +123,53 @@ namespace RoomReservations.Tests.Data.ReservationsServiceTests
         public void SearchReservations_WithRooms_ReturnsMatchingReservations()
         {
             // Arrange
-            _context.Reservations.Add(new Reservation
-            {
-                StartDate = DateTime.Now.AddDays(-2),
-                EndDate = DateTime.Now,
-                Rooms = [
-                new()
-                {
-                    Name = "Test Room 3",
-                    PricePerNight = 99.99M
-                }
-                ]
-            });
-            _context.Reservations.Add(new Reservation
-            {
-                StartDate = DateTime.Now.AddDays(-4),
-                EndDate = DateTime.Now.AddDays(-1),
-                Rooms = [
-                new()
-                {
-                    Name = "Test Room 2",
-                    PricePerNight = 130.99M
-                }
-                ]
-            });
+            List<Room> rooms =
+               [
+                   new Room
+                   {
+                       Name = "Test Room 1",
+                       PricePerNight = 30.50M
+                   },
+                   new Room
+                   {
+                       Name = "Test Room 2",
+                       PricePerNight = 130.99M
+                   }
+               ];
+            List<Reservation> reservations =
+                [
+                    new Reservation
+                    {
+                        StartDate = DateTime.Now.AddDays(-2),
+                        EndDate = DateTime.Now,
+                        Rooms = [rooms[0]]
+                    },
+                    new Reservation
+                    {
+                        StartDate = DateTime.Now.AddDays(-4),
+                        EndDate = DateTime.Now.AddDays(-1),
+                        Rooms = [rooms[0], rooms[1]]
+                    },
+                    new Reservation
+                    {
+                        StartDate = DateTime.Now.AddDays(4),
+                        EndDate = DateTime.Now.AddDays(10),
+                        Rooms = [rooms[1]]
+                    }
+                ];
+            _context.Reservations.AddRange(reservations);
             _context.SaveChanges();
 
-            List<Room> roomsToFind = [
-                new()
-                {
-                    Name = "Test Room 2",
-                    PricePerNight = 130.99M
-                }
-                ];
+            List<Room> roomsToFind = [rooms[0]];
 
             // Act
             var result = _reservationService.SearchReservations(rooms: roomsToFind);
 
             // Assert
+            Assert.IsNotNull(result);
             Assert.IsTrue(result.All(r => r.Rooms.Any(room => roomsToFind.Contains(room))));
+            Assert.AreEqual(result.Count, 2);
+
         }
     }
 }
