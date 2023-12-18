@@ -24,12 +24,24 @@ namespace RoomReservations.Tests.Data.ReservationsServiceTests
         }
 
         [TestMethod()]
-        public void SearchReservations_NoArgs_ReturnsEmptyList()
+        public void SearchReservations_NoArgs_ReturnsEverything()
         {
+            _context.Reservations.Add(new Reservation
+            {
+                StartDate = DateTime.Now.AddDays(-2),
+                EndDate = DateTime.Now.AddDays(7),
+            });
+            _context.Reservations.Add(new Reservation
+            {
+                StartDate = DateTime.Now,
+                EndDate = DateTime.Now.AddDays(10),
+            });
+            _context.SaveChanges();
+
             List<Reservation> reservations = _reservationService.SearchReservations();
 
             Assert.IsNotNull(reservations);
-            Assert.AreEqual(reservations.Count, 0);
+            Assert.AreEqual(reservations.Count, 2);
         }
 
         [TestMethod]
