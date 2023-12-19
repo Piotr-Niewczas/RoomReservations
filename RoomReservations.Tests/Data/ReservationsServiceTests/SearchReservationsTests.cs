@@ -44,6 +44,11 @@ namespace RoomReservations.Tests.Data.ReservationsServiceTests
             });
             _context.Reservations.Add(new Reservation
             {
+				StartDate = startDate,
+				EndDate = DateTime.Now.AddDays(7),
+			});
+			_context.Reservations.Add(new Reservation
+			{
                 StartDate = startDate.AddDays(-2),
                 EndDate = DateTime.Now.AddDays(7),
             });
