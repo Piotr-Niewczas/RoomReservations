@@ -79,33 +79,32 @@ namespace RoomReservations.Data
 				.ToListAsync();
 			return reservations.Any();
 		}
-    
-    public List<Reservation> SearchReservations(DateTime? startDate = null, DateTime? endDate = null, bool? isPaid = null, List<Room>? rooms = null)
-    {
-        var query = _context.Reservations.AsQueryable();
 
-        if (startDate is not null && startDate.HasValue)
-        {
-            query = query.Where(reservation => reservation.StartDate == startDate.Value);
-        }
+		public List<Reservation> SearchReservations(DateTime? startDate = null, DateTime? endDate = null, bool? isPaid = null, List<Room>? rooms = null)
+		{
+			var query = _context.Reservations.AsQueryable();
 
-        if (endDate is not null && endDate.HasValue)
-        {
-            query = query.Where(reservation => reservation.EndDate == endDate.Value);
-        }
+			if (startDate is not null && startDate.HasValue)
+			{
+				query = query.Where(reservation => reservation.StartDate == startDate.Value);
+			}
 
-        if (isPaid is not null && isPaid.HasValue)
-        {
-            query = query.Where(reservation => reservation.IsPaid == isPaid.Value);
-        }
+			if (endDate is not null && endDate.HasValue)
+			{
+				query = query.Where(reservation => reservation.EndDate == endDate.Value);
+			}
 
-        if (rooms is not null && rooms.Count > 0)
-        {
-            query = query.Where(reservation => reservation.Rooms.Any(room => rooms.Contains(room)));
-        }
+			if (isPaid is not null && isPaid.HasValue)
+			{
+				query = query.Where(reservation => reservation.IsPaid == isPaid.Value);
+			}
 
-        return query.ToList();
-    }
+			if (rooms is not null && rooms.Count > 0)
+			{
+				query = query.Where(reservation => reservation.Rooms.Any(room => rooms.Contains(room)));
+			}
 
+			return query.ToList();
+		}
 	}
 }
