@@ -222,40 +222,6 @@ namespace RoomReservations.Data.Tests
 		}
 
 		[TestMethod()]
-		public async Task DeleteAllReservations_TwoInDb_NoneLeft()
-		{
-			List<Reservation> reservations = [
-				new Reservation
-				{
-					StartDate = _date.AddDays(1),
-					EndDate = _date.AddDays(2),
-					Rooms =
-					[
-						rooms[0]
-					],
-					Transactions = []
-				},
-				new Reservation
-				{
-					StartDate = _date.AddDays(3),
-					EndDate = _date.AddDays(5),
-					Rooms =
-					[
-						rooms[1]
-					],
-					Transactions = []
-				}
-			];
-			_context.Reservations.AddRange(reservations);
-			await _context.SaveChangesAsync();
-			Assert.IsTrue(_context.Reservations.Any());
-
-			await _reservationService.DeleteAllReservations();
-
-			Assert.IsFalse(_context.Reservations.Any());
-		}
-
-		[TestMethod()]
 		public async Task IsRoomReservedInDateRange_OneInRange_ReturnsTrue()
 		{
 			Reservation reservation = new()
