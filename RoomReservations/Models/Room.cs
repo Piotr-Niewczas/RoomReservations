@@ -14,5 +14,7 @@ namespace RoomReservations.Models
         public decimal PricePerNight { get; set; }
         public string Location { get; set; } = String.Empty;
         public string ImageUrl { get; set; } = "img/rooms/notfound.jpg";
+
+        public List<RoomReservation> RoomReservations { get; set; } = [];
     }
 }
