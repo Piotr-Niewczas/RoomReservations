@@ -127,7 +127,7 @@ namespace RoomReservations.Tests.Data.ReservationsServiceTests
             Assert.AreEqual(result.Count, 1);
         }
 
-        //[TestMethod]
+        //[TestMethod] // Currencly not working due to missconfiguration of the database
         //public void SearchReservations_WithRooms_ReturnsMatchingReservations()
         //{
         //    // Arrange
@@ -152,6 +152,7 @@ namespace RoomReservations.Tests.Data.ReservationsServiceTests
         //    {
         //        roomsFromDb[0]
         //    };
+
         //    _context.Reservations.Add(new Reservation
         //    {
         //        StartDate = DateTime.Now.AddDays(-2),
@@ -188,7 +189,7 @@ namespace RoomReservations.Tests.Data.ReservationsServiceTests
         //    // Assert
         //    Assert.IsNotNull(result);
         //    Assert.IsTrue(result.All(r => r.Rooms.Any(room => roomsToFind.Contains(room))));
-        //    Assert.AreEqual(1, result.Count);
+
         //    Assert.AreEqual(result.Count, 2);
         //    Assert.AreEqual(result[0].Rooms[0].Name, rooms[0].Name);
 
