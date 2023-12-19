@@ -1,12 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using RoomReservations.Data;
-using RoomReservations.Models;
+﻿using RoomReservations.Models;
 using RoomReservations.Tests.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RoomReservations.Data.Tests
 {
