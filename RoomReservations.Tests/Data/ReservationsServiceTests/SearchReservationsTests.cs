@@ -136,29 +136,36 @@ namespace RoomReservations.Tests.Data.ReservationsServiceTests
                        PricePerNight = 130.99M
                    }
                ];
-            List<Reservation> reservations =
-                [
-                    new Reservation
-                    {
-                        StartDate = DateTime.Now.AddDays(-2),
-                        EndDate = DateTime.Now,
-                        Rooms = [rooms[0]]
-                    },
-                    new Reservation
-                    {
-                        StartDate = DateTime.Now.AddDays(-4),
-                        EndDate = DateTime.Now.AddDays(-1),
-                        Rooms = [rooms[0], rooms[1]]
-                    },
-                    new Reservation
-                    {
-                        StartDate = DateTime.Now.AddDays(4),
-                        EndDate = DateTime.Now.AddDays(10),
-                        Rooms = [rooms[1]]
-                    }
-                ];
-            _context.Reservations.AddRange(reservations);
+            _context.Rooms.AddRange(rooms);
             _context.SaveChanges();
+
+            _context.Reservations.Add(new Reservation
+            {
+                StartDate = DateTime.Now.AddDays(-2),
+                EndDate = DateTime.Now,
+                Rooms = new List<Room> { _context.Rooms.First(r => r.Name == "Test Room 1") }
+            });
+            _context.SaveChanges();
+
+            _context.Reservations.Add(new Reservation
+            {
+                StartDate = DateTime.Now.AddDays(1),
+                EndDate = DateTime.Now.AddDays(4),
+                Rooms = new List<Room> { _context.Rooms.First(r => r.Name == "Test Room 1"), _context.Rooms.First(r => r.Name == "Test Room 2") }
+            });
+            _context.SaveChanges();
+
+            _context.Reservations.Add(new Reservation
+            {
+                StartDate = DateTime.Now.AddDays(4),
+                EndDate = DateTime.Now.AddDays(10),
+                Rooms = new List<Room> { _context.Rooms.First(r => r.Name == "Test Room 2") }
+            });
+            _context.SaveChanges();
+
+            var reservationsInDb = _context.Reservations.ToList();
+
+            Assert.AreEqual(3, reservationsInDb[0].Rooms.Count);
 
             List<Room> roomsToFind = [rooms[0]];
 
@@ -169,6 +176,7 @@ namespace RoomReservations.Tests.Data.ReservationsServiceTests
             Assert.IsNotNull(result);
             Assert.IsTrue(result.All(r => r.Rooms.Any(room => roomsToFind.Contains(room))));
             Assert.AreEqual(result.Count, 2);
+            Assert.AreEqual(result[0].Rooms[0].Name, rooms[0].Name);
 
         }
     }
