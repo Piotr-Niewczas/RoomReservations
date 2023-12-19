@@ -44,13 +44,19 @@ namespace RoomReservations.Data.Tests
 			_reservationService = new ReservationService(_context);
 		}
 
+		[TestCleanup]
+		public void Cleanup()
+		{
+			_context.Dispose();
+		}
+
 		[TestMethod()]
 		public async Task GetReservationsAsync_TwoReservationsInDb_ReturnsTwoReservations()
 		{
 			reservations.Add(new Reservation
 			{
 				StartDate = _date.AddDays(1),
-				EndDate = _date.AddDays(2),
+				EndDate = _date.AddDays(3),
 				Rooms =
 				[
 					rooms[0]
@@ -59,7 +65,7 @@ namespace RoomReservations.Data.Tests
 			});
 			reservations.Add(new Reservation
 			{
-				StartDate = _date.AddDays(3),
+				StartDate = _date.AddDays(2),
 				EndDate = _date.AddDays(5),
 				Rooms =
 				[
@@ -249,12 +255,6 @@ namespace RoomReservations.Data.Tests
 
 			bool result = await _reservationService.IsRoomReservedInDateRange(rooms[0], _date.AddDays(11), _date.AddDays(15));
 			Assert.IsFalse(result);
-		}
-
-		[TestCleanup]
-		public void Cleanup()
-		{
-			_context.Dispose();
 		}
 	}
 }
