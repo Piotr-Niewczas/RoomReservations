@@ -56,20 +56,26 @@ namespace RoomReservations.Data.Tests
 			reservations.Add(new Reservation
 			{
 				StartDate = _date.AddDays(1),
-				EndDate = _date.AddDays(3),
-				Rooms =
+				EndDate = _date.AddDays(2),
+				RoomReservations =
 				[
-					rooms[0]
+					new RoomReservation
+					{
+						Room = rooms[0]
+					}
 				],
 				Transactions = []
 			});
 			reservations.Add(new Reservation
 			{
-				StartDate = _date.AddDays(2),
+				StartDate = _date.AddDays(3),
 				EndDate = _date.AddDays(5),
-				Rooms =
+				RoomReservations =
 				[
-					rooms[1]
+					new RoomReservation
+					{
+						Room = rooms[1]
+					}
 				],
 				Transactions = []
 			});
@@ -98,20 +104,26 @@ namespace RoomReservations.Data.Tests
 			{
 				StartDate = _date.AddDays(1),
 				EndDate = _date.AddDays(2),
-				Rooms =
-					[
-						rooms[0]
-					],
+				RoomReservations =
+				[
+					new RoomReservation
+					{
+						Room = rooms[0]
+					}
+				],
 				Transactions = []
 			});
 			reservations.Add(new Reservation
 			{
 				StartDate = _date.AddDays(3),
 				EndDate = _date.AddDays(5),
-				Rooms =
-					[
-						rooms[1]
-					],
+				RoomReservations =
+				[
+					new RoomReservation
+					{
+						Room = rooms[1]
+					}
+				],
 				Transactions = []
 			});
 			_context.Reservations.AddRange(reservations);
@@ -131,20 +143,26 @@ namespace RoomReservations.Data.Tests
 			{
 				StartDate = _date.AddDays(1),
 				EndDate = _date.AddDays(2),
-				Rooms =
-					[
-						rooms[0]
-					],
+				RoomReservations =
+				[
+					new RoomReservation
+					{
+						Room = rooms[0]
+					}
+				],
 				Transactions = []
 			});
 			reservations.Add(new Reservation
 			{
 				StartDate = _date.AddDays(5),
 				EndDate = _date.AddDays(7),
-				Rooms =
-					[
-						rooms[1]
-					],
+				RoomReservations =
+				[
+					new RoomReservation
+					{
+						Room = rooms[1]
+					}
+				],
 				Transactions = []
 			});
 			_context.Reservations.AddRange(reservations);
@@ -160,8 +178,9 @@ namespace RoomReservations.Data.Tests
 		public async Task AddReservationAsync_NullArgument_ReturnsFalse()
 		{
 			Reservation reservation = null!;
+			List<Room> rooms = new();
 
-			Task<bool> result = _reservationService.AddReservationAsync(reservation);
+			Task<bool> result = _reservationService.AddReservationAsync(reservation, rooms);
 
 			Assert.IsTrue(result.IsCompletedSuccessfully);
 			Assert.IsFalse(result.Result);
@@ -177,11 +196,11 @@ namespace RoomReservations.Data.Tests
 			{
 				StartDate = _date.AddDays(1),
 				EndDate = _date.AddDays(2),
-				Rooms = [],
 				Transactions = []
 			};
+			List<Room> rooms = new();
 
-			Task<bool> result = _reservationService.AddReservationAsync(reservation);
+			Task<bool> result = _reservationService.AddReservationAsync(reservation, rooms);
 
 			Assert.IsTrue(result.IsCompletedSuccessfully);
 			Assert.IsFalse(result.Result);
@@ -193,29 +212,29 @@ namespace RoomReservations.Data.Tests
 		[TestMethod()]
 		public async Task AddReservationAsync_TwoOverlapingReservations_ReturnsFalse()
 		{
+			List<Room> oneRoom = [rooms[0]];
+
 			Reservation reservation = new()
 			{
 				StartDate = _date.AddDays(1),
 				EndDate = _date.AddDays(10),
-				Rooms = [rooms[0]],
 				Transactions = []
 			};
-			bool result0 = await _reservationService.AddReservationAsync(reservation);
+			bool result0 = await _reservationService.AddReservationAsync(reservation, oneRoom);
 			Assert.IsTrue(result0);
 			await _context.SaveChangesAsync();
 
-			Reservation overlaping = new()
+			Reservation overlapingReservation = new()
 			{
 				StartDate = _date.AddDays(5),
 				EndDate = _date.AddDays(15),
-				Rooms = [rooms[0]],
 				Transactions = []
 			};
 
-			Task<bool> result = _reservationService.AddReservationAsync(overlaping);
+			Task<bool> result = _reservationService.AddReservationAsync(overlapingReservation, oneRoom);
 			Assert.IsTrue(result.IsCompletedSuccessfully);
 			Assert.IsFalse(result.Result);
-			// Check that overlaping reservations wasn't added to the database
+			// Check that overlaping reservation wasn't added to the database
 			List<Reservation> resList = await _reservationService.GetReservationsAsync();
 			Assert.AreEqual(resList.Count, 1);
 			Assert.AreEqual(resList[0].StartDate, reservation.StartDate);
@@ -224,36 +243,38 @@ namespace RoomReservations.Data.Tests
 		[TestMethod()]
 		public async Task IsRoomReservedInDateRange_OneInRange_ReturnsTrue()
 		{
+			Room oneRoom = rooms[0];
+
 			Reservation reservation = new()
 			{
 				StartDate = _date.AddDays(1),
 				EndDate = _date.AddDays(10),
-				Rooms = [rooms[0]],
 				Transactions = []
 			};
-			bool result0 = await _reservationService.AddReservationAsync(reservation);
+			bool result0 = await _reservationService.AddReservationAsync(reservation, [oneRoom]);
 			Assert.IsTrue(result0);
 			await _context.SaveChangesAsync();
 
-			bool result = await _reservationService.IsRoomReservedInDateRange(rooms[0], _date.AddDays(1), _date.AddDays(15));
+			bool result = await _reservationService.IsRoomReservedInDateRange(oneRoom, _date.AddDays(1), _date.AddDays(15));
 			Assert.IsTrue(result);
 		}
 
 		[TestMethod()]
 		public async Task IsRoomReservedInDateRange_NnoeRange_ReturnsFalse()
 		{
+			Room room = rooms[0];
+
 			Reservation reservation = new()
 			{
 				StartDate = _date.AddDays(1),
 				EndDate = _date.AddDays(10),
-				Rooms = [rooms[0]],
 				Transactions = []
 			};
-			bool result0 = await _reservationService.AddReservationAsync(reservation);
+			bool result0 = await _reservationService.AddReservationAsync(reservation, [room]);
 			Assert.IsTrue(result0);
 			await _context.SaveChangesAsync();
 
-			bool result = await _reservationService.IsRoomReservedInDateRange(rooms[0], _date.AddDays(11), _date.AddDays(15));
+			bool result = await _reservationService.IsRoomReservedInDateRange(room, _date.AddDays(11), _date.AddDays(15));
 			Assert.IsFalse(result);
 		}
 	}
