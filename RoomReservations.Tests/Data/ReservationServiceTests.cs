@@ -256,7 +256,5 @@ namespace RoomReservations.Data.Tests
 			bool result = await _reservationService.IsRoomReservedInDateRange(rooms[0], _date.AddDays(11), _date.AddDays(15));
 			Assert.IsFalse(result);
 		}
-
-
 	}
 }

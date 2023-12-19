@@ -40,11 +40,6 @@ Formularz tworzenia rezerwacji
 	<MudButton Variant="Variant.Filled" Color="Color.Primary" ButtonType="ButtonType.Submit">Submit</MudButton>
 </EditForm>
 
-<br style="line-height:150px;" />
-Dev stuff:
-<br />
-<MudButton Variant="Variant.Outlined" Color="Color.Secondary" @onclick="Dev_ClearDb">Nuke reservations db</MudButton>
-
 
 @code {
 	Reservation reservation = new();
@@ -117,11 +112,5 @@ Dev stuff:
 		this.severity = severity;
 		this.message = message;
 		showAlert = true;
-	}
-
-	private async Task Dev_ClearDb()
-	{
-		await ReservationService.DeleteAllReservations();
-		await ReloadAvailableRoomsAtDates();
 	}
 }
