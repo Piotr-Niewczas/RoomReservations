@@ -60,6 +60,7 @@ namespace RoomReservations.Tests.Data.ReservationsServiceTests
 			// Assert
 			Assert.IsNotNull(result);
 			Assert.IsTrue(result.All(r => r.StartDate == startDate));
+			Assert.AreEqual(result.Count, 2);
 		}
 
 		[TestMethod]
@@ -84,6 +85,7 @@ namespace RoomReservations.Tests.Data.ReservationsServiceTests
 
 			// Assert
 			Assert.IsTrue(result.All(r => r.EndDate == endDate));
+			Assert.AreEqual(result.Count, 1);
 		}
 
 		[TestMethod]
@@ -110,6 +112,7 @@ namespace RoomReservations.Tests.Data.ReservationsServiceTests
 
 			// Assert
 			Assert.IsTrue(result.All(r => r.IsPaid == isPaid));
+			Assert.AreEqual(result.Count, 1);
 		}
 
 		[TestMethod]
@@ -155,6 +158,7 @@ namespace RoomReservations.Tests.Data.ReservationsServiceTests
 
 			// Assert
 			Assert.IsTrue(result.All(r => r.Rooms.Any(room => roomsToFind.Contains(room))));
+			Assert.AreEqual(result.Count, 1);
 		}
 	}
 }
