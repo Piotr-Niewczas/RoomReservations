@@ -46,7 +46,12 @@ namespace RoomReservations.Data.Tests
             {
                 StartDate = DateTime.Now.AddDays(-1),
                 EndDate = DateTime.Now.AddDays(1),
-                Rooms = [room]
+                RoomReservations = [
+                    new RoomReservation
+                    {
+                        Room = room
+                    }
+                ]
             };
             _context.Add(reservation);
             _context.SaveChanges();
@@ -75,7 +80,12 @@ namespace RoomReservations.Data.Tests
             {
                 StartDate = DateTime.Now.AddDays(-1),
                 EndDate = DateTime.Now.AddDays(1),
-                Rooms = [room]
+                RoomReservations = [
+                    new RoomReservation
+                    {
+                        Room = room
+                    }
+                ]
             };
             _context.Add(reservation);
             _context.SaveChanges();
@@ -112,7 +122,12 @@ namespace RoomReservations.Data.Tests
             {
                 StartDate = DateTime.Now.AddDays(-1),
                 EndDate = DateTime.Now.AddDays(10),
-                Rooms = [rooms[0]]
+                RoomReservations = [
+                    new RoomReservation
+                    {
+                        Room = rooms[0]
+                    }
+                ]
             };
             _context.Add(reservation);
             _context.SaveChanges();
