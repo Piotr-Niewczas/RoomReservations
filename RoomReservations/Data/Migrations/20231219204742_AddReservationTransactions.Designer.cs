@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RoomReservations.Data;
 
@@ -10,9 +11,11 @@ using RoomReservations.Data;
 namespace RoomReservations.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231219204742_AddReservationTransactions")]
+    partial class AddReservationTransactions
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.0");
@@ -416,11 +419,6 @@ namespace RoomReservations.Migrations
             modelBuilder.Entity("RoomReservations.Models.Transaction", b =>
                 {
                     b.Navigation("ReservationTransactions");
-                });
-
-            modelBuilder.Entity("RoomReservations.Models.Room", b =>
-                {
-                    b.Navigation("RoomReservations");
                 });
 #pragma warning restore 612, 618
         }

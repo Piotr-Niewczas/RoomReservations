@@ -36,13 +36,16 @@ namespace RoomReservations.Tests.Models.Reservation
 						}
 					}
 				],
-				Transactions =
+				ReservationTransactions =
 				[
-					new RoomReservations.Models.Transaction
+					new RoomReservations.Models.ReservationTransaction
 					{
-						Amount = 146.45M,
-						EntryDate = DateTime.Now,
-						AccountingDate = DateTime.Now.AddDays(3)
+						Transaction = new RoomReservations.Models.Transaction
+						{
+							Amount = 146.45M,
+							EntryDate = DateTime.Now,
+							AccountingDate = DateTime.Now.AddDays(3)
+						}
 					}
 				]
 			};
@@ -61,8 +64,8 @@ namespace RoomReservations.Tests.Models.Reservation
 			Assert.AreEqual(reservation.RoomReservations.Count, reservationFromDb.RoomReservations.Count);
 			Assert.AreEqual(reservation.RoomReservations.First().Room.Name, reservationFromDb.RoomReservations.First().Room.Name);
 
-			Assert.AreEqual(reservation.Transactions.Count, reservationFromDb.Transactions.Count);
-			Assert.AreEqual(reservation.Transactions.First().Amount, reservationFromDb.Transactions.First().Amount);
+			Assert.AreEqual(reservation.ReservationTransactions.Count, reservationFromDb.ReservationTransactions.Count);
+			Assert.AreEqual(reservation.ReservationTransactions.First().Transaction.Amount, reservationFromDb.ReservationTransactions.First().Transaction.Amount);
 		}
 
 

@@ -46,7 +46,8 @@ namespace RoomReservations.Data.Tests
             {
                 StartDate = DateTime.Now.AddDays(-1),
                 EndDate = DateTime.Now.AddDays(1),
-                RoomReservations = [
+                RoomReservations =
+                [
                     new RoomReservation
                     {
                         Room = room
@@ -80,7 +81,8 @@ namespace RoomReservations.Data.Tests
             {
                 StartDate = DateTime.Now.AddDays(-1),
                 EndDate = DateTime.Now.AddDays(1),
-                RoomReservations = [
+                RoomReservations =
+                [
                     new RoomReservation
                     {
                         Room = room
@@ -122,7 +124,8 @@ namespace RoomReservations.Data.Tests
             {
                 StartDate = DateTime.Now.AddDays(-1),
                 EndDate = DateTime.Now.AddDays(10),
-                RoomReservations = [
+                RoomReservations =
+                [
                     new RoomReservation
                     {
                         Room = rooms[0]
