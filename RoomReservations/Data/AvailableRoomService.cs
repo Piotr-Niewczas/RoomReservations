@@ -30,7 +30,7 @@ namespace RoomReservations.Data
 				var isAvailable = true;
 				foreach (var reservation in reservations)
 				{
-					if (reservation.Rooms.Any(roomInRes => roomInRes.Id == room.Id))
+					if (reservation.RoomReservations.Any(rr => rr.RoomId == room.Id))
 					{
 						isAvailable = false;
 						break;

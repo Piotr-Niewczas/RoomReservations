@@ -147,6 +147,11 @@ namespace RoomReservations.Tests.Data.ReservationsServiceTests
         //    _context.Rooms.AddRange(rooms);
         //    _context.SaveChanges();
 
+        //    var roomsFromDb = _context.Rooms.ToList();
+        //    var roomsToFind = new List<Room>
+        //    {
+        //        roomsFromDb[0]
+        //    };
         //    _context.Reservations.Add(new Reservation
         //    {
         //        StartDate = DateTime.Now.AddDays(-2),
