@@ -52,12 +52,17 @@ namespace RoomReservations.Tests.Data.ReservationsServiceTests
             _context.Reservations.Add(new Reservation
             {
                 StartDate = startDate,
-                EndDate = DateTime.Now.AddDays(10),
+                EndDate = startDate.AddDays(10),
+            });
+            _context.Reservations.Add(new Reservation
+            {
+                StartDate = startDate,
+                EndDate = startDate.AddDays(7),
             });
             _context.Reservations.Add(new Reservation
             {
                 StartDate = startDate.AddDays(-2),
-                EndDate = DateTime.Now.AddDays(7),
+                EndDate = startDate.AddDays(7),
             });
             _context.SaveChanges();
 
@@ -67,6 +72,7 @@ namespace RoomReservations.Tests.Data.ReservationsServiceTests
             // Assert
             Assert.IsNotNull(result);
             Assert.IsTrue(result.All(r => r.StartDate == startDate));
+            Assert.AreEqual(result.Count, 2);
         }
 
         [TestMethod]
@@ -76,12 +82,12 @@ namespace RoomReservations.Tests.Data.ReservationsServiceTests
             var endDate = DateTime.Now;
             _context.Reservations.Add(new Reservation
             {
-                StartDate = DateTime.Now.AddDays(-2),
+                StartDate = endDate.AddDays(-2),
                 EndDate = endDate,
             });
             _context.Reservations.Add(new Reservation
             {
-                StartDate = DateTime.Now.AddDays(-4),
+                StartDate = endDate.AddDays(-4),
                 EndDate = endDate.AddDays(-1),
             });
             _context.SaveChanges();
@@ -91,6 +97,7 @@ namespace RoomReservations.Tests.Data.ReservationsServiceTests
 
             // Assert
             Assert.IsTrue(result.All(r => r.EndDate == endDate));
+            Assert.AreEqual(result.Count, 1);
         }
 
         [TestMethod]
@@ -117,6 +124,7 @@ namespace RoomReservations.Tests.Data.ReservationsServiceTests
 
             // Assert
             Assert.IsTrue(result.All(r => r.IsPaid == isPaid));
+            Assert.AreEqual(result.Count, 1);
         }
 
         //[TestMethod] // Currencly not working due to missconfiguration of the database

@@ -8,7 +8,6 @@ namespace RoomReservations.Data
 		Task<bool> AddReservationAsync(Reservation reservation, List<Room> selectedRooms);
 		Task<List<Reservation>> GetReservationsAsync();
 		Task<List<Reservation>> GetReservationsBetweenAsync(DateTime startDate, DateTime endDate);
-		Task DeleteAllReservations();
 	}
 
 	public class ReservationService : IReservationService
@@ -68,11 +67,6 @@ namespace RoomReservations.Data
 			return true;
 
 		}
-		public async Task DeleteAllReservations()
-		{
-			_context.Reservations.RemoveRange(_context.Reservations);
-			await _context.SaveChangesAsync();
-		}
 
 		public async Task<bool> AreAnyRoomsReservedInDateRange(List<Room> rooms, DateTime startdate, DateTime dateTime)
 		{
@@ -121,5 +115,6 @@ namespace RoomReservations.Data
 
 			return query.ToList();
 		}
+
 	}
 }
