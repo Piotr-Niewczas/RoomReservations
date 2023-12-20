@@ -417,6 +417,11 @@ namespace RoomReservations.Migrations
                 {
                     b.Navigation("ReservationTransactions");
                 });
+
+            modelBuilder.Entity("RoomReservations.Models.Room", b =>
+                {
+                    b.Navigation("RoomReservations");
+                });
 #pragma warning restore 612, 618
         }
     }
