@@ -3,7 +3,7 @@ using RoomReservations.Tests.Models;
 
 namespace RoomReservations.Data.Tests
 {
-    [TestClass()]
+    [TestClass]
     public class ReservationServiceTests
     {
         private ApplicationDbContext _context = null!;
@@ -102,26 +102,12 @@ namespace RoomReservations.Data.Tests
             reservations.Add(new Reservation
             {
                 StartDate = _date.AddDays(1),
-                EndDate = _date.AddDays(2),
-                RoomReservations =
-                [
-                    new RoomReservation
-                    {
-                        Room = rooms[0]
-                    }
-                ]
+                EndDate = _date.AddDays(2)
             });
             reservations.Add(new Reservation
             {
                 StartDate = _date.AddDays(3),
-                EndDate = _date.AddDays(5),
-                RoomReservations =
-                [
-                    new RoomReservation
-                    {
-                        Room = rooms[1]
-                    }
-                ]
+                EndDate = _date.AddDays(5)
             });
             _context.Reservations.AddRange(reservations);
             await _context.SaveChangesAsync();
@@ -139,26 +125,12 @@ namespace RoomReservations.Data.Tests
             reservations.Add(new Reservation
             {
                 StartDate = _date.AddDays(1),
-                EndDate = _date.AddDays(2),
-                RoomReservations =
-                [
-                    new RoomReservation
-                    {
-                        Room = rooms[0]
-                    }
-                ]
+                EndDate = _date.AddDays(2)
             });
             reservations.Add(new Reservation
             {
                 StartDate = _date.AddDays(5),
-                EndDate = _date.AddDays(7),
-                RoomReservations =
-                [
-                    new RoomReservation
-                    {
-                        Room = rooms[1]
-                    }
-                ]
+                EndDate = _date.AddDays(7)
             });
             _context.Reservations.AddRange(reservations);
             await _context.SaveChangesAsync();
