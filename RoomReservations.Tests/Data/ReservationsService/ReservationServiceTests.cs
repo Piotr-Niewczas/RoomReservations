@@ -2,7 +2,7 @@
 using RoomReservations.Models;
 using RoomReservations.Tests.Models;
 
-namespace RoomReservations.Tests.Data.ReservationsServiceTests
+namespace RoomReservations.Tests.Data.ReservationsService
 {
     [TestClass()]
     public class ReservationServiceTests
@@ -29,7 +29,6 @@ namespace RoomReservations.Tests.Data.ReservationsServiceTests
                }
            ];
         readonly List<Reservation> reservations = [];
-        private readonly DateTime _date = new(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         [TestInitialize]
         public void Initialize()
@@ -47,10 +46,11 @@ namespace RoomReservations.Tests.Data.ReservationsServiceTests
         [TestMethod()]
         public async Task GetReservationsAsync_TwoReservationsInDb_ReturnsTwoReservations()
         {
+            var date = DateTime.Now;
             reservations.Add(new Reservation
             {
-                StartDate = _date.AddDays(1),
-                EndDate = _date.AddDays(3),
+                StartDate = date.AddDays(1),
+                EndDate = date.AddDays(3),
                 RoomReservations =
                 [
                     new RoomReservation
@@ -61,8 +61,8 @@ namespace RoomReservations.Tests.Data.ReservationsServiceTests
             });
             reservations.Add(new Reservation
             {
-                StartDate = _date.AddDays(2),
-                EndDate = _date.AddDays(5),
+                StartDate = date.AddDays(2),
+                EndDate = date.AddDays(5),
                 RoomReservations =
                 [
                     new RoomReservation
@@ -107,10 +107,11 @@ namespace RoomReservations.Tests.Data.ReservationsServiceTests
         [TestMethod()]
         public async Task AddReservationAsync_RoomsListEmpty_ReturnsFalse()
         {
+            var date = DateTime.Now;
             Reservation reservation = new()
             {
-                StartDate = _date.AddDays(1),
-                EndDate = _date.AddDays(2),
+                StartDate = date.AddDays(1),
+                EndDate = date.AddDays(2),
             };
             List<Room> rooms = new();
 
@@ -126,11 +127,12 @@ namespace RoomReservations.Tests.Data.ReservationsServiceTests
         [TestMethod()]
         public async Task AddReservationAsync_TwoOverlapingReservations_ReturnsFalse()
         {
+            var date = DateTime.Now;
             List<Room> oneRoom = [rooms[0]];
             Reservation reservation = new()
             {
-                StartDate = _date.AddDays(1),
-                EndDate = _date.AddDays(10),
+                StartDate = date.AddDays(1),
+                EndDate = date.AddDays(10),
             };
             bool result0 = await _reservationService.AddReservationAsync(reservation, oneRoom);
             Assert.IsTrue(result0);
@@ -138,8 +140,8 @@ namespace RoomReservations.Tests.Data.ReservationsServiceTests
 
             Reservation overlapingReservation = new()
             {
-                StartDate = _date.AddDays(5),
-                EndDate = _date.AddDays(15),
+                StartDate = date.AddDays(5),
+                EndDate = date.AddDays(15),
             };
 
             Task<bool> result = _reservationService.AddReservationAsync(overlapingReservation, oneRoom);

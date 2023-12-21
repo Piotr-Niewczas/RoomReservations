@@ -7,13 +7,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RoomReservations.Tests.Data.ReservationsServiceTests
+namespace RoomReservations.Tests.Data.ReservationsService
 {
     [TestClass]
     public class ReservationQueryTests
     {
         private ApplicationDbContext _context = null!;
-        private ReservationService _reservationService = null!;
+        private RoomReservations.Data.ReservationService _reservationService = null!;
 
         readonly List<Room> rooms =
             [
@@ -40,7 +40,7 @@ namespace RoomReservations.Tests.Data.ReservationsServiceTests
         public void Initialize()
         {
             _context = TestsContextOptions.TestingContext;
-            _reservationService = new ReservationService(_context);
+            _reservationService = new RoomReservations.Data.ReservationService(_context);
         }
 
         [TestCleanup]
