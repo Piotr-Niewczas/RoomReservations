@@ -211,6 +211,7 @@ namespace RoomReservations.Tests.Data.ReservationsServiceTests
             Assert.IsTrue(result.All(r => r.RoomReservations.Any(rr => roomsToFind.Contains(rr.Room))));
             Assert.AreEqual(result.Count, 2);
             Assert.AreEqual(result.First().RoomReservations.First().Room.Name, rooms.First().Name);
+            Assert.IsTrue(result.All(result => result.StartDate == date.AddDays(-2) || result.StartDate == date.AddDays(1)));
         }
     }
 }
