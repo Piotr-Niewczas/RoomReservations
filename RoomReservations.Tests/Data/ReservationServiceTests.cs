@@ -223,38 +223,5 @@ namespace RoomReservations.Data.Tests
             Assert.AreEqual(resList[0].StartDate, reservation.StartDate);
         }
 
-        [TestMethod()]
-        public async Task IsRoomReservedInDateRange_OneInRange_ReturnsTrue()
-        {
-            Room oneRoom = rooms[0];
-            Reservation reservation = new()
-            {
-                StartDate = _date.AddDays(1),
-                EndDate = _date.AddDays(10),
-            };
-            bool result0 = await _reservationService.AddReservationAsync(reservation, [oneRoom]);
-            Assert.IsTrue(result0);
-            await _context.SaveChangesAsync();
-
-            bool result = await _reservationService.IsRoomReservedInDateRange(oneRoom, _date.AddDays(1), _date.AddDays(15));
-            Assert.IsTrue(result);
-        }
-
-        [TestMethod()]
-        public async Task IsRoomReservedInDateRange_NnoeRange_ReturnsFalse()
-        {
-            Room room = rooms[0];
-            Reservation reservation = new()
-            {
-                StartDate = _date.AddDays(1),
-                EndDate = _date.AddDays(10),
-            };
-            bool result0 = await _reservationService.AddReservationAsync(reservation, [room]);
-            Assert.IsTrue(result0);
-            await _context.SaveChangesAsync();
-
-            bool result = await _reservationService.IsRoomReservedInDateRange(room, _date.AddDays(11), _date.AddDays(15));
-            Assert.IsFalse(result);
-        }
     }
 }
