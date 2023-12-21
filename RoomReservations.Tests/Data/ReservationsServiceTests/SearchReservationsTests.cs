@@ -26,52 +26,54 @@ namespace RoomReservations.Tests.Data.ReservationsServiceTests
         [TestMethod()]
         public void SearchReservations_NoArgs_ReturnsEverything()
         {
+            var date = DateTime.Now;
             _context.Reservations.Add(new Reservation
             {
-                StartDate = DateTime.Now.AddDays(-2),
-                EndDate = DateTime.Now.AddDays(7),
+                StartDate = date.AddDays(-2),
+                EndDate = date.AddDays(7),
             });
             _context.Reservations.Add(new Reservation
             {
-                StartDate = DateTime.Now,
-                EndDate = DateTime.Now.AddDays(10),
+                StartDate = date,
+                EndDate = date.AddDays(10),
             });
             _context.SaveChanges();
 
             List<Reservation> reservations = _reservationService.SearchReservations();
 
             Assert.IsNotNull(reservations);
-            Assert.AreEqual(reservations.Count, 2);
+            Assert.AreEqual(2, reservations.Count);
+            Assert.AreNotEqual(reservations[0].StartDate, reservations[1].StartDate);
         }
 
         [TestMethod]
         public void SearchReservations_WithStartDate_ReturnsMatchingReservations()
         {
             // Arrange
-            var startDate = DateTime.Now;
+            var date = DateTime.Now;
             _context.Reservations.Add(new Reservation
             {
-                StartDate = startDate,
-                EndDate = startDate.AddDays(10),
+                StartDate = date,
+                EndDate = date.AddDays(10),
             });
             _context.Reservations.Add(new Reservation
             {
-                StartDate = startDate,
-                EndDate = startDate.AddDays(7),
+                StartDate = date,
+                EndDate = date.AddDays(7),
             });
             _context.Reservations.Add(new Reservation
             {
-                StartDate = startDate.AddDays(-2),
-                EndDate = startDate.AddDays(7),
+                StartDate = date.AddDays(-2),
+                EndDate = date.AddDays(7),
             });
             _context.SaveChanges();
 
             // Act
-            var result = _reservationService.SearchReservations(startDate: startDate);
+            var result = _reservationService.SearchReservations(startDate: date);
 
             // Assert
             Assert.IsNotNull(result);
-            Assert.IsTrue(result.All(r => r.StartDate == startDate));
+            Assert.IsTrue(result.All(r => r.StartDate == date));
             Assert.AreEqual(result.Count, 2);
         }
 
@@ -79,24 +81,24 @@ namespace RoomReservations.Tests.Data.ReservationsServiceTests
         public void SearchReservations_WithEndDate_ReturnsMatchingReservations()
         {
             // Arrange
-            var endDate = DateTime.Now;
+            var date = DateTime.Now;
             _context.Reservations.Add(new Reservation
             {
-                StartDate = endDate.AddDays(-2),
-                EndDate = endDate,
+                StartDate = date.AddDays(-2),
+                EndDate = date,
             });
             _context.Reservations.Add(new Reservation
             {
-                StartDate = endDate.AddDays(-4),
-                EndDate = endDate.AddDays(-1),
+                StartDate = date.AddDays(-4),
+                EndDate = date.AddDays(-1),
             });
             _context.SaveChanges();
 
             // Act
-            var result = _reservationService.SearchReservations(endDate: endDate);
+            var result = _reservationService.SearchReservations(endDate: date);
 
             // Assert
-            Assert.IsTrue(result.All(r => r.EndDate == endDate));
+            Assert.IsTrue(result.All(r => r.EndDate == date));
             Assert.AreEqual(result.Count, 1);
         }
 
@@ -105,16 +107,17 @@ namespace RoomReservations.Tests.Data.ReservationsServiceTests
         {
             // Arrange
             var isPaid = true;
+            var date = DateTime.Now;
             _context.Reservations.Add(new Reservation
             {
-                StartDate = DateTime.Now.AddDays(-2),
-                EndDate = DateTime.Now,
+                StartDate = date.AddDays(-2),
+                EndDate = date,
                 IsPaid = isPaid
             });
             _context.Reservations.Add(new Reservation
             {
-                StartDate = DateTime.Now.AddDays(-4),
-                EndDate = DateTime.Now.AddDays(-1),
+                StartDate = date.AddDays(-4),
+                EndDate = date.AddDays(-1),
                 IsPaid = !isPaid
             });
             _context.SaveChanges();
@@ -124,73 +127,91 @@ namespace RoomReservations.Tests.Data.ReservationsServiceTests
 
             // Assert
             Assert.IsTrue(result.All(r => r.IsPaid == isPaid));
-            Assert.AreEqual(result.Count, 1);
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual(date, result.First().EndDate);
         }
 
-        //[TestMethod] // Currencly not working due to missconfiguration of the database
-        //public void SearchReservations_WithRooms_ReturnsMatchingReservations()
-        //{
-        //    // Arrange
-        //    List<Room> rooms =
-        //       [
-        //           new Room
-        //           {
-        //               Name = "Test Room 1",
-        //               PricePerNight = 30.50M
-        //           },
-        //           new Room
-        //           {
-        //               Name = "Test Room 2",
-        //               PricePerNight = 130.99M
-        //           }
-        //       ];
-        //    _context.Rooms.AddRange(rooms);
-        //    _context.SaveChanges();
+        [TestMethod]
+        public void SearchReservations_WithRooms_ReturnsMatchingReservations()
+        {
+            // Arrange
+            List<Room> rooms =
+               [
+                   new Room
+                   {
+                       Name = "Test Room 1",
+                       PricePerNight = 30.50M
+                   },
+                   new Room
+                   {
+                       Name = "Test Room 2",
+                       PricePerNight = 130.99M
+                   }
+               ];
+            _context.Rooms.AddRange(rooms);
+            _context.SaveChanges();
 
-        //    var roomsFromDb = _context.Rooms.ToList();
-        //    var roomsToFind = new List<Room>
-        //    {
-        //        roomsFromDb[0]
-        //    };
-        //    _context.Reservations.Add(new Reservation
-        //    {
-        //        StartDate = DateTime.Now.AddDays(-2),
-        //        EndDate = DateTime.Now,
-        //        Rooms = new List<Room> { _context.Rooms.First(r => r.Name == "Test Room 1") }
-        //    });
-        //    _context.SaveChanges();
+            var date = DateTime.Now;
+            List<Reservation> reservations = [
+                new Reservation
+                {
+                    StartDate = date.AddDays(-2),
+                    EndDate = date,
+                    RoomReservations =
+                    [
+                        new RoomReservation
+                        {
+                            Room = _context.Rooms.First(r => r.Name == rooms[0].Name)
+                        }
+                    ]
+                },
+                new Reservation
+                {
+                    StartDate = date.AddDays(1),
+                    EndDate = date.AddDays(4),
+                    RoomReservations =
+                    [
+                        new RoomReservation
+                        {
+                            Room = _context.Rooms.First(r => r.Name == rooms[0].Name)
+                        },
+                        new RoomReservation
+                        {
+                            Room = _context.Rooms.First(r => r.Name == rooms[1].Name)
+                        }
+                    ]
+                },
+                new Reservation
+                {
+                    StartDate = date.AddDays(4),
+                    EndDate = date.AddDays(10),
+                    RoomReservations =
+                    [
+                        new RoomReservation
+                        {
+                            Room = _context.Rooms.First(r => r.Name == rooms[1].Name)
+                        }
+                    ]
+                }
+            ];
 
-        //    _context.Reservations.Add(new Reservation
-        //    {
-        //        StartDate = DateTime.Now.AddDays(1),
-        //        EndDate = DateTime.Now.AddDays(4),
-        //        Rooms = new List<Room> { _context.Rooms.First(r => r.Name == "Test Room 1"), _context.Rooms.First(r => r.Name == "Test Room 2") }
-        //    });
-        //    _context.SaveChanges();
+            _context.Reservations.AddRange(reservations); ;
+            _context.SaveChanges();
+            var roomsFromDb = _context.Rooms.ToList();
+            var roomsToFind = new List<Room>
+            {
+                roomsFromDb[0]
+            };
 
-        //    _context.Reservations.Add(new Reservation
-        //    {
-        //        StartDate = DateTime.Now.AddDays(4),
-        //        EndDate = DateTime.Now.AddDays(10),
-        //        Rooms = new List<Room> { _context.Rooms.First(r => r.Name == "Test Room 2") }
-        //    });
-        //    _context.SaveChanges();
+            // Act
+            var result = _reservationService.SearchReservations(rooms: roomsToFind);
 
-        //    var reservationsInDb = _context.Reservations.ToList();
-
-        //    Assert.AreEqual(3, reservationsInDb[0].Rooms.Count);
-
-        //    List<Room> roomsToFind = [rooms[0]];
-
-        //    // Act
-        //    var result = _reservationService.SearchReservations(rooms: roomsToFind);
-
-        //    // Assert
-        //    Assert.IsNotNull(result);
-        //    Assert.IsTrue(result.All(r => r.Rooms.Any(room => roomsToFind.Contains(room))));
-        //    Assert.AreEqual(result.Count, 2);
-        //    Assert.AreEqual(result[0].Rooms[0].Name, rooms[0].Name);
-
-        //}
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.IsTrue(result.All(r => r.RoomReservations.Any(rr => roomsToFind.Contains(rr.Room))));
+            Assert.AreEqual(result.Count, 2);
+            Assert.AreEqual(result.First().RoomReservations.First().Room.Name, rooms.First().Name);
+            Assert.IsTrue(result.All(result => result.StartDate == date.AddDays(-2) || result.StartDate == date.AddDays(1)));
+        }
     }
 }
