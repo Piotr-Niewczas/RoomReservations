@@ -6,8 +6,8 @@ namespace RoomReservations.Data
     public interface IReservationService
     {
         Task<bool> AddReservationAsync(Reservation reservation, List<Room> rooms);
-        Task<List<Reservation>> GetReservationsAsync(bool includeRoomReservations = false, bool includeReservationTransactions = false);
-        Task<List<Reservation>> GetReservationsBetweenAsync(DateTime startDate, DateTime endDate, bool includeRoomReservations = false, bool includeReservationTransactions = false);
+        Task<List<Reservation>> GetReservationsAsync(bool forceIncludeRoomReservations = false, bool forceIncludeReservationTransactions = false);
+        Task<List<Reservation>> GetReservationsBetweenAsync(DateTime startDate, DateTime endDate, bool forceIncludeRoomReservations = false, bool forceIncludeReservationTransactions = false);
     }
 
     public class ReservationService : IReservationService
@@ -19,15 +19,15 @@ namespace RoomReservations.Data
             _context = context;
         }
 
-        public async Task<List<Reservation>> GetReservationsAsync(bool includeRoomReservations = false, bool includeReservationTransactions = false)
+        public async Task<List<Reservation>> GetReservationsAsync(bool forceIncludeRoomReservations = false, bool forceIncludeReservationTransactions = false)
         {
             var query = _context.Reservations.AsQueryable();
 
-            if (includeRoomReservations)
+            if (forceIncludeRoomReservations)
             {
                 query = query.Include(r => r.RoomReservations);
             }
-            if (includeReservationTransactions)
+            if (forceIncludeReservationTransactions)
             {
                 query = query.Include(r => r.ReservationTransactions);
             }
