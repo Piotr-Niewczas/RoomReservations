@@ -73,7 +73,7 @@ namespace RoomReservations.Data.Tests
             _context.Reservations.AddRange(reservations);
             await _context.SaveChangesAsync();
 
-            List<Reservation> result = await _reservationService.GetReservationsAsync();
+            List<Reservation> result = await _reservationService.CreateReservationQuery().ExecuteAsync();
 
             Assert.IsNotNull(result);
             Assert.AreEqual(result.Count, reservations.Count);
@@ -82,7 +82,7 @@ namespace RoomReservations.Data.Tests
         [TestMethod()]
         public async Task GetReservationsAsync_NoReservationsInDb_ReturnsEmptyList()
         {
-            List<Reservation> result = await _reservationService.GetReservationsAsync();
+            List<Reservation> result = await _reservationService.CreateReservationQuery().ExecuteAsync();
 
             Assert.IsNotNull(result);
             Assert.AreEqual(result.Count, 0);
@@ -118,7 +118,9 @@ namespace RoomReservations.Data.Tests
             _context.Reservations.AddRange(reservations);
             await _context.SaveChangesAsync();
 
-            List<Reservation> result = await _reservationService.GetReservationsBetweenAsync(_date.AddDays(0), _date.AddDays(2));
+            List<Reservation> result = await _reservationService.CreateReservationQuery()
+                .WhereDatesBetween(_date.AddDays(0), _date.AddDays(2))
+                .ExecuteAsync();
 
             Assert.IsNotNull(result);
             Assert.AreEqual(result.Count, 1);
@@ -155,7 +157,9 @@ namespace RoomReservations.Data.Tests
             _context.Reservations.AddRange(reservations);
             await _context.SaveChangesAsync();
 
-            List<Reservation> result = await _reservationService.GetReservationsBetweenAsync(_date.AddDays(3), _date.AddDays(4));
+            List<Reservation> result = await _reservationService.CreateReservationQuery()
+                .WhereDatesBetween(_date.AddDays(3), _date.AddDays(4))
+                .ExecuteAsync(); ;
 
             Assert.IsNotNull(result);
             Assert.AreEqual(result.Count, 0);
@@ -172,7 +176,7 @@ namespace RoomReservations.Data.Tests
             Assert.IsTrue(result.IsCompletedSuccessfully);
             Assert.IsFalse(result.Result);
             // Check that no reservations were added to the database
-            List<Reservation> resList = await _reservationService.GetReservationsAsync();
+            List<Reservation> resList = await _reservationService.CreateReservationQuery().ExecuteAsync();
             Assert.AreEqual(resList.Count, 0);
         }
 
@@ -191,7 +195,7 @@ namespace RoomReservations.Data.Tests
             Assert.IsTrue(result.IsCompletedSuccessfully);
             Assert.IsFalse(result.Result);
             // Check that no reservations were added to the database
-            List<Reservation> resList = await _reservationService.GetReservationsAsync();
+            List<Reservation> resList = await _reservationService.CreateReservationQuery().ExecuteAsync();
             Assert.AreEqual(resList.Count, 0);
         }
 
@@ -218,7 +222,7 @@ namespace RoomReservations.Data.Tests
             Assert.IsTrue(result.IsCompletedSuccessfully);
             Assert.IsFalse(result.Result);
             // Check that overlaping reservation wasn't added to the database
-            List<Reservation> resList = await _reservationService.GetReservationsAsync();
+            List<Reservation> resList = await _reservationService.CreateReservationQuery().ExecuteAsync();
             Assert.AreEqual(resList.Count, 1);
             Assert.AreEqual(resList[0].StartDate, reservation.StartDate);
         }
