@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RoomReservations.Models;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace RoomReservations.Data
 {
