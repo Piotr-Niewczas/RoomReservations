@@ -73,10 +73,18 @@ namespace RoomReservations.Data.Tests
             _context.Reservations.AddRange(reservations);
             await _context.SaveChangesAsync();
 
-            List<Reservation> result = await _reservationService.GetReservationsAsync();
+            List<Reservation> result = await _reservationService.GetReservationsAsync(forceIncludeRoomReservations: true);
 
             Assert.IsNotNull(result);
             Assert.AreEqual(result.Count, reservations.Count);
+            Assert.AreEqual(result[0].StartDate, reservations[0].StartDate);
+            Assert.AreEqual(result[1].StartDate, reservations[1].StartDate);
+
+            // Check that rooms are included
+            Assert.AreEqual(result[0].RoomReservations.Count, 1);
+            Assert.AreEqual(result[0].RoomReservations[0].Room.Name, rooms[0].Name);
+            Assert.AreEqual(result[1].RoomReservations.Count, 1);
+            Assert.AreEqual(result[1].RoomReservations[0].Room.Name, rooms[1].Name);
         }
 
         [TestMethod()]
