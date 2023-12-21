@@ -6,8 +6,10 @@ namespace RoomReservations.Data
     public interface IReservationService
     {
         Task<bool> AddReservationAsync(Reservation reservation, List<Room> rooms);
-        Task<List<Reservation>> GetReservationsAsync(bool forceIncludeRoomReservations = false, bool forceIncludeReservationTransactions = false);
-        Task<List<Reservation>> GetReservationsBetweenAsync(DateTime startDate, DateTime endDate, bool forceIncludeRoomReservations = false, bool forceIncludeReservationTransactions = false);
+        Task<List<Reservation>> GetReservationsAsync();
+        Task<List<Reservation>> GetReservationsBetweenAsync(DateTime startDate, DateTime endDate);
+        Task AddRoomReservations(Reservation reservation);
+        Task AddReservationTransactions(Reservation reservation);
     }
 
     public class ReservationService : IReservationService
@@ -19,38 +21,16 @@ namespace RoomReservations.Data
             _context = context;
         }
 
-        public async Task<List<Reservation>> GetReservationsAsync(bool forceIncludeRoomReservations = false, bool forceIncludeReservationTransactions = false)
+        public async Task<List<Reservation>> GetReservationsAsync()
         {
-            var query = _context.Reservations.AsQueryable();
-
-            if (forceIncludeRoomReservations)
-            {
-                query = query.Include(r => r.RoomReservations);
-            }
-            if (forceIncludeReservationTransactions)
-            {
-                query = query.Include(r => r.ReservationTransactions);
-            }
-
-            return await query.ToListAsync();
+            return await _context.Reservations.ToListAsync();
         }
 
-        public async Task<List<Reservation>> GetReservationsBetweenAsync(DateTime startDate, DateTime endDate, bool includeRoomReservations = false, bool includeReservationTransactions = false)
+        public async Task<List<Reservation>> GetReservationsBetweenAsync(DateTime startDate, DateTime endDate)
         {
-            var query = _context.Reservations
+            return await _context.Reservations
                 .Where(r => !(startDate >= r.EndDate || endDate <= r.StartDate))
-                .AsQueryable();
-
-            if (includeRoomReservations)
-            {
-                query = query.Include(r => r.RoomReservations);
-            }
-            if (includeReservationTransactions)
-            {
-                query = query.Include(r => r.ReservationTransactions);
-            }
-
-            return await query.ToListAsync();
+                .ToListAsync();
         }
 
         /// <summary>
@@ -136,6 +116,24 @@ namespace RoomReservations.Data
             }
 
             return query.ToList();
+        }
+
+        public async Task AddRoomReservations(Reservation reservation)
+        {
+            var roomReservations = await _context.RoomReservations
+                .Where(rr => rr.ReservationId == reservation.Id)
+                .ToListAsync();
+
+            reservation.RoomReservations = roomReservations;
+        }
+
+        public async Task AddReservationTransactions(Reservation reservation)
+        {
+            var ReservationTransactions = await _context.ReservationTransactions
+                .Where(rt => rt.ReservationId == reservation.Id)
+                .ToListAsync();
+
+            reservation.ReservationTransactions = ReservationTransactions;
         }
     }
 }

@@ -73,7 +73,11 @@ namespace RoomReservations.Data.Tests
             _context.Reservations.AddRange(reservations);
             await _context.SaveChangesAsync();
 
-            List<Reservation> result = await _reservationService.GetReservationsAsync(forceIncludeRoomReservations: true);
+            List<Reservation> result = await _reservationService.GetReservationsAsync();
+            foreach (var reservation in result)
+            {
+                await _reservationService.AddRoomReservations(reservation);
+            }
 
             Assert.IsNotNull(result);
             Assert.AreEqual(result.Count, reservations.Count);
@@ -258,7 +262,11 @@ namespace RoomReservations.Data.Tests
             await _context.Reservations.AddAsync(reservation);
             await _context.SaveChangesAsync();
 
-            List<Reservation> result = await _reservationService.GetReservationsAsync(forceIncludeReservationTransactions: true);
+            List<Reservation> result = await _reservationService.GetReservationsAsync();
+            foreach (var res in result)
+            {
+                await _reservationService.AddReservationTransactions(res);
+            }
 
             Assert.IsNotNull(result);
             Assert.AreEqual(result.Count, 1);
