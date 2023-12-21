@@ -236,5 +236,35 @@ namespace RoomReservations.Data.Tests
             bool result = await _reservationService.IsRoomReservedInDateRange(room, _date.AddDays(11), _date.AddDays(15));
             Assert.IsFalse(result);
         }
+
+        [TestMethod()]
+        public async Task GetReservationsAsync_WithTransaction_ReturnsReservationWithTransaction()
+        {
+            Reservation reservation = new()
+            {
+                StartDate = _date.AddDays(1),
+                EndDate = _date.AddDays(10),
+                ReservationTransactions = [
+                    new ReservationTransaction
+                    {
+                        Transaction = new Transaction
+                        {
+                            Amount = 100.00M,
+                            EntryDate = _date
+                        },
+                    }
+                ]
+            };
+            await _context.Reservations.AddAsync(reservation);
+            await _context.SaveChangesAsync();
+
+            List<Reservation> result = await _reservationService.GetReservationsAsync(forceIncludeReservationTransactions: true);
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(result.Count, 1);
+            Assert.AreEqual(result[0].StartDate, reservation.StartDate);
+            Assert.AreEqual(result[0].ReservationTransactions.Count, 1);
+            Assert.AreEqual(result[0].ReservationTransactions[0].Transaction.Amount, reservation.ReservationTransactions[0].Transaction.Amount);
+        }
     }
 }
