@@ -1,0 +1,23 @@
+﻿@using RoomReservations.Data
+@using RoomReservations.Models
+@inject IReservationService ReservationService
+@page "/list-reservations"
+
+<h3>List of all Reservations</h3>
+
+@foreach (var reservation in reservations)
+{
+	<ViewReservation ReservationToDisplay="reservation"></ViewReservation>
+	<br />
+}
+
+
+
+@code {
+	private List<Reservation> reservations = [];
+
+	protected override async Task OnInitializedAsync()
+	{
+		reservations = await ReservationService.CreateReservationQuery().WithRooms().ExecuteAsync();
+	}
+}
