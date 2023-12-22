@@ -1,20 +1,46 @@
 ﻿using RoomReservations.Data;
 using RoomReservations.Models;
 using RoomReservations.Tests.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace RoomReservations.Tests.Data.ReservationsServiceTests
+namespace RoomReservations.Tests.Data.ReservationsService
 {
-    [TestClass()]
-    public class SearchReservationsTests
+    [TestClass]
+    public class ReservationQueryTests
     {
         private ApplicationDbContext _context = null!;
-        private ReservationService _reservationService = null!;
+        private RoomReservations.Data.ReservationService _reservationService = null!;
+
+        readonly List<Room> rooms =
+            [
+                new Room
+                {
+                    Name = "Test Room 1",
+                    PricePerNight = 30.50M
+                },
+                new Room
+                {
+                    Name = "Test Room 2",
+                    PricePerNight = 130.99M
+                },
+                new Room
+                {
+                    Name = "Test Room 3",
+                    PricePerNight = 99.99M
+                }
+            ];
+        readonly List<Reservation> reservations = [];
+        private readonly DateTime _date = new(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         [TestInitialize]
         public void Initialize()
         {
             _context = TestsContextOptions.TestingContext;
-            _reservationService = new ReservationService(_context);
+            _reservationService = new RoomReservations.Data.ReservationService(_context);
         }
 
         [TestCleanup]
@@ -24,7 +50,84 @@ namespace RoomReservations.Tests.Data.ReservationsServiceTests
         }
 
         [TestMethod()]
-        public void SearchReservations_NoArgs_ReturnsEverything()
+        public async Task ReservationQuery_TwoReservations_OneMatchingDateRange()
+        {
+            reservations.Add(new Reservation
+            {
+                StartDate = _date.AddDays(1),
+                EndDate = _date.AddDays(2),
+                RoomReservations =
+                [
+                    new RoomReservation
+                    {
+                        Room = rooms[0]
+                    }
+                ]
+            });
+            reservations.Add(new Reservation
+            {
+                StartDate = _date.AddDays(3),
+                EndDate = _date.AddDays(5),
+                RoomReservations =
+                [
+                    new RoomReservation
+                    {
+                        Room = rooms[1]
+                    }
+                ]
+            });
+            _context.Reservations.AddRange(reservations);
+            await _context.SaveChangesAsync();
+
+            List<Reservation> result = await _reservationService.CreateReservationQuery()
+                .WhereDatesBetween(_date.AddDays(0), _date.AddDays(2))
+                .ExecuteAsync();
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(result.Count, 1);
+            Assert.AreEqual(result[0].StartDate, reservations[0].StartDate);
+        }
+
+        [TestMethod()]
+        public async Task ReservationQuery_TwoReservations_NoneMatchingInDateRange()
+        {
+            reservations.Add(new Reservation
+            {
+                StartDate = _date.AddDays(1),
+                EndDate = _date.AddDays(2),
+                RoomReservations =
+                [
+                    new RoomReservation
+                    {
+                        Room = rooms[0]
+                    }
+                ]
+            });
+            reservations.Add(new Reservation
+            {
+                StartDate = _date.AddDays(5),
+                EndDate = _date.AddDays(7),
+                RoomReservations =
+                [
+                    new RoomReservation
+                    {
+                        Room = rooms[1]
+                    }
+                ]
+            });
+            _context.Reservations.AddRange(reservations);
+            await _context.SaveChangesAsync();
+
+            List<Reservation> result = await _reservationService.CreateReservationQuery()
+                .WhereDatesBetween(_date.AddDays(3), _date.AddDays(4))
+                .ExecuteAsync(); ;
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(result.Count, 0);
+        }
+
+        [TestMethod()]
+        public async Task ReservationQuery_NoArgs_ReturnsEverything()
         {
             var date = DateTime.Now;
             _context.Reservations.Add(new Reservation
@@ -39,7 +142,7 @@ namespace RoomReservations.Tests.Data.ReservationsServiceTests
             });
             _context.SaveChanges();
 
-            List<Reservation> reservations = _reservationService.SearchReservations();
+            List<Reservation> reservations = await _reservationService.CreateReservationQuery().ExecuteAsync();
 
             Assert.IsNotNull(reservations);
             Assert.AreEqual(2, reservations.Count);
@@ -47,7 +150,7 @@ namespace RoomReservations.Tests.Data.ReservationsServiceTests
         }
 
         [TestMethod]
-        public void SearchReservations_WithStartDate_ReturnsMatchingReservations()
+        public async Task ReservationQuery_WhereStartDatee_ReturnsTwoMatchingReservations()
         {
             // Arrange
             var date = DateTime.Now;
@@ -69,7 +172,9 @@ namespace RoomReservations.Tests.Data.ReservationsServiceTests
             _context.SaveChanges();
 
             // Act
-            var result = _reservationService.SearchReservations(startDate: date);
+            var result = await _reservationService.CreateReservationQuery()
+                .WhereStartDate(date)
+                .ExecuteAsync();
 
             // Assert
             Assert.IsNotNull(result);
@@ -78,7 +183,7 @@ namespace RoomReservations.Tests.Data.ReservationsServiceTests
         }
 
         [TestMethod]
-        public void SearchReservations_WithEndDate_ReturnsMatchingReservations()
+        public async Task SearchReservations_WhereEndDate_ReturnsMatchingReservation()
         {
             // Arrange
             var date = DateTime.Now;
@@ -95,7 +200,9 @@ namespace RoomReservations.Tests.Data.ReservationsServiceTests
             _context.SaveChanges();
 
             // Act
-            var result = _reservationService.SearchReservations(endDate: date);
+            var result = await _reservationService.CreateReservationQuery()
+                .WhereEndDate(date)
+                .ExecuteAsync();
 
             // Assert
             Assert.IsTrue(result.All(r => r.EndDate == date));
@@ -103,7 +210,7 @@ namespace RoomReservations.Tests.Data.ReservationsServiceTests
         }
 
         [TestMethod]
-        public void SearchReservations_WithIsPaid_ReturnsMatchingReservations()
+        public async Task SearchReservations_WhereIsPaid_ReturnsMatchingReservation()
         {
             // Arrange
             var isPaid = true;
@@ -123,7 +230,9 @@ namespace RoomReservations.Tests.Data.ReservationsServiceTests
             _context.SaveChanges();
 
             // Act
-            var result = _reservationService.SearchReservations(isPaid: isPaid);
+            var result = await _reservationService.CreateReservationQuery()
+                .WhereIsPaid(isPaid)
+                .ExecuteAsync();
 
             // Assert
             Assert.IsTrue(result.All(r => r.IsPaid == isPaid));
@@ -132,7 +241,7 @@ namespace RoomReservations.Tests.Data.ReservationsServiceTests
         }
 
         [TestMethod]
-        public void SearchReservations_WithRooms_ReturnsMatchingReservations()
+        public async Task ReservationQuery_WhereAnyOfRooms_ReturnsTwoMatchingReservationsWithTheirRooms()
         {
             // Arrange
             List<Room> rooms =
@@ -204,7 +313,10 @@ namespace RoomReservations.Tests.Data.ReservationsServiceTests
             };
 
             // Act
-            var result = _reservationService.SearchReservations(rooms: roomsToFind);
+            var result = await _reservationService.CreateReservationQuery()
+                .WhereAnyOfRooms(roomsToFind)
+                .WithRooms()
+                .ExecuteAsync();
 
             // Assert
             Assert.IsNotNull(result);
