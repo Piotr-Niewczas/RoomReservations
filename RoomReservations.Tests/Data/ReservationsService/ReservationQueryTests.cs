@@ -325,5 +325,73 @@ namespace RoomReservations.Tests.Data.ReservationsService
             Assert.AreEqual(result.First().RoomReservations.First().Room.Name, rooms.First().Name);
             Assert.IsTrue(result.All(result => result.StartDate == date.AddDays(-2) || result.StartDate == date.AddDays(1)));
         }
+
+        [TestMethod]
+        public async Task ReservationQuery_WhereId_ReturnsMatchingReservation()
+        {
+            // Arrange
+            var date = DateTime.Now;
+            int idToFind = 100;
+            _context.Reservations.Add(new Reservation
+            {
+                Id = idToFind,
+                StartDate = date.AddDays(-2),
+                EndDate = date,
+            });
+            _context.Reservations.Add(new Reservation
+            {
+                Id = idToFind + 1,
+                StartDate = date.AddDays(-4),
+                EndDate = date.AddDays(-1),
+            });
+            _context.Reservations.Add(new Reservation
+            {
+                Id = idToFind - 1,
+                StartDate = date.AddDays(-40),
+                EndDate = date.AddDays(-10),
+            });
+            _context.SaveChanges();
+
+            // Act
+            var result = await _reservationService.CreateReservationQuery()
+                .WhereId(idToFind)
+                .ExecuteAsync();
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(result.Count, 1);
+            Assert.AreEqual(result.First().Id, idToFind);
+            Assert.AreEqual(result.First().EndDate, date);
+        }
+
+        [TestMethod]
+        public async Task ReservationQuery_WhereId_ReturnsEmpty()
+        {
+            // Arrange
+            var date = DateTime.Now;
+            int idToFind = 100;
+            _context.Reservations.Add(new Reservation
+            {
+                Id = idToFind - 1,
+                StartDate = date.AddDays(-2),
+                EndDate = date,
+            });
+            _context.Reservations.Add(new Reservation
+            {
+                Id = idToFind + 1,
+                StartDate = date.AddDays(-4),
+                EndDate = date.AddDays(-1),
+            });
+            _context.SaveChanges();
+
+            // Act
+            var result = await _reservationService.CreateReservationQuery()
+                .WhereId(idToFind)
+                .ExecuteAsync();
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(result.Count, 0);
+        }
     }
 }

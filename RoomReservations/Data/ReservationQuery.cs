@@ -58,5 +58,11 @@ namespace RoomReservations.Data
             _query = _query.Where(reservation => !(startDate >= reservation.EndDate || endDate <= reservation.StartDate));
             return this;
         }
+
+        public ReservationQuery WhereId(int id)
+        {
+            _query = _query.Where(reservation => reservation.Id == id);
+            return this;
+        }
     }
 }
