@@ -183,7 +183,7 @@ namespace RoomReservations.Tests.Data.ReservationsService
         }
 
         [TestMethod]
-        public async Task SearchReservations_WhereEndDate_ReturnsMatchingReservation()
+        public async Task ReservationQuery_WhereEndDate_ReturnsMatchingReservation()
         {
             // Arrange
             var date = DateTime.Now;
@@ -210,7 +210,7 @@ namespace RoomReservations.Tests.Data.ReservationsService
         }
 
         [TestMethod]
-        public async Task SearchReservations_WhereIsPaid_ReturnsMatchingReservation()
+        public async Task ReservationQuery_WhereIsPaid_ReturnsMatchingReservation()
         {
             // Arrange
             var isPaid = true;
