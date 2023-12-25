@@ -9,6 +9,8 @@ namespace RoomReservations.Data
         ReservationQuery CreateReservationQuery();
         Task<bool> UpdateReservationAsync(Reservation updatedReservation);
         Task<bool> DeleteReservationAsync(int id);
+        Task<bool> AreAnyRoomsReservedInDateRange(List<Room> rooms, DateTime startdate, DateTime dateTime, Reservation? reservationToIgnore = null);
+        Task<List<Reservation>> ReservationsForAnyOfRoomsInDateRange(List<Room> rooms, DateTime startdate, DateTime dateTime);
     }
 
     public class ReservationService : IReservationService
