@@ -100,7 +100,13 @@ namespace RoomReservations.Data
                 return false;
             }
 
-            if (await AreAnyRoomsReservedInDateRange(updatedReservation.RoomReservations.Select(rr => rr.Room).ToList(), updatedReservation.StartDate, updatedReservation.EndDate, reservation))
+            if (await AreAnyRoomsReservedInDateRange(
+                        updatedReservation.RoomReservations.Select(rr => rr.Room).ToList(),
+                        updatedReservation.StartDate,
+                        updatedReservation.EndDate,
+                        reservation
+                    )
+                )
             {
                 return false;
             }
