@@ -8,6 +8,7 @@ namespace RoomReservations.Data
         Task<bool> AddReservationAsync(Reservation reservation, List<Room> rooms);
         ReservationQuery CreateReservationQuery();
         Task<bool> UpdateReservationAsync(Reservation updatedReservation);
+        Task<bool> DeleteReservationAsync(int id);
     }
 
     public class ReservationService : IReservationService
@@ -117,5 +118,20 @@ namespace RoomReservations.Data
         {
             return _context.Reservations.Any(e => e.Id == id);
         }
+
+        public async Task<bool> DeleteReservationAsync(int id)
+        {
+            var reservation = await _context.Reservations.FindAsync(id);
+            if (reservation == null)
+            {
+                return false;
+            }
+
+            _context.Reservations.Remove(reservation);
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
     }
 }

@@ -224,5 +224,40 @@ namespace RoomReservations.Tests.Data.ReservationsService
 
             Assert.IsFalse(result);
         }
+
+        [TestMethod]
+        public async Task DeleteReservationAsync_ReservationExists_DeletesAndReturnsTrue()
+        {
+            var date = DateTime.Now;
+            var reservation = new Reservation
+            {
+                Id = 1,
+                StartDate = date,
+                EndDate = date.AddDays(1),
+                RoomReservations =
+                [
+                    new RoomReservation
+                    {
+                        Room = rooms[0]
+                    }
+                ]
+            };
+            _context.Reservations.Add(reservation);
+            await _context.SaveChangesAsync();
+
+            var result = await _reservationService.DeleteReservationAsync(reservation.Id);
+
+            Assert.IsTrue(result);
+            var resFromDb = await _context.Reservations.FindAsync(reservation.Id);
+            Assert.IsNull(resFromDb);
+        }
+
+        [TestMethod]
+        public async Task DeleteReservationAsync_ReservationDoesNotExist_ReturnsFalse()
+        {
+            var result = await _reservationService.DeleteReservationAsync(1);
+
+            Assert.IsFalse(result);
+        }
     }
 }
