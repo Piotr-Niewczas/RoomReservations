@@ -7,6 +7,7 @@ namespace RoomReservations.Data
     {
         Task<bool> AddReservationAsync(Reservation reservation, List<Room> rooms);
         ReservationQuery CreateReservationQuery();
+        Task<bool> UpdateReservationAsync(Reservation updatedReservation);
     }
 
     public class ReservationService : IReservationService
@@ -67,6 +68,54 @@ namespace RoomReservations.Data
                 .Where(r => r.RoomReservations.Any(roomInRes => rooms.Contains(roomInRes.Room)))
                 .ToListAsync();
             return reservations.Count != 0;
+        }
+
+        /// <summary>
+        /// Updates reservation in the database, if it is valid. Cannot update reservation transactions.
+        /// </summary>
+        /// <param name="updatedReservation"></param>
+        /// <returns>True if succeded.</returns>
+        /// <exception cref="Exception"></exception>
+        public async Task<bool> UpdateReservationAsync(Reservation updatedReservation)
+        {
+            if (updatedReservation == null)
+            {
+                return false;
+            }
+
+            var reservation = await _context.Reservations.FindAsync(updatedReservation.Id);
+
+            if (reservation == null)
+            {
+                return false;
+            }
+
+            reservation.StartDate = updatedReservation.StartDate;
+            reservation.EndDate = updatedReservation.EndDate;
+            reservation.RoomReservations = updatedReservation.RoomReservations;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!ReservationExists(updatedReservation.Id))
+                {
+                    return false;
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return true;
+        }
+
+        private bool ReservationExists(int id)
+        {
+            return _context.Reservations.Any(e => e.Id == id);
         }
     }
 }

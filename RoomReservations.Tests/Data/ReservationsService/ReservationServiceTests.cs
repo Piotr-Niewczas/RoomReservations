@@ -1,6 +1,7 @@
 ﻿using RoomReservations.Data;
 using RoomReservations.Models;
 using RoomReservations.Tests.Models;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace RoomReservations.Tests.Data.ReservationsService
 {
@@ -153,5 +154,75 @@ namespace RoomReservations.Tests.Data.ReservationsService
             Assert.AreEqual(resList[0].StartDate, reservation.StartDate);
         }
 
+        [TestMethod]
+        public async Task UpdateReservationAsync_ReservationExists_UpdatesAndReturnsTrue()
+        {
+            var date = DateTime.Now;
+            var reservation = new Reservation
+            {
+                Id = 1,
+                StartDate = date,
+                EndDate = date.AddDays(1),
+                RoomReservations =
+                [
+                    new RoomReservation
+                    {
+                        Room = rooms[0]
+                    },
+                    new RoomReservation
+                    {
+                        Room = rooms[2]
+                    }
+                ]
+            };
+            _context.Reservations.Add(reservation);
+            await _context.SaveChangesAsync();
+            var updatedReservation = new Reservation
+            {
+                Id = reservation.Id,
+                StartDate = date.AddDays(1),
+                EndDate = date.AddDays(2),
+                RoomReservations =
+                [
+                    new RoomReservation
+                    {
+                        Room = rooms[1]
+                    }
+                ]
+            };
+
+            var result = await _reservationService.UpdateReservationAsync(updatedReservation);
+
+            Assert.IsTrue(result);
+            var resFromDb = await _context.Reservations.FindAsync(reservation.Id);
+            Assert.IsNotNull(resFromDb);
+            Assert.AreEqual(resFromDb.StartDate, updatedReservation.StartDate);
+            Assert.AreEqual(resFromDb.EndDate, updatedReservation.EndDate);
+            Assert.AreEqual(resFromDb.RoomReservations.Count, updatedReservation.RoomReservations.Count);
+            Assert.AreEqual(resFromDb.RoomReservations[0].Room, updatedReservation.RoomReservations[0].Room);
+        }
+
+        [TestMethod]
+        public async Task UpdateReservationAsync_ReservationDoesNotExist_ReturnsFalse()
+        {
+            var date = DateTime.Now;
+            var updatedReservation = new Reservation
+            {
+                Id = 1,
+                StartDate = date.AddDays(1),
+                EndDate = date.AddDays(2),
+                RoomReservations =
+                [
+                    new RoomReservation
+                    {
+                        Room = rooms[1]
+                    }
+                ]
+            };
+
+            var result = await _reservationService.UpdateReservationAsync(updatedReservation);
+
+            Assert.IsFalse(result);
+        }
     }
 }
