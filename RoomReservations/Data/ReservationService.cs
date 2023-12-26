@@ -81,6 +81,8 @@ namespace RoomReservations.Data
             var reservations = await _context.Reservations
                 .Where(r => !(startDate > r.EndDate || endDate < r.StartDate))
                 .Where(r => r.RoomReservations.Any(roomInRes => rooms.Contains(roomInRes.Room)))
+                .Include(r => r.RoomReservations)
+                .ThenInclude(rr => rr.Room)
                 .ToListAsync();
             return reservations;
         }
