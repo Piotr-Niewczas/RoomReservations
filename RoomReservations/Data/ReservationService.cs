@@ -9,7 +9,7 @@ namespace RoomReservations.Data
         ReservationQuery CreateReservationQuery();
         Task<bool> UpdateReservationAsync(Reservation updatedReservation);
         Task<bool> DeleteReservationAsync(int id);
-        Task<bool> AreAnyRoomsReservedInDateRange(List<Room> rooms, DateTime startdate, DateTime dateTime, Reservation? reservationToIgnore = null);
+        Task<bool> AreAnyRoomsReservedInDateRange(List<Room> rooms, DateTime startdate, DateTime dateTime, int? reservationIdToIgnore = null);
         Task<List<Reservation>> ReservationsForAnyOfRoomsInDateRange(List<Room> rooms, DateTime startdate, DateTime dateTime);
     }
 
@@ -64,11 +64,16 @@ namespace RoomReservations.Data
 
         }
 
-        public async Task<bool> AreAnyRoomsReservedInDateRange(List<Room> rooms, DateTime startDate, DateTime endDate, Reservation? reservationToIgnore = null)
+        public async Task<bool> AreAnyRoomsReservedInDateRange(List<Room> rooms, DateTime startDate, DateTime endDate, int? reservationIdToIgnore = null)
         {
-            return (await ReservationsForAnyOfRoomsInDateRange(rooms, startDate, endDate))
-                .Where(r => r != reservationToIgnore)
-                .Any();
+            var reservations = await ReservationsForAnyOfRoomsInDateRange(rooms, startDate, endDate);
+
+            if (reservationIdToIgnore != null)
+            {
+                reservations = reservations.Where(r => r.Id != reservationIdToIgnore).ToList();
+            }
+
+            return reservations.Any();
         }
 
         public async Task<List<Reservation>> ReservationsForAnyOfRoomsInDateRange(List<Room> rooms, DateTime startDate, DateTime endDate)
@@ -104,7 +109,7 @@ namespace RoomReservations.Data
                         updatedReservation.RoomReservations.Select(rr => rr.Room).ToList(),
                         updatedReservation.StartDate,
                         updatedReservation.EndDate,
-                        reservation
+                        reservation.Id
                     )
                 )
             {
