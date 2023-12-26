@@ -64,17 +64,17 @@ namespace RoomReservations.Data
 
         }
 
-        public async Task<bool> AreAnyRoomsReservedInDateRange(List<Room> rooms, DateTime startdate, DateTime dateTime, Reservation? reservationToIgnore = null)
+        public async Task<bool> AreAnyRoomsReservedInDateRange(List<Room> rooms, DateTime startDate, DateTime endDate, Reservation? reservationToIgnore = null)
         {
-            return (await ReservationsForAnyOfRoomsInDateRange(rooms, startdate, dateTime))
+            return (await ReservationsForAnyOfRoomsInDateRange(rooms, startDate, endDate))
                 .Where(r => r != reservationToIgnore)
                 .Any();
         }
 
-        public async Task<List<Reservation>> ReservationsForAnyOfRoomsInDateRange(List<Room> rooms, DateTime startdate, DateTime dateTime)
+        public async Task<List<Reservation>> ReservationsForAnyOfRoomsInDateRange(List<Room> rooms, DateTime startDate, DateTime endDate)
         {
             var reservations = await _context.Reservations
-                .Where(r => !(startdate >= r.EndDate || dateTime <= r.StartDate))
+                .Where(r => !(startDate > r.EndDate || endDate < r.StartDate))
                 .Where(r => r.RoomReservations.Any(roomInRes => rooms.Contains(roomInRes.Room)))
                 .ToListAsync();
             return reservations;
