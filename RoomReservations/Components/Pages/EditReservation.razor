@@ -2,6 +2,7 @@
 @using RoomReservations.Data
 @inject IReservationService ReservationService
 @using RoomReservations.Models
+@inject IJSRuntime JSRuntime
 
 <h3>EditReservation</h3>
 
@@ -83,9 +84,10 @@
 		ShowAlert(Severity.Success, "Reservation updated successfully");
     }
 
-    private void CancelChanges()
+    private async void CancelChanges()
     {
-        // Cancel changes logic here
+        // Navigate to previous page user was on using JS
+        await JSRuntime.InvokeVoidAsync("history.back");
     }
 
     private void HideAlert()
