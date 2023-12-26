@@ -395,7 +395,7 @@ namespace RoomReservations.Tests.Data.ReservationsService
             _context.Reservations.Add(reservation);
             await _context.SaveChangesAsync();
 
-            var result = await _reservationService.AreAnyRoomsReservedInDateRange([rooms[0]], date, date.AddDays(3), reservation);
+            var result = await _reservationService.AreAnyRoomsReservedInDateRange([rooms[0]], date, date.AddDays(3), reservation.Id);
 
             Assert.IsFalse(result);
         }
