@@ -1,4 +1,7 @@
 ﻿@using RoomReservations.Models
+@inject Microsoft.AspNetCore.Components.NavigationManager NavigationManager
+@using RoomReservations.Data
+@inject IReservationService ReservationService
 
 <MudCard>
     <MudCardContent>
@@ -12,14 +15,53 @@
 			}
         </MudCardContent>
         <MudCardActions>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary">Edit NYI</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => NavigateToEditPage())">Edit</MudButton>
         <div style="flex-grow: 1;"></div>
-        <MudButton Variant="Variant.Filled" Color="Color.Secondary">Delete NYI</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="@(() => DeleteReservation())">Delete</MudButton>
         </MudCardActions>
+    @if (showAlert)
+    {
+        <MudAlert Severity=@severity ShowCloseIcon="true" CloseIconClicked="(() => showAlert = false)">@message</MudAlert>
+    }
     </MudCard>
 
 
 @code {
     [Parameter]
     public Reservation ReservationToDisplay { get; set; } = new Reservation();
+
+    private bool showAlert = false;
+    private Severity severity = Severity.Info;
+    private string message = "Your alert message goes here.";
+
+    private void NavigateToEditPage()
+    {
+        var url = "/edit-reservation/" + ReservationToDisplay.Id;
+        NavigationManager.NavigateTo(url);
+    }
+
+    private async void DeleteReservation()
+	{
+        var result = await ReservationService.DeleteReservationAsync(ReservationToDisplay.Id);
+        if (result) // If successful, refresh page
+		{
+            ShowAlert(Severity.Success, "Reservation deleted successfully.");
+            await Task.Delay(2000);
+            NavigationManager.NavigateTo(NavigationManager.Uri, true);
+		}
+        else ShowAlert(Severity.Error, "Could not delete reservation.");
+
+	}
+
+    private void HideAlert()
+    {
+        showAlert = false;
+    }
+
+    private void ShowAlert(Severity severity, string message)
+    {
+        this.severity = severity;
+        this.message = message;
+        showAlert = true;
+    }
 }
