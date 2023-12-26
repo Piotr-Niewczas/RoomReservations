@@ -1,7 +1,6 @@
 ﻿using RoomReservations.Data;
 using RoomReservations.Models;
 using RoomReservations.Tests.Models;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace RoomReservations.Tests.Data.ReservationsService
 {
@@ -256,6 +255,171 @@ namespace RoomReservations.Tests.Data.ReservationsService
         public async Task DeleteReservationAsync_ReservationDoesNotExist_ReturnsFalse()
         {
             var result = await _reservationService.DeleteReservationAsync(1);
+
+            Assert.IsFalse(result);
+        }
+
+        [TestMethod()]
+        public async Task ReservationsForAnyOfRoomsInDateRange_TwoMatching_ReturnsReservations()
+        {
+            var date = DateTime.Now;
+            List<Reservation> reservations = [
+                new Reservation
+                {
+                    StartDate = date,
+                    EndDate = date.AddDays(2),
+                    RoomReservations =
+                    [
+                        new RoomReservation
+                        {
+                            Room = rooms[0]
+                        }
+                    ]
+                },
+                new Reservation
+                {
+                    StartDate = date,
+                    EndDate = date.AddDays(4),
+                    RoomReservations =
+                    [
+                        new RoomReservation
+                        {
+                            Room = rooms[1]
+                        }
+                    ]
+                },
+                new Reservation
+                {
+                    StartDate = date.AddDays(1),
+                    EndDate = date.AddDays(3),
+                    RoomReservations =
+                    [
+                        new RoomReservation
+                        {
+                            Room = rooms[0]
+                        },
+                        new RoomReservation
+                        {
+                            Room = rooms[2]
+                        }
+                    ]
+                }
+            ];
+            _context.Reservations.AddRange(reservations);
+            await _context.SaveChangesAsync();
+
+            var result = await _reservationService.ReservationsForAnyOfRoomsInDateRange([rooms[0]], date.AddDays(1), date.AddDays(3));
+
+            Assert.AreEqual(result.Count, 2);
+            Assert.IsTrue(result.Contains(reservations[0]));
+            Assert.IsTrue(result.Contains(reservations[2]));
+        }
+
+        [TestMethod()]
+        public async Task ReservationsForAnyOfRoomsInDateRange_NoMatching_ReturnsEmpty()
+        {
+            var date = DateTime.Now;
+            List<Reservation> reservations = [
+                new Reservation
+                {
+                    StartDate = date,
+                    EndDate = date.AddDays(2),
+                    RoomReservations =
+                    [
+                        new RoomReservation
+                        {
+                            Room = rooms[0]
+                        }
+                    ]
+                },
+                new Reservation
+                {
+                    StartDate = date.AddDays(5),
+                    EndDate = date.AddDays(6),
+                    RoomReservations =
+                    [
+                        new RoomReservation
+                        {
+                            Room = rooms[0]
+                        }
+                    ]
+                }];
+            _context.Reservations.AddRange(reservations);
+            await _context.SaveChangesAsync();
+
+            var result = await _reservationService.ReservationsForAnyOfRoomsInDateRange([rooms[0]], date.AddDays(3), date.AddDays(4));
+
+            Assert.AreEqual(result.Count, 0);
+        }
+
+        [TestMethod()]
+        public async Task AreAnyRoomsReservedInDateRange_OneMatching_ReturnsTrue()
+        {
+            var date = DateTime.Now;
+            var reservation = new Reservation
+            {
+                StartDate = date,
+                EndDate = date.AddDays(2),
+                RoomReservations =
+                [
+                    new RoomReservation
+                    {
+                        Room = rooms[0]
+                    }
+                ]
+            };
+            _context.Reservations.Add(reservation);
+            await _context.SaveChangesAsync();
+
+            var result = await _reservationService.AreAnyRoomsReservedInDateRange([rooms[0]], date.AddDays(2), date.AddDays(3));
+
+            Assert.IsTrue(result);
+        }
+
+        [TestMethod()]
+        public async Task AreAnyRoomsReservedInDateRange_OneMatchingButIgnored_ReturnsFalse()
+        {
+            var date = DateTime.Now;
+            var reservation = new Reservation
+            {
+                StartDate = date,
+                EndDate = date.AddDays(2),
+                RoomReservations =
+                [
+                    new RoomReservation
+                    {
+                        Room = rooms[0]
+                    }
+                ]
+            };
+            _context.Reservations.Add(reservation);
+            await _context.SaveChangesAsync();
+
+            var result = await _reservationService.AreAnyRoomsReservedInDateRange([rooms[0]], date, date.AddDays(3), reservation);
+
+            Assert.IsFalse(result);
+        }
+
+        [TestMethod()]
+        public async Task AreAnyRoomsReservedInDateRange_NoneMatching_ReturnsFalse()
+        {
+            var date = DateTime.Now;
+            var reservation = new Reservation
+            {
+                StartDate = date,
+                EndDate = date.AddDays(2),
+                RoomReservations =
+                [
+                    new RoomReservation
+                    {
+                        Room = rooms[0]
+                    }
+                ]
+            };
+            _context.Reservations.Add(reservation);
+            await _context.SaveChangesAsync();
+
+            var result = await _reservationService.AreAnyRoomsReservedInDateRange([rooms[1]], date.AddDays(2), date.AddDays(3));
 
             Assert.IsFalse(result);
         }
