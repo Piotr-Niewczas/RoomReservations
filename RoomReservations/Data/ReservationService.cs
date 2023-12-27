@@ -9,6 +9,9 @@ public interface IReservationService
     Task<bool> UpdateReservationAsync(Reservation updatedReservation);
     Task<bool> DeleteReservationAsync(int id);
     IQueryable<Reservation> CreateReservationQuery();
+
+    IQueryable<Reservation>
+        ReservationsForAnyOfRoomsInDateRange(List<Room> rooms, DateTime startDate, DateTime endDate);
 }
 
 public class ReservationService(ApplicationDbContext context) : IReservationService
@@ -95,7 +98,7 @@ public class ReservationService(ApplicationDbContext context) : IReservationServ
         return new QueryFactory(_context).Create<Reservation>();
     }
 
-    private IQueryable<Reservation> ReservationsForAnyOfRoomsInDateRange(List<Room> rooms, DateTime startDate,
+    public IQueryable<Reservation> ReservationsForAnyOfRoomsInDateRange(List<Room> rooms, DateTime startDate,
         DateTime endDate)
     {
         var reservations = context.Reservations
