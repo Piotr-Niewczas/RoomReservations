@@ -1,4 +1,5 @@
-﻿using RoomReservations.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using RoomReservations.Data;
 using RoomReservations.Models;
 using RoomReservations.Tests.Models;
 
@@ -75,7 +76,7 @@ public class ReservationServiceTests
         _context.Reservations.AddRange(reservations);
         await _context.SaveChangesAsync();
 
-        List<Reservation> result = await _reservationService.CreateReservationQuery().ExecuteAsync();
+        var result = await _reservationService.CreateReservationQuery().ToListAsync();
 
         Assert.IsNotNull(result);
         Assert.AreEqual(result.Count, reservations.Count);
@@ -84,7 +85,7 @@ public class ReservationServiceTests
     [TestMethod]
     public async Task GetReservationsAsync_NoReservationsInDb_ReturnsEmptyList()
     {
-        List<Reservation> result = await _reservationService.CreateReservationQuery().ExecuteAsync();
+        var result = await _reservationService.CreateReservationQuery().ToListAsync();
 
         Assert.IsNotNull(result);
         Assert.AreEqual(result.Count, 0);
@@ -101,7 +102,7 @@ public class ReservationServiceTests
         Assert.IsTrue(result.IsCompletedSuccessfully);
         Assert.IsFalse(result.Result);
         // Check that no reservations were added to the database
-        List<Reservation> resList = await _reservationService.CreateReservationQuery().ExecuteAsync();
+        var resList = await _reservationService.CreateReservationQuery().ToListAsync();
         Assert.AreEqual(resList.Count, 0);
     }
 
@@ -121,7 +122,7 @@ public class ReservationServiceTests
         Assert.IsTrue(result.IsCompletedSuccessfully);
         Assert.IsFalse(result.Result);
         // Check that no reservations were added to the database
-        List<Reservation> resList = await _reservationService.CreateReservationQuery().ExecuteAsync();
+        var resList = await _reservationService.CreateReservationQuery().ToListAsync();
         Assert.AreEqual(resList.Count, 0);
     }
 
@@ -149,7 +150,7 @@ public class ReservationServiceTests
         Assert.IsTrue(result.IsCompletedSuccessfully);
         Assert.IsFalse(result.Result);
         // Check that overlaping reservation wasn't added to the database
-        List<Reservation> resList = await _reservationService.CreateReservationQuery().ExecuteAsync();
+        var resList = await _reservationService.CreateReservationQuery().ToListAsync();
         Assert.AreEqual(resList.Count, 1);
         Assert.AreEqual(resList[0].StartDate, reservation.StartDate);
     }
@@ -312,7 +313,7 @@ public class ReservationServiceTests
 
         var result =
             await _reservationService.ReservationsForAnyOfRoomsInDateRange([rooms[0]], date.AddDays(1),
-                date.AddDays(3));
+                date.AddDays(3)).ToListAsync();
 
         Assert.AreEqual(result.Count, 2);
         Assert.IsTrue(result.Contains(reservations[0]));
@@ -355,7 +356,7 @@ public class ReservationServiceTests
 
         var result =
             await _reservationService.ReservationsForAnyOfRoomsInDateRange([rooms[0]], date.AddDays(3),
-                date.AddDays(4));
+                date.AddDays(4)).ToListAsync();
 
         Assert.AreEqual(result.Count, 0);
     }
