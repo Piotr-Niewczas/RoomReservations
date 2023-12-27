@@ -1,23 +1,28 @@
-﻿@using RoomReservations.Data
-@using RoomReservations.Models
-@inject IReservationService ReservationService
+﻿@inject IReservationService ReservationService
+@inject QueryFactory QueryFactory
 @page "/list-reservations"
+@using Microsoft.EntityFrameworkCore
+@using RoomReservations.Models
+@using RoomReservations.Data
 
 <h3>List of all Reservations</h3>
 
-@foreach (var reservation in reservations)
+@foreach (var reservation in _reservations)
 {
-	<ViewReservation ReservationToDisplay="reservation"></ViewReservation>
-	<br />
+    <ViewReservation ReservationToDisplay="reservation"></ViewReservation>
+    <br/>
 }
 
 
-
 @code {
-	private List<Reservation> reservations = [];
+    private List<Reservation> _reservations = [];
 
-	protected override async Task OnInitializedAsync()
-	{
-		reservations = await ReservationService.CreateReservationQuery().WithRooms().ExecuteAsync();
-	}
+    protected override async Task OnInitializedAsync()
+    {
+        _reservations = await QueryFactory.Create<Reservation>()
+            .Include(r => r.RoomReservations)
+            .ThenInclude(rr => rr.Room)
+            .ToListAsync();
+    }
+
 }
