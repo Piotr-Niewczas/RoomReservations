@@ -19,7 +19,8 @@ public class AvailableRoomService(ApplicationDbContext context) : IAvailableRoom
         var reservations = await _reservationService.CreateReservationQuery()
             .WhereDatesBetween(startDate, endDate)
             .WithRooms()
-            .ExecuteAsync();
+            .ToListAsync();
+
 
         return (from room in rooms
             let isAvailable =
