@@ -8,8 +8,6 @@ namespace RoomReservations.Tests.Data.ReservationsService;
 [TestClass]
 public class ReservationServiceTests
 {
-    private readonly List<Reservation> reservations = [];
-
     private readonly List<Room> rooms =
     [
         new Room
@@ -49,30 +47,34 @@ public class ReservationServiceTests
     public async Task GetReservationsAsync_TwoReservationsInDb_ReturnsTwoReservations()
     {
         var date = DateTime.Now;
-        reservations.Add(new Reservation
-        {
-            StartDate = date.AddDays(1),
-            EndDate = date.AddDays(3),
-            RoomReservations =
-            [
-                new RoomReservation
-                {
-                    Room = rooms[0]
-                }
-            ]
-        });
-        reservations.Add(new Reservation
-        {
-            StartDate = date.AddDays(2),
-            EndDate = date.AddDays(5),
-            RoomReservations =
-            [
-                new RoomReservation
-                {
-                    Room = rooms[1]
-                }
-            ]
-        });
+        List<Reservation> reservations =
+        [
+            new Reservation
+            {
+                StartDate = date.AddDays(1),
+                EndDate = date.AddDays(3),
+                RoomReservations =
+                [
+                    new RoomReservation
+                    {
+                        Room = rooms[0]
+                    }
+                ]
+            },
+
+            new Reservation
+            {
+                StartDate = date.AddDays(2),
+                EndDate = date.AddDays(5),
+                RoomReservations =
+                [
+                    new RoomReservation
+                    {
+                        Room = rooms[1]
+                    }
+                ]
+            }
+        ];
         _context.Reservations.AddRange(reservations);
         await _context.SaveChangesAsync();
 
