@@ -197,7 +197,10 @@ public class ReservationServiceTests
         var result = await _reservationService.UpdateReservationAsync(updatedReservation);
 
         Assert.IsTrue(result);
-        var resFromDb = await _context.Reservations.FindAsync(reservation.Id);
+        var resFromDb = await _context.Reservations.Where(r => r.Id == reservation.Id)
+            .Include(r => r.RoomReservations)
+            .ThenInclude(rr => rr.Room)
+            .FirstOrDefaultAsync();
         Assert.IsNotNull(resFromDb);
         Assert.AreEqual(resFromDb.StartDate, updatedReservation.StartDate);
         Assert.AreEqual(resFromDb.EndDate, updatedReservation.EndDate);
