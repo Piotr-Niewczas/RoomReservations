@@ -1,68 +1,48 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RoomReservations.Models;
 
-namespace RoomReservations.Data
+namespace RoomReservations.Data;
+
+public static class ReservationQuery
 {
-    public class ReservationQuery
+    public static IQueryable<Reservation> WithRooms(this IQueryable<Reservation> query)
     {
-        private readonly ApplicationDbContext _context;
-        private IQueryable<Reservation> _query;
-        public ReservationQuery(ApplicationDbContext context)
-        {
-            _context = context;
-            _query = _context.Reservations;
-        }
-        public async Task<List<Reservation>> ExecuteAsync()
-        {
-            return await _query.ToListAsync();
-        }
+        return query.Include(r => r.RoomReservations).ThenInclude(rr => rr.Room);
+    }
 
-        public ReservationQuery WithRooms()
-        {
-            _query = _query.Include(r => r.RoomReservations).ThenInclude(rr => rr.Room);
-            return this;
-        }
+    public static IQueryable<Reservation> WithTransactions(this IQueryable<Reservation> query)
+    {
+        return query.Include(r => r.ReservationTransactions).ThenInclude(rt => rt.Transaction);
+    }
 
-        public ReservationQuery WithTransactions()
-        {
-            _query = _query.Include(r => r.ReservationTransactions).ThenInclude(rt => rt.Transaction);
-            return this;
-        }
+    public static IQueryable<Reservation> WhereStartDate(this IQueryable<Reservation> query, DateTime startDate)
+    {
+        return query.Where(reservation => reservation.StartDate == startDate);
+    }
 
-        public ReservationQuery WhereStartDate(DateTime startDate)
-        {
-            _query = _query.Where(reservation => reservation.StartDate == startDate);
-            return this;
-        }
+    public static IQueryable<Reservation> WhereEndDate(this IQueryable<Reservation> query, DateTime endDate)
+    {
+        return query.Where(reservation => reservation.EndDate == endDate);
+    }
 
-        public ReservationQuery WhereEndDate(DateTime endDate)
-        {
-            _query = _query.Where(reservation => reservation.EndDate == endDate);
-            return this;
-        }
+    public static IQueryable<Reservation> WhereIsPaid(this IQueryable<Reservation> query, bool isPaid)
+    {
+        return query.Where(reservation => reservation.IsPaid == isPaid);
+    }
 
-        public ReservationQuery WhereIsPaid(bool isPaid)
-        {
-            _query = _query.Where(reservation => reservation.IsPaid == isPaid);
-            return this;
-        }
+    public static IQueryable<Reservation> WhereAnyOfRooms(this IQueryable<Reservation> query, List<Room> rooms)
+    {
+        return query.Where(reservation => reservation.RoomReservations.Any(rr => rooms.Contains(rr.Room)));
+    }
 
-        public ReservationQuery WhereAnyOfRooms(List<Room> rooms)
-        {
-            _query = _query.Where(reservation => reservation.RoomReservations.Any(rr => rooms.Contains(rr.Room)));
-            return this;
-        }
+    public static IQueryable<Reservation> WhereDatesBetween(this IQueryable<Reservation> query, DateTime startDate,
+        DateTime endDate)
+    {
+        return query.Where(reservation => !(startDate >= reservation.EndDate || endDate <= reservation.StartDate));
+    }
 
-        public ReservationQuery WhereDatesBetween(DateTime startDate, DateTime endDate)
-        {
-            _query = _query.Where(reservation => !(startDate >= reservation.EndDate || endDate <= reservation.StartDate));
-            return this;
-        }
-
-        public ReservationQuery WhereId(int id)
-        {
-            _query = _query.Where(reservation => reservation.Id == id);
-            return this;
-        }
+    public static IQueryable<Reservation> WhereId(this IQueryable<Reservation> query, int id)
+    {
+        return query.Where(reservation => reservation.Id == id);
     }
 }
