@@ -6,34 +6,27 @@ namespace RoomReservations.Data;
 public interface IReservationService
 {
     Task<bool> AddReservationAsync(Reservation reservation, List<Room> rooms);
-    ReservationQuery CreateReservationQuery();
     Task<bool> UpdateReservationAsync(Reservation updatedReservation);
     Task<bool> DeleteReservationAsync(int id);
-
-    Task<bool> AreAnyRoomsReservedInDateRange(List<Room> rooms, DateTime startdate, DateTime dateTime,
-        int? reservationIdToIgnore = null);
-
-    Task<List<Reservation>> ReservationsForAnyOfRoomsInDateRange(List<Room> rooms, DateTime startdate,
-        DateTime dateTime);
 }
 
 public class ReservationService(ApplicationDbContext context) : IReservationService
 {
-    public ReservationQuery CreateReservationQuery()
-    {
-        return new ReservationQuery(context);
-    }
-
     /// <summary>
     ///     Adds Reservation to the database, if it is valid
     /// </summary>
     /// <param name="reservation"></param>
+    /// <param name="rooms"></param>
     /// <returns>True if added</returns>
     public async Task<bool> AddReservationAsync(Reservation reservation, List<Room> rooms)
     {
         if (rooms.Count == 0) return false;
 
-        if (await AreAnyRoomsReservedInDateRange(rooms, reservation.StartDate, reservation.EndDate)) return false;
+        if (ReservationsForAnyOfRoomsInDateRange(rooms,
+                reservation.StartDate,
+                reservation.EndDate)
+            .Any())
+            return false;
 
         foreach (var room in rooms)
             reservation.RoomReservations.Add(new RoomReservation
@@ -47,29 +40,6 @@ public class ReservationService(ApplicationDbContext context) : IReservationServ
         return true;
     }
 
-    public async Task<bool> AreAnyRoomsReservedInDateRange(List<Room> rooms, DateTime startDate, DateTime endDate,
-        int? reservationIdToIgnore = null)
-    {
-        var reservations = await ReservationsForAnyOfRoomsInDateRange(rooms, startDate, endDate);
-
-        if (reservationIdToIgnore != null)
-            reservations = reservations.Where(r => r.Id != reservationIdToIgnore).ToList();
-
-        return reservations.Count != 0;
-    }
-
-    public async Task<List<Reservation>> ReservationsForAnyOfRoomsInDateRange(List<Room> rooms, DateTime startDate,
-        DateTime endDate)
-    {
-        var reservations = await context.Reservations
-            .Where(r => !(startDate > r.EndDate || endDate < r.StartDate))
-            .Where(r => r.RoomReservations.Any(roomInRes => rooms.Contains(roomInRes.Room)))
-            .Include(r => r.RoomReservations)
-            .ThenInclude(rr => rr.Room)
-            .ToListAsync();
-        return reservations;
-    }
-
     /// <summary>
     ///     Updates reservation in the database, if it is valid. Cannot update reservation transactions.
     /// </summary>
@@ -79,17 +49,16 @@ public class ReservationService(ApplicationDbContext context) : IReservationServ
     public async Task<bool> UpdateReservationAsync(Reservation updatedReservation)
     {
         var reservation = await context.Reservations.FindAsync(updatedReservation.Id);
-
         if (reservation == null) return false;
 
-        if (await AreAnyRoomsReservedInDateRange(
-                updatedReservation.RoomReservations.Select(rr => rr.Room).ToList(),
+        var collidingReservations = await ReservationsForAnyOfRoomsInDateRange(updatedReservation.RoomReservations
+                    .Select(rr => rr.Room)
+                    .ToList(),
                 updatedReservation.StartDate,
-                updatedReservation.EndDate,
-                reservation.Id
-            )
-           )
-            return false;
+                updatedReservation.EndDate)
+            .Where(r => r.Id != reservation.Id).ToListAsync();
+
+        if (collidingReservations.Count != 0) return false;
 
         reservation.StartDate = updatedReservation.StartDate;
         reservation.EndDate = updatedReservation.EndDate;
@@ -118,6 +87,18 @@ public class ReservationService(ApplicationDbContext context) : IReservationServ
         await context.SaveChangesAsync();
 
         return true;
+    }
+
+    private IQueryable<Reservation> ReservationsForAnyOfRoomsInDateRange(List<Room> rooms, DateTime startDate,
+        DateTime endDate)
+    {
+        var reservations = context.Reservations
+            .Where(r => !(startDate > r.EndDate || endDate < r.StartDate))
+            .Where(r => r.RoomReservations.Any(roomInRes => rooms.Contains(roomInRes.Room)))
+            .Include(r => r.RoomReservations)
+            .ThenInclude(rr => rr.Room);
+
+        return reservations;
     }
 
     private bool ReservationExists(int id)
