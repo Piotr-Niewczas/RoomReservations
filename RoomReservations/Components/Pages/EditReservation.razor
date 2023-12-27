@@ -1,7 +1,8 @@
 ﻿@page "/edit-reservation/{id:int}"
 @using RoomReservations.Data
-@inject IReservationService ReservationService
 @using RoomReservations.Models
+@using Microsoft.EntityFrameworkCore
+@inject IReservationService ReservationService
 @inject IJSRuntime JSRuntime
 
 <h3>EditReservation</h3>
@@ -11,7 +12,7 @@
         <MudText Typo="Typo.h6">Edit Reservation</MudText>
         <MudText>Reservation ID: @ReservationToEdit.Id</MudText>
         <MudText>Customer Name: NYI </MudText>
-        <MudDateRangePicker Label="Reservation Date Picker" @bind-DateRange="_dateRange" MinDate=@DateTime.Now PickerClosed="DatePickerClosed" />
+        <MudDateRangePicker Label="Reservation Date Picker" @bind-DateRange="_dateRange" MinDate="@DateTime.Now" PickerClosed="DatePickerClosed"/>
         <MudText>Rooms:</MudText>
         @foreach (var rr in ReservationToEdit.RoomReservations)
         {
@@ -25,7 +26,7 @@
     </MudCardActions>
     @if (showAlert)
     {
-        <MudAlert Severity=@severity ShowCloseIcon="true" CloseIconClicked="(() => showAlert = false)">@message</MudAlert>
+        <MudAlert Severity=@severity ShowCloseIcon="true" CloseIconClicked="() => showAlert = false">@message</MudAlert>
     }
 </MudCard>
 
@@ -33,15 +34,15 @@
     [Parameter] public int Id { get; set; }
 
     Reservation ReservationToEdit = new();
-    private DateRange _dateRange = new ();
+    private DateRange _dateRange = new();
 
-    private bool showAlert = false;
+    private bool showAlert;
     private Severity severity = Severity.Info;
     private string message = "Your alert message goes here.";
 
     protected override Task OnInitializedAsync()
     {
-        ReservationToEdit = ReservationService.CreateReservationQuery().WhereId(Id).WithRooms().ExecuteAsync().Result.First();
+        ReservationToEdit = ReservationService.CreateReservationQuery().WhereId(Id).WithRooms().ToListAsync().Result.First();
         _dateRange.Start = ReservationToEdit.StartDate;
         _dateRange.End = ReservationToEdit.EndDate;
         return base.OnInitializedAsync();
@@ -49,17 +50,16 @@
 
     private async void DatePickerClosed()
     {
-        // Check if rooms are available at the given dates. 
-        List<Reservation> collidingReservations = await ReservationService.ReservationsForAnyOfRoomsInDateRange(
+        // Check if rooms are available at the given dates. Remove current reservation from the list of colliding reservations.
+        var collidingReservations = await ReservationService.ReservationsForAnyOfRoomsInDateRange(
             ReservationToEdit.RoomReservations.Select(rr => rr.Room).ToList(),
             _dateRange.Start ?? ReservationToEdit.StartDate,
-            _dateRange.End ?? ReservationToEdit.EndDate);
-        collidingReservations = collidingReservations.Where(r => r.Id != ReservationToEdit.Id).ToList(); // Remove current reservation from the list
+            _dateRange.End ?? ReservationToEdit.EndDate).Where(r => r.Id != ReservationToEdit.Id).ToListAsync();
 
         // If not, show alert
         if (collidingReservations.Count > 0)
         {
-            string collidingRoomNames = string.Join(", ", collidingReservations.SelectMany(r => r.RoomReservations.Select(rr => rr.Room.Name)).Distinct().ToList());
+            var collidingRoomNames = string.Join(", ", collidingReservations.SelectMany(r => r.RoomReservations.Select(rr => rr.Room.Name)).Distinct().ToList());
             ShowAlert(Severity.Error, $"Room '{collidingRoomNames}' is not available at the given dates");
             return;
         }
@@ -71,17 +71,17 @@
 
     private async void SaveChanges()
     {
-        bool wasSuccessful = await ReservationService.UpdateReservationAsync(ReservationToEdit);
+        var wasSuccessful = await ReservationService.UpdateReservationAsync(ReservationToEdit);
 
         if (!wasSuccessful)
-		{
-			// Show error alert
-			ShowAlert(Severity.Error, "An error occured while updating the reservation");
-			return;
-		}
+        {
+            // Show error alert
+            ShowAlert(Severity.Error, "An error occured while updating the reservation");
+            return;
+        }
 
         // Show success alert
-		ShowAlert(Severity.Success, "Reservation updated successfully");
+        ShowAlert(Severity.Success, "Reservation updated successfully");
     }
 
     private async void CancelChanges()
@@ -101,4 +101,5 @@
         this.message = message;
         showAlert = true;
     }
+
 }
