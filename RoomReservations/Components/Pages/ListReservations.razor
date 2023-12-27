@@ -1,5 +1,6 @@
-﻿@inject IReservationService ReservationService
+﻿@inject QueryFactory QueryFactory
 @page "/list-reservations"
+@using Microsoft.EntityFrameworkCore
 @using RoomReservations.Models
 @using RoomReservations.Data
 
@@ -17,7 +18,10 @@
 
     protected override async Task OnInitializedAsync()
     {
-        _reservations = await ReservationService.CreateReservationQuery().WithRooms().ExecuteAsync();
+        _reservations = await QueryFactory.Create<Reservation>()
+            .Include(r => r.RoomReservations)
+            .ThenInclude(rr => rr.Room)
+            .ToListAsync();
     }
 
 }
