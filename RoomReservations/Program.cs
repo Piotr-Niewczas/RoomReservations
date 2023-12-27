@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using MudBlazor.Services;
 using RoomReservations.Components;
 using RoomReservations.Components.Account;
 using RoomReservations.Data;
-using MudBlazor.Services;
 
 namespace RoomReservations
 {
@@ -32,7 +32,9 @@ namespace RoomReservations
                 })
                 .AddIdentityCookies();
 
-            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ??
+                                   throw new InvalidOperationException(
+                                       "Connection string 'DefaultConnection' not found.");
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlite(connectionString));
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
@@ -47,6 +49,7 @@ namespace RoomReservations
             builder.Services.AddScoped<IRoomService, RoomService>();
             builder.Services.AddScoped<IAvailableRoomService, AvailableRoomService>();
             builder.Services.AddScoped<IReservationService, ReservationService>();
+            builder.Services.AddScoped<QueryFactory>();
 
             var app = builder.Build();
 
