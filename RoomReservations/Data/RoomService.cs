@@ -1,26 +1,24 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RoomReservations.Models;
 
-namespace RoomReservations.Data
+namespace RoomReservations.Data;
+
+public interface IRoomService
 {
-    public interface IRoomService
+    Task<List<Room>> GetRoomsAsync();
+}
+
+public class RoomService : IRoomService
+{
+    private readonly ApplicationDbContext _context;
+
+    public RoomService(ApplicationDbContext context)
     {
-        Task<List<Room>> GetRoomsAsync();
+        _context = context;
     }
 
-    public class RoomService : IRoomService
+    public async Task<List<Room>> GetRoomsAsync()
     {
-        private readonly ApplicationDbContext _context;
-
-        public RoomService(ApplicationDbContext context)
-        {
-            _context = context;
-        }
-
-        public async Task<List<Room>> GetRoomsAsync()
-        {
-            return await _context.Rooms.ToListAsync();
-        }
+        return await _context.Rooms.ToListAsync();
     }
-
 }
