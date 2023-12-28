@@ -1,11 +1,10 @@
-﻿namespace RoomReservations.Models
-{
-	public class ReservationTransaction
-	{
-		public int ReservationId { get; set; }
-		public Reservation Reservation { get; set; } = null!;
+﻿namespace RoomReservations.Models;
 
-		public int TransactionId { get; set; }
-		public Transaction Transaction { get; set; } = null!;
-	}
+public class ReservationTransaction
+{
+    public int ReservationId { get; set; }
+    public Reservation Reservation { get; set; } = null!;
+
+    public int TransactionId { get; set; }
+    public Transaction Transaction { get; set; } = null!;
 }
