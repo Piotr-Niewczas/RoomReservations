@@ -1,78 +1,81 @@
 ﻿using RoomReservations.Data;
+using RoomReservations.Models;
 
-namespace RoomReservations.Tests.Models.Reservation
+namespace RoomReservations.Tests.Models.Reservation;
+
+[TestClass]
+public class Add_Reservation_to_db_Test
 {
-	[TestClass]
-	public class Add_Reservation_to_db_Test
-	{
-		private ApplicationDbContext _context = null!;
-		[TestInitialize]
-		public void Initialize()
-		{
-			_context = TestsContextOptions.TestingContext;
-		}
+    private ApplicationDbContext _context = null!;
 
-		[TestMethod]
-		public void Add_Reservation_with_one_room_and_transaction_to_db()
-		{
-			var reservation = new RoomReservations.Models.Reservation
-			{
-				Id = 999,
-				StartDate = DateTime.Now.AddDays(10),
-				EndDate = DateTime.Now.AddDays(30),
-				IsPaid = false,
-				RoomReservations =
-				[
-					new RoomReservations.Models.RoomReservation
-					{
-						Room = new RoomReservations.Models.Room
-						{
-							Name = "Test Room",
-							Description = "Test Description",
-							Capacity = 24,
-							PricePerNight = 130.99M,
-							Location = "Test Location",
-							ImageUrl = "Test/Image/Url.jpg"
-						}
-					}
-				],
-				ReservationTransactions =
-				[
-					new RoomReservations.Models.ReservationTransaction
-					{
-						Transaction = new RoomReservations.Models.Transaction
-						{
-							Amount = 146.45M,
-							EntryDate = DateTime.Now,
-							AccountingDate = DateTime.Now.AddDays(3)
-						}
-					}
-				]
-			};
+    [TestInitialize]
+    public void Initialize()
+    {
+        _context = TestsContextOptions.TestingContext;
+    }
 
-			_context.Reservations.Add(reservation);
-			_context.SaveChanges();
+    [TestMethod]
+    public void Add_Reservation_with_one_room_and_transaction_to_db()
+    {
+        var reservation = new RoomReservations.Models.Reservation
+        {
+            Id = 999,
+            StartDate = DateTime.Now.AddDays(10),
+            EndDate = DateTime.Now.AddDays(30),
+            IsPaid = false,
+            RoomReservations =
+            [
+                new RoomReservation
+                {
+                    Room = new RoomReservations.Models.Room
+                    {
+                        Name = "Test Room",
+                        Description = "Test Description",
+                        Capacity = 24,
+                        PricePerNight = 130.99M,
+                        Location = "Test Location",
+                        ImageUrl = "Test/Image/Url.jpg"
+                    }
+                }
+            ],
+            ReservationTransactions =
+            [
+                new ReservationTransaction
+                {
+                    Transaction = new RoomReservations.Models.Transaction
+                    {
+                        Amount = 146.45M,
+                        EntryDate = DateTime.Now,
+                        AccountingDate = DateTime.Now.AddDays(3)
+                    }
+                }
+            ]
+        };
 
-			var reservationFromDb = _context.Reservations.FirstOrDefault(r => r.Id == reservation.Id);
+        _context.Reservations.Add(reservation);
+        _context.SaveChanges();
 
-			Assert.IsNotNull(reservationFromDb);
+        var reservationFromDb = _context.Reservations.FirstOrDefault(r => r.Id == reservation.Id);
 
-			Assert.AreEqual(reservation.StartDate, reservationFromDb.StartDate);
-			Assert.AreEqual(reservation.EndDate, reservationFromDb.EndDate);
-			Assert.AreEqual(reservation.IsPaid, reservationFromDb.IsPaid);
+        Assert.IsNotNull(reservationFromDb);
 
-			Assert.AreEqual(reservation.RoomReservations.Count, reservationFromDb.RoomReservations.Count);
-			Assert.AreEqual(reservation.RoomReservations.First().Room.Name, reservationFromDb.RoomReservations.First().Room.Name);
+        Assert.AreEqual(reservation.StartDate, reservationFromDb.StartDate);
+        Assert.AreEqual(reservation.EndDate, reservationFromDb.EndDate);
+        Assert.AreEqual(reservation.IsPaid, reservationFromDb.IsPaid);
 
-			Assert.AreEqual(reservation.ReservationTransactions.Count, reservationFromDb.ReservationTransactions.Count);
-			Assert.AreEqual(reservation.ReservationTransactions.First().Transaction.Amount, reservationFromDb.ReservationTransactions.First().Transaction.Amount);
-		}
+        Assert.AreEqual(reservation.RoomReservations.Count, reservationFromDb.RoomReservations.Count);
+        Assert.AreEqual(reservation.RoomReservations.First().Room.Name,
+            reservationFromDb.RoomReservations.First().Room.Name);
+
+        Assert.AreEqual(reservation.ReservationTransactions.Count, reservationFromDb.ReservationTransactions.Count);
+        Assert.AreEqual(reservation.ReservationTransactions.First().Transaction.Amount,
+            reservationFromDb.ReservationTransactions.First().Transaction.Amount);
+    }
 
 
-		[TestCleanup]
-		public void Cleanup()
-		{
-			_context.Dispose();
-		}
-	}
+    [TestCleanup]
+    public void Cleanup()
+    {
+        _context.Dispose();
+    }
 }
