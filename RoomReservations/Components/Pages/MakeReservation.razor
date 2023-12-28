@@ -1,7 +1,6 @@
 ﻿@page "/make-reservation"
-@using RoomReservations.Data
 @using RoomReservations.Models
-@using Microsoft.AspNetCore.Components
+@using RoomReservations.Data
 @inject IAvailableRoomService AvailableRoomService
 @inject IReservationService ReservationService
 @rendermode InteractiveServer
@@ -11,107 +10,109 @@
 Formularz tworzenia rezerwacji
 
 <EditForm Model="@reservation" OnSubmit="Submit" FormName="ReservationForm">
-	<MudSelect T="int" Label="Select Room" @bind-Value="@selectedRoomId">
-		@foreach (var room in availableRoomsFromDb)
-		{
-			<MudSelectItem T="int" Value="@room.Id">@room.Name</MudSelectItem>
-		}
-	</MudSelect>
-	<br />
-	<br />
-	<MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="AddSelectedRoom">Add Room</MudButton>
-	<br/>
-	<MudPaper Width="300px">
-		<MudList Clickable="false">
-			<MudListSubheader>Selected rooms</MudListSubheader>
-			@foreach (var selectedRoom in selectedRooms)
-			{
-				<MudListItem>@selectedRoom.Name</MudListItem>
-			}
-		</MudList>
-	</MudPaper>
-	<br />
-	<MudDateRangePicker Label="Basic range picker" @bind-DateRange="_dateRange" PickerClosed="ReloadAvailableRoomsAtDates"/>
-	<br />
-	@if (showAlert)
-	{
-		<MudAlert Severity=@severity ShowCloseIcon="true" CloseIconClicked="(() => showAlert = false)">@message</MudAlert>
-	}
-	<MudButton Variant="Variant.Filled" Color="Color.Primary" ButtonType="ButtonType.Submit">Submit</MudButton>
+    <MudSelect T="int" Label="Select Room" @bind-Value="@selectedRoomId">
+        @foreach (var room in availableRoomsFromDb)
+        {
+            <MudSelectItem T="int" Value="@room.Id">@room.Name</MudSelectItem>
+        }
+    </MudSelect>
+    <br/>
+    <br/>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="AddSelectedRoom">Add Room</MudButton>
+    <br/>
+    <MudPaper Width="300px">
+        <MudList Clickable="false">
+            <MudListSubheader>Selected rooms</MudListSubheader>
+            @foreach (var selectedRoom in selectedRooms)
+            {
+                <MudListItem>@selectedRoom.Name</MudListItem>
+            }
+        </MudList>
+    </MudPaper>
+    <br/>
+    <MudDateRangePicker Label="Basic range picker" @bind-DateRange="_dateRange" PickerClosed="ReloadAvailableRoomsAtDates"/>
+    <br/>
+    @if (showAlert)
+    {
+        <MudAlert Severity=@severity ShowCloseIcon="true" CloseIconClicked="() => showAlert = false">@message</MudAlert>
+    }
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" ButtonType="ButtonType.Submit">Submit</MudButton>
 </EditForm>
 
 
 @code {
-	Reservation reservation = new();
-	List<Room> availableRoomsFromDb = new();
-	List<Room> selectedRooms = new();
-	private DateRange _dateRange = new DateRange(DateTime.Now.Date, DateTime.Now.AddDays(5).Date);
-	private int selectedRoomId;
-	private bool showAlert = false;
-	private Severity severity = Severity.Info;
-	private string message = "Your alert message goes here.";
+    Reservation reservation = new();
+    List<Room> availableRoomsFromDb = new();
+    List<Room> selectedRooms = new();
+    private DateRange _dateRange = new(DateTime.Now.Date, DateTime.Now.AddDays(5).Date);
+    private int selectedRoomId;
+    private bool showAlert = false;
+    private Severity severity = Severity.Info;
+    private string message = "Your alert message goes here.";
 
-	protected override async Task OnInitializedAsync()
-	{
-		await ReloadAvailableRoomsAtDates();
-	}
+    protected override async Task OnInitializedAsync()
+    {
+        await ReloadAvailableRoomsAtDates();
+    }
 
-	private void AddSelectedRoom()
-	{
-		// Find the selected room by its ID
-		var selectedRoom = availableRoomsFromDb.FirstOrDefault(room => room.Id == selectedRoomId);
+    private void AddSelectedRoom()
+    {
+        // Find the selected room by its ID
+        var selectedRoom = availableRoomsFromDb.FirstOrDefault(room => room.Id == selectedRoomId);
 
-		// Add the selected room to the reservation if it's not already added
-		if (selectedRoom != null && !selectedRooms.Contains(selectedRoom))
-		{
-			availableRoomsFromDb.Remove(selectedRoom);
-			selectedRooms.Add(selectedRoom);
-		}
+        // Add the selected room to the reservation if it's not already added
+        if (selectedRoom != null && !selectedRooms.Contains(selectedRoom))
+        {
+            availableRoomsFromDb.Remove(selectedRoom);
+            selectedRooms.Add(selectedRoom);
+        }
 
-		// Clear the selection
-		selectedRoomId = 0;
-	}
+        // Clear the selection
+        selectedRoomId = 0;
+    }
 
-	private async Task ReloadAvailableRoomsAtDates()
-	{
-		DateTime start = _dateRange.Start ?? DateTime.MinValue.Date;
-		DateTime end = _dateRange.End ?? DateTime.MaxValue.Date;
-		availableRoomsFromDb = await AvailableRoomService.GetAvailableRoomsAsync(start, end);
-	}
+    private async Task ReloadAvailableRoomsAtDates()
+    {
+        var start = _dateRange.Start ?? DateTime.MinValue.Date;
+        var end = _dateRange.End ?? DateTime.MaxValue.Date;
+        availableRoomsFromDb = await AvailableRoomService.GetAvailableRoomsAsync(start, end);
+    }
 
-	public async void Submit(EditContext context)
-	{
-		if (!selectedRooms.Any())
-		{
-			ShowAlert(Severity.Error, "Please select at least one room");
-			return;
-		}
-		if(_dateRange.Start is null || _dateRange.End is null)
-		{
-			ShowAlert(Severity.Error, "Please select reservation dates");
-			return;
-		}
+    public async void Submit(EditContext context)
+    {
+        if (!selectedRooms.Any())
+        {
+            ShowAlert(Severity.Error, "Please select at least one room");
+            return;
+        }
 
-		reservation.StartDate = _dateRange.Start ?? DateTime.MinValue;
-		reservation.EndDate = _dateRange.End ?? DateTime.MinValue;
-		bool result = await ReservationService.AddReservationAsync(reservation, selectedRooms);
+        if (_dateRange.Start is null || _dateRange.End is null)
+        {
+            ShowAlert(Severity.Error, "Please select reservation dates");
+            return;
+        }
 
-		if (!result) ShowAlert(Severity.Error, "Something went wrong");
-		else ShowAlert(Severity.Success, "Reservation added successfully");
+        reservation.StartDate = _dateRange.Start ?? DateTime.MinValue;
+        reservation.EndDate = _dateRange.End ?? DateTime.MinValue;
+        var result = await ReservationService.AddReservationAsync(reservation, selectedRooms);
 
-		reservation = new();	
-		await ReloadAvailableRoomsAtDates();
-	}
+        if (!result) ShowAlert(Severity.Error, "Something went wrong");
+        else ShowAlert(Severity.Success, "Reservation added successfully");
 
-	private void HideAlert()
-	{
-		showAlert = false;
-	}
+        reservation = new Reservation();
+        await ReloadAvailableRoomsAtDates();
+    }
 
-	private void ShowAlert(Severity severity, string message)
-	{
-		this.severity = severity;
-		this.message = message;
-		showAlert = true;
-	}
+    private void HideAlert()
+    {
+        showAlert = false;
+    }
+
+    private void ShowAlert(Severity severity, string message)
+    {
+        this.severity = severity;
+        this.message = message;
+        showAlert = true;
+    }
+
 }
