@@ -8,17 +8,10 @@ public interface IRoomService
     Task<List<Room>> GetRoomsAsync();
 }
 
-public class RoomService : IRoomService
+public class RoomService(ApplicationDbContext context) : IRoomService
 {
-    private readonly ApplicationDbContext _context;
-
-    public RoomService(ApplicationDbContext context)
-    {
-        _context = context;
-    }
-
     public async Task<List<Room>> GetRoomsAsync()
     {
-        return await _context.Rooms.ToListAsync();
+        return await context.Rooms.ToListAsync();
     }
 }
