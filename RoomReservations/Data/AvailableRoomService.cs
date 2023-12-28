@@ -24,9 +24,9 @@ public class AvailableRoomService(ApplicationDbContext context) : IAvailableRoom
 
 
         return (from room in rooms
-            let isAvailable =
-                reservations.All(reservation => reservation.RoomReservations.All(rr => rr.RoomId != room.Id))
-            where isAvailable
-            select room).ToList();
+                let isAvailable =
+                    reservations.All(reservation => reservation.RoomReservations.All(rr => rr.RoomId != room.Id))
+                where isAvailable
+                select room).ToList();
     }
 }
