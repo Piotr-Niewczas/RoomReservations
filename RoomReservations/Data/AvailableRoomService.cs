@@ -7,17 +7,11 @@ public interface IAvailableRoomService
     Task<List<Room>> GetAvailableRoomsAsync(DateTime startDate, DateTime endDate);
 }
 
-public class AvailableRoomService : IAvailableRoomService
+public class AvailableRoomService(ApplicationDbContext context) : IAvailableRoomService
 {
-    private readonly IReservationService _reservationService;
-    private readonly IRoomService _roomService;
+    private readonly IReservationService _reservationService = new ReservationService(context);
+    private readonly IRoomService _roomService = new RoomService(context);
 
-
-    public AvailableRoomService(ApplicationDbContext context)
-    {
-        _reservationService = new ReservationService(context);
-        _roomService = new RoomService(context);
-    }
 
     public async Task<List<Room>> GetAvailableRoomsAsync(DateTime startDate, DateTime endDate)
     {
@@ -26,20 +20,11 @@ public class AvailableRoomService : IAvailableRoomService
             .WhereDatesBetween(startDate, endDate)
             .WithRooms()
             .ExecuteAsync();
-        var availableRooms = new List<Room>();
-        foreach (var room in rooms)
-        {
-            var isAvailable = true;
-            foreach (var reservation in reservations)
-                if (reservation.RoomReservations.Any(rr => rr.RoomId == room.Id))
-                {
-                    isAvailable = false;
-                    break;
-                }
 
-            if (isAvailable) availableRooms.Add(room);
-        }
-
-        return availableRooms;
+        return (from room in rooms
+            let isAvailable =
+                reservations.All(reservation => reservation.RoomReservations.All(rr => rr.RoomId != room.Id))
+            where isAvailable
+            select room).ToList();
     }
 }
