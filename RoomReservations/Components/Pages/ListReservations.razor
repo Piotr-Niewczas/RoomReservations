@@ -5,7 +5,7 @@
 
 <h3>List of all Reservations</h3>
 
-@foreach (var reservation in reservations)
+@foreach (var reservation in _reservations)
 {
     <ViewReservation ReservationToDisplay="reservation"></ViewReservation>
     <br/>
@@ -13,11 +13,11 @@
 
 
 @code {
-    private List<Reservation> reservations = [];
+    private List<Reservation> _reservations = [];
 
     protected override async Task OnInitializedAsync()
     {
-        reservations = await ReservationService.CreateReservationQuery().WithRooms().ExecuteAsync();
+        _reservations = await ReservationService.CreateReservationQuery().WithRooms().ExecuteAsync();
     }
 
 }
