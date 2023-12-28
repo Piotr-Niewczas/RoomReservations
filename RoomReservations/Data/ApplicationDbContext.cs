@@ -7,12 +7,12 @@ namespace RoomReservations.Data;
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
     : IdentityDbContext<ApplicationUser>(options)
 {
-    public DbSet<Reservation> Reservations { get; set; }
-    public DbSet<Room> Rooms { get; set; }
-    public DbSet<Transaction> Transactions { get; set; }
+    public DbSet<Reservation> Reservations { get; set; } = null!;
+    public DbSet<Room> Rooms { get; set; } = null!;
+    public DbSet<Transaction> Transactions { get; set; } = null!;
 
-    public DbSet<RoomReservation> RoomReservations { get; set; }
-    public DbSet<ReservationTransaction> ReservationTransactions { get; set; }
+    public DbSet<RoomReservation> RoomReservations { get; set; } = null!;
+    public DbSet<ReservationTransaction> ReservationTransactions { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
