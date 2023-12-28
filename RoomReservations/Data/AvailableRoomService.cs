@@ -1,4 +1,5 @@
-﻿using RoomReservations.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using RoomReservations.Models;
 
 namespace RoomReservations.Data;
 
