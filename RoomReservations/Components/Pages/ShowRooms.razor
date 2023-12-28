@@ -6,7 +6,7 @@
 
 <h3>Our beautiful rooms</h3>
 
-@if (rooms == null)
+@if (_rooms == null)
 {
     <p>
         <em>Loading...</em>
@@ -24,7 +24,7 @@ else
         </tr>
         </thead>
         <tbody>
-        @foreach (var room in rooms)
+        @foreach (var room in _rooms)
         {
             <tr>
                 <td>
@@ -41,11 +41,11 @@ else
 
 
 @code {
-    private List<Room> rooms = [];
+    private List<Room> _rooms = [];
 
     protected override async Task OnInitializedAsync()
     {
-        rooms = await RoomService.GetRoomsAsync();
+        _rooms = await RoomService.GetRoomsAsync();
     }
 
 }

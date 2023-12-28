@@ -10,7 +10,7 @@ using RoomReservations.Components.Account.Pages;
 using RoomReservations.Components.Account.Pages.Manage;
 using RoomReservations.Data;
 
-namespace Microsoft.AspNetCore.Routing
+namespace RoomReservations.Components.Account
 {
     internal static class IdentityComponentsEndpointRouteBuilderExtensions
     {

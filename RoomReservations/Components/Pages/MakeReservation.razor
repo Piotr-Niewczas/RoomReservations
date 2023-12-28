@@ -103,11 +103,6 @@ Formularz tworzenia rezerwacji
         await ReloadAvailableRoomsAtDates();
     }
 
-    private void HideAlert()
-    {
-        _showAlert = false;
-    }
-
     private void ShowAlert(Severity severity, string message)
     {
         _severity = severity;
