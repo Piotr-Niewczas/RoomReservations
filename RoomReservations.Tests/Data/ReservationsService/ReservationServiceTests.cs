@@ -8,7 +8,7 @@ namespace RoomReservations.Tests.Data.ReservationsService;
 [TestClass]
 public class ReservationServiceTests
 {
-    private readonly List<Room> rooms =
+    private readonly List<Room> _rooms =
     [
         new Room
         {
@@ -57,7 +57,7 @@ public class ReservationServiceTests
                 [
                     new RoomReservation
                     {
-                        Room = rooms[0]
+                        Room = _rooms[0]
                     }
                 ]
             },
@@ -70,7 +70,7 @@ public class ReservationServiceTests
                 [
                     new RoomReservation
                     {
-                        Room = rooms[1]
+                        Room = _rooms[1]
                     }
                 ]
             }
@@ -132,7 +132,7 @@ public class ReservationServiceTests
     public async Task AddReservationAsync_TwoOverlapingReservations_ReturnsFalse()
     {
         var date = DateTime.Now;
-        List<Room> oneRoom = [rooms[0]];
+        List<Room> oneRoom = [_rooms[0]];
         Reservation reservation = new()
         {
             StartDate = date.AddDays(1),
@@ -170,11 +170,11 @@ public class ReservationServiceTests
             [
                 new RoomReservation
                 {
-                    Room = rooms[0]
+                    Room = _rooms[0]
                 },
                 new RoomReservation
                 {
-                    Room = rooms[2]
+                    Room = _rooms[2]
                 }
             ]
         };
@@ -189,7 +189,7 @@ public class ReservationServiceTests
             [
                 new RoomReservation
                 {
-                    Room = rooms[1]
+                    Room = _rooms[1]
                 }
             ]
         };
@@ -221,7 +221,7 @@ public class ReservationServiceTests
             [
                 new RoomReservation
                 {
-                    Room = rooms[1]
+                    Room = _rooms[1]
                 }
             ]
         };
@@ -244,7 +244,7 @@ public class ReservationServiceTests
             [
                 new RoomReservation
                 {
-                    Room = rooms[0]
+                    Room = _rooms[0]
                 }
             ]
         };
@@ -280,7 +280,7 @@ public class ReservationServiceTests
                 [
                     new RoomReservation
                     {
-                        Room = rooms[0]
+                        Room = _rooms[0]
                     }
                 ]
             },
@@ -292,7 +292,7 @@ public class ReservationServiceTests
                 [
                     new RoomReservation
                     {
-                        Room = rooms[1]
+                        Room = _rooms[1]
                     }
                 ]
             },
@@ -304,11 +304,11 @@ public class ReservationServiceTests
                 [
                     new RoomReservation
                     {
-                        Room = rooms[0]
+                        Room = _rooms[0]
                     },
                     new RoomReservation
                     {
-                        Room = rooms[2]
+                        Room = _rooms[2]
                     }
                 ]
             }
@@ -317,7 +317,7 @@ public class ReservationServiceTests
         await _context.SaveChangesAsync();
 
         var result =
-            await _reservationService.ReservationsForAnyOfRoomsInDateRange([rooms[0]], date.AddDays(1),
+            await _reservationService.ReservationsForAnyOfRoomsInDateRange([_rooms[0]], date.AddDays(1),
                 date.AddDays(3)).ToListAsync();
 
         Assert.AreEqual(result.Count, 2);
@@ -339,7 +339,7 @@ public class ReservationServiceTests
                 [
                     new RoomReservation
                     {
-                        Room = rooms[0]
+                        Room = _rooms[0]
                     }
                 ]
             },
@@ -351,7 +351,7 @@ public class ReservationServiceTests
                 [
                     new RoomReservation
                     {
-                        Room = rooms[0]
+                        Room = _rooms[0]
                     }
                 ]
             }
@@ -360,7 +360,7 @@ public class ReservationServiceTests
         await _context.SaveChangesAsync();
 
         var result =
-            await _reservationService.ReservationsForAnyOfRoomsInDateRange([rooms[0]], date.AddDays(3),
+            await _reservationService.ReservationsForAnyOfRoomsInDateRange([_rooms[0]], date.AddDays(3),
                 date.AddDays(4)).ToListAsync();
 
         Assert.AreEqual(result.Count, 0);

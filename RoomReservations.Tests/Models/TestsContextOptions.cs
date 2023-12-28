@@ -10,10 +10,10 @@ public class TestsContextOptions
     {
         get
         {
-            var _connection = new SqliteConnection("Filename=:memory:");
-            _connection.Open();
+            var connection = new SqliteConnection("Filename=:memory:");
+            connection.Open();
             return new DbContextOptionsBuilder<ApplicationDbContext>()
-                .UseSqlite(_connection)
+                .UseSqlite(connection)
                 .Options;
         }
     }

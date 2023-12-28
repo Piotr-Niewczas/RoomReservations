@@ -1,10 +1,11 @@
-﻿using RoomReservations.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using RoomReservations.Data;
 using RoomReservations.Models;
 
 namespace RoomReservations.Tests.Models.Reservation;
 
 [TestClass]
-public class Add_Reservation_to_db_Test
+public class AddReservationToDbTest
 {
     private ApplicationDbContext _context = null!;
 
@@ -55,7 +56,9 @@ public class Add_Reservation_to_db_Test
         _context.Reservations.Add(reservation);
         _context.SaveChanges();
 
-        var reservationFromDb = _context.Reservations.FirstOrDefault(r => r.Id == reservation.Id);
+        var reservationFromDb = _context.Reservations.Include(r => r.RoomReservations).ThenInclude(rr => rr.Room)
+            .Include(r => r.ReservationTransactions).ThenInclude(rt => rt.Transaction)
+            .FirstOrDefault(r => r.Id == reservation.Id);
 
         Assert.IsNotNull(reservationFromDb);
 

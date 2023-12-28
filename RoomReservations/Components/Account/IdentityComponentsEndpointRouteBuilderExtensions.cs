@@ -1,3 +1,5 @@
+﻿using System.Security.Claims;
+using System.Text.Json;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -7,8 +9,6 @@ using Microsoft.Extensions.Primitives;
 using RoomReservations.Components.Account.Pages;
 using RoomReservations.Components.Account.Pages.Manage;
 using RoomReservations.Data;
-using System.Security.Claims;
-using System.Text.Json;
 
 namespace Microsoft.AspNetCore.Routing
 {
@@ -27,9 +27,11 @@ namespace Microsoft.AspNetCore.Routing
                 [FromForm] string provider,
                 [FromForm] string returnUrl) =>
             {
-                IEnumerable<KeyValuePair<string, StringValues>> query = [
+                IEnumerable<KeyValuePair<string, StringValues>> query =
+                [
                     new("ReturnUrl", returnUrl),
-                    new("Action", ExternalLogin.LoginCallbackAction)];
+                    new("Action", ExternalLogin.LoginCallbackAction)
+                ];
 
                 var redirectUrl = UriHelper.BuildRelative(
                     context.Request.PathBase,
@@ -64,7 +66,8 @@ namespace Microsoft.AspNetCore.Routing
                     "/Account/Manage/ExternalLogins",
                     QueryString.Create("Action", ExternalLogins.LinkLoginCallbackAction));
 
-                var properties = signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl, signInManager.UserManager.GetUserId(context.User));
+                var properties = signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl,
+                    signInManager.UserManager.GetUserId(context.User));
                 return TypedResults.Challenge(properties, [provider]);
             });
 
@@ -104,7 +107,8 @@ namespace Microsoft.AspNetCore.Routing
                 var fileBytes = JsonSerializer.SerializeToUtf8Bytes(personalData);
 
                 context.Response.Headers.TryAdd("Content-Disposition", "attachment; filename=PersonalData.json");
-                return TypedResults.File(fileBytes, contentType: "application/json", fileDownloadName: "PersonalData.json");
+                return TypedResults.File(fileBytes, contentType: "application/json",
+                    fileDownloadName: "PersonalData.json");
             });
 
             return accountGroup;

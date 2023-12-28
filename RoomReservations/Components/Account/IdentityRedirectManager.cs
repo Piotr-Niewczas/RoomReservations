@@ -1,5 +1,5 @@
+﻿using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components;
-using System.Diagnostics.CodeAnalysis;
 
 namespace RoomReservations.Components.Account
 {
@@ -15,6 +15,9 @@ namespace RoomReservations.Components.Account
             MaxAge = TimeSpan.FromSeconds(5),
         };
 
+        private string CurrentPath =>
+            navigationManager.ToAbsoluteUri(navigationManager.Uri).GetLeftPart(UriPartial.Path);
+
         [DoesNotReturn]
         public void RedirectTo(string? uri)
         {
@@ -29,7 +32,8 @@ namespace RoomReservations.Components.Account
             // During static rendering, NavigateTo throws a NavigationException which is handled by the framework as a redirect.
             // So as long as this is called from a statically rendered Identity component, the InvalidOperationException is never thrown.
             navigationManager.NavigateTo(uri);
-            throw new InvalidOperationException($"{nameof(IdentityRedirectManager)} can only be used during static rendering.");
+            throw new InvalidOperationException(
+                $"{nameof(IdentityRedirectManager)} can only be used during static rendering.");
         }
 
         [DoesNotReturn]
@@ -46,8 +50,6 @@ namespace RoomReservations.Components.Account
             context.Response.Cookies.Append(StatusCookieName, message, StatusCookieBuilder.Build(context));
             RedirectTo(uri);
         }
-
-        private string CurrentPath => navigationManager.ToAbsoluteUri(navigationManager.Uri).GetLeftPart(UriPartial.Path);
 
         [DoesNotReturn]
         public void RedirectToCurrentPage() => RedirectTo(CurrentPath);

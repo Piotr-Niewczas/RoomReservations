@@ -4,7 +4,7 @@ using RoomReservations.Data;
 namespace RoomReservations.Tests.Models.Transaction;
 
 [TestClass]
-public class Add_Transaction_to_db_Test
+public class AddTransactionToDbTest
 {
     private ApplicationDbContext _context = null!;
 

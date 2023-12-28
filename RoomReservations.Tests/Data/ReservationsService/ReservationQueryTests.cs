@@ -10,7 +10,7 @@ public class ReservationQueryTests
 {
     private readonly DateTime _date = DateTime.Now;
 
-    private readonly List<Room> rooms =
+    private readonly List<Room> _rooms =
     [
         new Room
         {
@@ -58,7 +58,7 @@ public class ReservationQueryTests
                 [
                     new RoomReservation
                     {
-                        Room = rooms[0]
+                        Room = _rooms[0]
                     }
                 ]
             },
@@ -71,7 +71,7 @@ public class ReservationQueryTests
                 [
                     new RoomReservation
                     {
-                        Room = rooms[1]
+                        Room = _rooms[1]
                     }
                 ]
             }
@@ -101,7 +101,7 @@ public class ReservationQueryTests
                 [
                     new RoomReservation
                     {
-                        Room = rooms[0]
+                        Room = _rooms[0]
                     }
                 ]
             },
@@ -114,7 +114,7 @@ public class ReservationQueryTests
                 [
                     new RoomReservation
                     {
-                        Room = rooms[1]
+                        Room = _rooms[1]
                     }
                 ]
             }
