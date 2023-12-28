@@ -19,9 +19,9 @@
         <div style="flex-grow: 1;"></div>
         <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="@(() => DeleteReservation())">Delete</MudButton>
     </MudCardActions>
-    @if (showAlert)
+    @if (_showAlert)
     {
-        <MudAlert Severity=@severity ShowCloseIcon="true" CloseIconClicked="() => showAlert = false">@message</MudAlert>
+        <MudAlert Severity=@_severity ShowCloseIcon="true" CloseIconClicked="() => _showAlert = false">@_message</MudAlert>
     }
 </MudCard>
 
@@ -29,9 +29,9 @@
 @code {
     [Parameter] public Reservation ReservationToDisplay { get; set; } = new();
 
-    private bool showAlert = false;
-    private Severity severity = Severity.Info;
-    private string message = "Your alert message goes here.";
+    private bool _showAlert = false;
+    private Severity _severity = Severity.Info;
+    private string _message = "Your alert message goes here.";
 
     private void NavigateToEditPage()
     {
@@ -53,14 +53,14 @@
 
     private void HideAlert()
     {
-        showAlert = false;
+        _showAlert = false;
     }
 
     private void ShowAlert(Severity severity, string message)
     {
-        this.severity = severity;
-        this.message = message;
-        showAlert = true;
+        _severity = severity;
+        _message = message;
+        _showAlert = true;
     }
 
 }
