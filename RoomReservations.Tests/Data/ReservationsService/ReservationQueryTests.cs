@@ -303,7 +303,6 @@ public class ReservationQueryTests
         ];
 
         _context.Reservations.AddRange(reservations);
-        ;
         _context.SaveChanges();
         var roomsFromDb = _context.Rooms.ToList();
         var roomsToFind = new List<Room>
