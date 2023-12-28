@@ -17,18 +17,11 @@ public interface IReservationService
         DateTime dateTime);
 }
 
-public class ReservationService : IReservationService
+public class ReservationService(ApplicationDbContext context) : IReservationService
 {
-    private readonly ApplicationDbContext _context;
-
-    public ReservationService(ApplicationDbContext context)
-    {
-        _context = context;
-    }
-
     public ReservationQuery CreateReservationQuery()
     {
-        return new ReservationQuery(_context);
+        return new ReservationQuery(context);
     }
 
     /// <summary>
@@ -38,9 +31,7 @@ public class ReservationService : IReservationService
     /// <returns>True if added</returns>
     public async Task<bool> AddReservationAsync(Reservation reservation, List<Room> rooms)
     {
-        if (reservation == null) return false;
-
-        if (rooms == null || rooms.Count == 0) return false;
+        if (rooms.Count == 0) return false;
 
         if (await AreAnyRoomsReservedInDateRange(rooms, reservation.StartDate, reservation.EndDate)) return false;
 
@@ -51,8 +42,8 @@ public class ReservationService : IReservationService
                 Reservation = reservation
             });
 
-        _context.Reservations.Add(reservation);
-        await _context.SaveChangesAsync();
+        context.Reservations.Add(reservation);
+        await context.SaveChangesAsync();
         return true;
     }
 
@@ -64,13 +55,13 @@ public class ReservationService : IReservationService
         if (reservationIdToIgnore != null)
             reservations = reservations.Where(r => r.Id != reservationIdToIgnore).ToList();
 
-        return reservations.Any();
+        return reservations.Count != 0;
     }
 
     public async Task<List<Reservation>> ReservationsForAnyOfRoomsInDateRange(List<Room> rooms, DateTime startDate,
         DateTime endDate)
     {
-        var reservations = await _context.Reservations
+        var reservations = await context.Reservations
             .Where(r => !(startDate > r.EndDate || endDate < r.StartDate))
             .Where(r => r.RoomReservations.Any(roomInRes => rooms.Contains(roomInRes.Room)))
             .Include(r => r.RoomReservations)
@@ -83,13 +74,11 @@ public class ReservationService : IReservationService
     ///     Updates reservation in the database, if it is valid. Cannot update reservation transactions.
     /// </summary>
     /// <param name="updatedReservation"></param>
-    /// <returns>True if succeded.</returns>
+    /// <returns>True if succeeded.</returns>
     /// <exception cref="Exception"></exception>
     public async Task<bool> UpdateReservationAsync(Reservation updatedReservation)
     {
-        if (updatedReservation == null) return false;
-
-        var reservation = await _context.Reservations.FindAsync(updatedReservation.Id);
+        var reservation = await context.Reservations.FindAsync(updatedReservation.Id);
 
         if (reservation == null) return false;
 
@@ -108,7 +97,7 @@ public class ReservationService : IReservationService
 
         try
         {
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
         }
         catch (DbUpdateConcurrencyException)
         {
@@ -122,17 +111,17 @@ public class ReservationService : IReservationService
 
     public async Task<bool> DeleteReservationAsync(int id)
     {
-        var reservation = await _context.Reservations.FindAsync(id);
+        var reservation = await context.Reservations.FindAsync(id);
         if (reservation == null) return false;
 
-        _context.Reservations.Remove(reservation);
-        await _context.SaveChangesAsync();
+        context.Reservations.Remove(reservation);
+        await context.SaveChangesAsync();
 
         return true;
     }
 
     private bool ReservationExists(int id)
     {
-        return _context.Reservations.Any(e => e.Id == id);
+        return context.Reservations.Any(e => e.Id == id);
     }
 }
