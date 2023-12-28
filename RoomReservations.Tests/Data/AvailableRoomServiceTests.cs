@@ -1,7 +1,8 @@
-﻿using RoomReservations.Models;
+﻿using RoomReservations.Data;
+using RoomReservations.Models;
 using RoomReservations.Tests.Models;
 
-namespace RoomReservations.Data.Tests;
+namespace RoomReservations.Tests.Data;
 
 [TestClass]
 public class AvailableRoomServiceTests
