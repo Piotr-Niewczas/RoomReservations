@@ -3,16 +3,9 @@ using RoomReservations.Models;
 
 namespace RoomReservations.Data;
 
-public class ReservationQuery
+public class ReservationQuery(ApplicationDbContext context)
 {
-    private readonly ApplicationDbContext _context;
-    private IQueryable<Reservation> _query;
-
-    public ReservationQuery(ApplicationDbContext context)
-    {
-        _context = context;
-        _query = _context.Reservations;
-    }
+    private IQueryable<Reservation> _query = context.Reservations;
 
     public async Task<List<Reservation>> ExecuteAsync()
     {
