@@ -9,11 +9,11 @@
 <MudCard>
     <MudCardContent>
         <MudText Typo="Typo.h6">Edit Reservation</MudText>
-        <MudText>Reservation ID: @ReservationToEdit.Id</MudText>
+        <MudText>Reservation ID: @_reservationToEdit.Id</MudText>
         <MudText>Customer Name: NYI </MudText>
         <MudDateRangePicker Label="Reservation Date Picker" @bind-DateRange="_dateRange" MinDate="@DateTime.Now" PickerClosed="DatePickerClosed"/>
         <MudText>Rooms:</MudText>
-        @foreach (var rr in ReservationToEdit.RoomReservations)
+        @foreach (var rr in _reservationToEdit.RoomReservations)
         {
             <MudText>"@rr.Room.Name"</MudText>
         }
@@ -23,38 +23,38 @@
         <div style="flex-grow: 1;"></div>
         <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="CancelChanges">Cancel</MudButton>
     </MudCardActions>
-    @if (showAlert)
+    @if (_showAlert)
     {
-        <MudAlert Severity=@severity ShowCloseIcon="true" CloseIconClicked="() => showAlert = false">@message</MudAlert>
+        <MudAlert Severity=@_severity ShowCloseIcon="true" CloseIconClicked="() => _showAlert = false">@_message</MudAlert>
     }
 </MudCard>
 
 @code {
     [Parameter] public int Id { get; set; }
 
-    Reservation ReservationToEdit = new();
+    Reservation _reservationToEdit = new();
     private DateRange _dateRange = new();
 
-    private bool showAlert = false;
-    private Severity severity = Severity.Info;
-    private string message = "Your alert message goes here.";
+    private bool _showAlert;
+    private Severity _severity = Severity.Info;
+    private string _message = "Your alert message goes here.";
 
     protected override Task OnInitializedAsync()
     {
-        ReservationToEdit = ReservationService.CreateReservationQuery().WhereId(Id).WithRooms().ExecuteAsync().Result.First();
-        _dateRange.Start = ReservationToEdit.StartDate;
-        _dateRange.End = ReservationToEdit.EndDate;
+        _reservationToEdit = ReservationService.CreateReservationQuery().WhereId(Id).WithRooms().ExecuteAsync().Result.First();
+        _dateRange.Start = _reservationToEdit.StartDate;
+        _dateRange.End = _reservationToEdit.EndDate;
         return base.OnInitializedAsync();
     }
 
     private async void DatePickerClosed()
     {
         // Check if rooms are available at the given dates. 
-        List<Reservation> collidingReservations = await ReservationService.ReservationsForAnyOfRoomsInDateRange(
-            ReservationToEdit.RoomReservations.Select(rr => rr.Room).ToList(),
-            _dateRange.Start ?? ReservationToEdit.StartDate,
-            _dateRange.End ?? ReservationToEdit.EndDate);
-        collidingReservations = collidingReservations.Where(r => r.Id != ReservationToEdit.Id).ToList(); // Remove current reservation from the list
+        var collidingReservations = await ReservationService.ReservationsForAnyOfRoomsInDateRange(
+            _reservationToEdit.RoomReservations.Select(rr => rr.Room).ToList(),
+            _dateRange.Start ?? _reservationToEdit.StartDate,
+            _dateRange.End ?? _reservationToEdit.EndDate);
+        collidingReservations = collidingReservations.Where(r => r.Id != _reservationToEdit.Id).ToList(); // Remove current reservation from the list
 
         // If not, show alert
         if (collidingReservations.Count > 0)
@@ -65,13 +65,13 @@
         }
 
         // If rooms are available, update the reservation dates
-        ReservationToEdit.StartDate = _dateRange.Start ?? ReservationToEdit.StartDate;
-        ReservationToEdit.EndDate = _dateRange.End ?? ReservationToEdit.EndDate;
+        _reservationToEdit.StartDate = _dateRange.Start ?? _reservationToEdit.StartDate;
+        _reservationToEdit.EndDate = _dateRange.End ?? _reservationToEdit.EndDate;
     }
 
     private async void SaveChanges()
     {
-        var wasSuccessful = await ReservationService.UpdateReservationAsync(ReservationToEdit);
+        var wasSuccessful = await ReservationService.UpdateReservationAsync(_reservationToEdit);
 
         if (!wasSuccessful)
         {
@@ -92,14 +92,14 @@
 
     private void HideAlert()
     {
-        showAlert = false;
+        _showAlert = false;
     }
 
     private void ShowAlert(Severity severity, string message)
     {
-        this.severity = severity;
-        this.message = message;
-        showAlert = true;
+        _severity = severity;
+        _message = message;
+        _showAlert = true;
     }
 
 }
