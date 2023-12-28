@@ -3,7 +3,7 @@
 @using RoomReservations.Models
 @using Microsoft.EntityFrameworkCore
 @inject IReservationService ReservationService
-@inject IJSRuntime JSRuntime
+@inject IJSRuntime JsRuntime
 
 <h3>EditReservation</h3>
 
@@ -88,7 +88,7 @@
     private async void CancelChanges()
     {
         // Navigate to previous page user was on using JS
-        await JSRuntime.InvokeVoidAsync("history.back");
+        await JsRuntime.InvokeVoidAsync("history.back");
     }
 
     private void HideAlert()
