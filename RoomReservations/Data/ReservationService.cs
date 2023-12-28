@@ -95,7 +95,7 @@ public class ReservationService(ApplicationDbContext context) : IReservationServ
 
     public IQueryable<Reservation> CreateReservationQuery()
     {
-        return new QueryFactory(_context).Create<Reservation>();
+        return new QueryFactory(context).Create<Reservation>();
     }
 
     public IQueryable<Reservation> ReservationsForAnyOfRoomsInDateRange(List<Room> rooms, DateTime startDate,

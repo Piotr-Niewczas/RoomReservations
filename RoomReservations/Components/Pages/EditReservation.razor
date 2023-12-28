@@ -1,6 +1,7 @@
 ﻿@page "/edit-reservation/{id:int}"
-@using RoomReservations.Models
 @using RoomReservations.Data
+@using RoomReservations.Models
+@using Microsoft.EntityFrameworkCore
 @inject IReservationService ReservationService
 @inject IJSRuntime JSRuntime
 
@@ -41,7 +42,7 @@
 
     protected override Task OnInitializedAsync()
     {
-        _reservationToEdit = ReservationService.CreateReservationQuery().WhereId(Id).WithRooms().ExecuteAsync().Result.First();
+        _reservationToEdit = ReservationService.CreateReservationQuery().WhereId(Id).WithRooms().ToListAsync().Result.First();
         _dateRange.Start = _reservationToEdit.StartDate;
         _dateRange.End = _reservationToEdit.EndDate;
         return base.OnInitializedAsync();
@@ -53,7 +54,7 @@
         var collidingReservations = await ReservationService.ReservationsForAnyOfRoomsInDateRange(
             _reservationToEdit.RoomReservations.Select(rr => rr.Room).ToList(),
             _dateRange.Start ?? _reservationToEdit.StartDate,
-            _dateRange.End ?? _reservationToEdit.EndDate);
+            _dateRange.End ?? _reservationToEdit.EndDate).ToListAsync();
         collidingReservations = collidingReservations.Where(r => r.Id != _reservationToEdit.Id).ToList(); // Remove current reservation from the list
 
         // If not, show alert
