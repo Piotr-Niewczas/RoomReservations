@@ -4,7 +4,7 @@ using RoomReservations.Data;
 namespace RoomReservations.Tests.Models.Room;
 
 [TestClass]
-public class Add_Room_to_db_Test
+public class AddRoomToDbTest
 {
     private ApplicationDbContext _context = null!;
 
