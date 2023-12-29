@@ -66,7 +66,7 @@ public class AvailableRoomServiceTests
             User = user
         };
         _context.Add(reservation);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
 
         // Act
         var result = await _availableRoomService.GetAvailableRoomsAsync(DateTime.Now, DateTime.Now.AddDays(1));
@@ -104,7 +104,7 @@ public class AvailableRoomServiceTests
             User = user
         };
         _context.Add(reservation);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
 
         // Act
         var result =
@@ -152,7 +152,7 @@ public class AvailableRoomServiceTests
             User = user
         };
         _context.Add(reservation);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
 
         // Act
         var result =
