@@ -8,10 +8,10 @@ public static class MockData
 {
     private static readonly List<UserData> MockUsers =
     [
-        new UserData("admin", "Admin123", "admin@admin.com", "Admin"),
-        new UserData("receptionist", "Receptionist123", "recepcionist@r.com", "Receptionist"),
-        new UserData("employee", "Employee123", "employee@e.com", "Employee"),
-        new UserData("client", "Client123", "client@c.com", "Client")
+        new UserData("Admin123#", "admin@a.com", "Admin"),
+        new UserData("Receptionist123#", "recepcionist@r.com", "Receptionist"),
+        new UserData("Employee123#", "employee@e.com", "Employee"),
+        new UserData("Client123#", "client@c.com", "Client")
     ];
 
     private static readonly List<Room> MockRooms =
@@ -133,18 +133,18 @@ public static class MockData
         {
             var applicationUser = new ApplicationUser
             {
-                UserName = user.UserName,
+                UserName = user.Email,
                 Email = user.Email
             };
 
-            await userManager.CreateAsync(applicationUser, user.Password);
+            var createResult = await userManager.CreateAsync(applicationUser, user.Password);
+            if (!createResult.Succeeded) throw new Exception($"Failed to create user {user.Email}");
             await userManager.AddToRoleAsync(applicationUser, user.Role);
         }
     }
 
-    private class UserData(string userName, string password, string email, string role)
+    private class UserData(string password, string email, string role)
     {
-        public string UserName { get; } = userName;
         public string Password { get; } = password;
         public string Email { get; } = email;
         public string Role { get; } = role;
