@@ -1,8 +1,14 @@
 ﻿@page "/make-reservation"
 @using RoomReservations.Models
 @using RoomReservations.Data
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Authorization
 @inject IAvailableRoomService AvailableRoomService
 @inject IReservationService ReservationService
+@inject UserManager<ApplicationUser> UserManager
+@inject IHttpContextAccessor HttpContextAccessor
+@attribute [Authorize]
+
 @rendermode InteractiveServer
 
 <h3>MakeReservation</h3>
@@ -90,6 +96,25 @@ Formularz tworzenia rezerwacji
 
         _reservation.StartDate = _dateRange.Start ?? DateTime.MinValue;
         _reservation.EndDate = _dateRange.End ?? DateTime.MinValue;
+
+        // Check if the user is logged in
+        if (HttpContextAccessor.HttpContext is null)
+        {
+            _alert.ShowAlert(Severity.Error, "Something went wrong");
+            return;
+        }
+
+        var user = await UserManager.GetUserAsync(HttpContextAccessor.HttpContext.User);
+        if (user is null)
+        {
+            _alert.ShowAlert(Severity.Error, "Please log in to make a reservation");
+            return;
+        }
+
+        // Add the user to the reservation
+        _reservation.User = user;
+        _reservation.UserId = user.Id;
+
         var result = await ReservationService.AddReservationAsync(_reservation, _selectedRooms);
 
         if (!result) _alert.ShowAlert(Severity.Error, "Something went wrong");
