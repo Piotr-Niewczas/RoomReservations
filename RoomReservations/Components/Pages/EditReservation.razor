@@ -45,12 +45,13 @@
 
     private async void DatePickerClosed()
     {
-        // Check if rooms are available at the given dates. 
+        // Check if rooms are available at the given dates. Remove current reservation from the list.
         var collidingReservations = await ReservationService.ReservationsForAnyOfRoomsInDateRange(
-            _reservationToEdit.RoomReservations.Select(rr => rr.Room).ToList(),
-            _dateRange.Start ?? _reservationToEdit.StartDate,
-            _dateRange.End ?? _reservationToEdit.EndDate).ToListAsync();
-        collidingReservations = collidingReservations.Where(r => r.Id != _reservationToEdit.Id).ToList(); // Remove current reservation from the list
+                _reservationToEdit.RoomReservations.Select(rr => rr.Room).ToList(),
+                _dateRange.Start ?? _reservationToEdit.StartDate,
+                _dateRange.End ?? _reservationToEdit.EndDate)
+            .Where(r => r.Id != _reservationToEdit.Id).ToListAsync();
+
 
         // If not, show alert
         if (collidingReservations.Count > 0)
