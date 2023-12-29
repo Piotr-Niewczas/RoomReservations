@@ -149,7 +149,7 @@ public class ReservationServiceTests
     }
 
     [TestMethod]
-    public async Task AddReservationAsync_TwoOverlapingReservations_ReturnsFalse()
+    public async Task AddReservationAsync_TwoOverlappingReservations_ReturnsFalse()
     {
         var date = DateTime.Now;
         List<Room> oneRoom = [_rooms[0]];
@@ -164,7 +164,7 @@ public class ReservationServiceTests
         Assert.IsTrue(result0);
         await _context.SaveChangesAsync();
 
-        Reservation overlapingReservation = new()
+        Reservation overlappingReservation = new()
         {
             StartDate = date.AddDays(5),
             EndDate = date.AddDays(15),
@@ -172,10 +172,10 @@ public class ReservationServiceTests
             User = _user
         };
 
-        var result = _reservationService.AddReservationAsync(overlapingReservation, oneRoom);
+        var result = _reservationService.AddReservationAsync(overlappingReservation, oneRoom);
         Assert.IsTrue(result.IsCompletedSuccessfully);
         Assert.IsFalse(result.Result);
-        // Check that overlaping reservation wasn't added to the database
+        // Check that overlapping reservation wasn't added to the database
         var resList = await _reservationService.CreateReservationQuery().ToListAsync();
         Assert.AreEqual(resList.Count, 1);
         Assert.AreEqual(resList[0].StartDate, reservation.StartDate);
