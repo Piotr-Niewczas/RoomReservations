@@ -1,11 +1,16 @@
 ﻿@inject QueryFactory QueryFactory
+@inject UserManager<ApplicationUser> UserManager
+@inject IHttpContextAccessor HttpContextAccessor
 @page "/list-reservations"
 @using Microsoft.EntityFrameworkCore
 @using RoomReservations.Models
 @using RoomReservations.Data
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
 
-<h3>List of all Reservations</h3>
-
+<h3>List of all Reservations of this user</h3>
+<Alert @ref="_alert"></Alert>
 @foreach (var reservation in _reservations)
 {
     <ViewReservation ReservationToDisplay="reservation"></ViewReservation>
@@ -15,12 +20,28 @@
 
 @code {
     private List<Reservation> _reservations = [];
+    private Alert _alert = new();
 
     protected override async Task OnInitializedAsync()
     {
+        // Check if the user is logged in
+        if (HttpContextAccessor.HttpContext is null)
+        {
+            _alert.ShowAlert(Severity.Error, "Something went wrong");
+            return;
+        }
+
+        var user = await UserManager.GetUserAsync(HttpContextAccessor.HttpContext.User);
+        if (user is null)
+        {
+            _alert.ShowAlert(Severity.Error, "Please log in to make a reservation");
+            return;
+        }
+
         _reservations = await QueryFactory.Create<Reservation>()
             .Include(r => r.RoomReservations)
             .ThenInclude(rr => rr.Room)
+            .Where(r => r.UserId == user.Id)
             .ToListAsync();
     }
 
