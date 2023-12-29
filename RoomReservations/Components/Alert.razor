@@ -1,0 +1,25 @@
+﻿@if (_showAlert)
+{
+    <MudAlert Severity=@_severity ShowCloseIcon="true" CloseIconClicked="() => HideAlert()">@_message</MudAlert>
+}
+
+@code {
+    private bool _showAlert;
+    private Severity _severity = Severity.Info;
+    private string _message = "Your alert message goes here.";
+
+    public void ShowAlert(Severity severity, string message)
+    {
+        _severity = severity;
+        _message = message;
+        _showAlert = true;
+        StateHasChanged();
+    }
+
+    public void HideAlert()
+    {
+        _showAlert = false;
+        StateHasChanged();
+    }
+
+}
