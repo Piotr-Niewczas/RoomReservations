@@ -1,11 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using RoomReservations.Data;
 
 namespace RoomReservations.Models;
 
-public class User
+public class User : ApplicationUser
 {
-    public int Id { get; set; }
-    [Required(AllowEmptyStrings = false)] public string Name { get; set; } = string.Empty;
-    [Required(AllowEmptyStrings = false)] public string Surname { get; set; } = string.Empty;
     public List<Reservation> Reservations { get; set; } = [];
 }

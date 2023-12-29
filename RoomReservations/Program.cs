@@ -5,6 +5,7 @@ using MudBlazor.Services;
 using RoomReservations.Components;
 using RoomReservations.Components.Account;
 using RoomReservations.Data;
+using RoomReservations.Models;
 
 namespace RoomReservations;
 
@@ -39,7 +40,8 @@ public class Program
             options.UseSqlite(connectionString));
         builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-        builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
+        builder.Services.AddIdentityCore<User>(options => options.SignIn.RequireConfirmedAccount = false)
+            .AddRoles<IdentityRole>()
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddSignInManager()
             .AddDefaultTokenProviders();
