@@ -30,7 +30,7 @@ Formularz tworzenia rezerwacji
         </MudList>
     </MudPaper>
     <br/>
-    <MudDateRangePicker Label="Basic range picker" @bind-DateRange="_dateRange" PickerClosed="ReloadAvailableRoomsAtDates"/>
+    <MudDateRangePicker Label="Basic range picker" @bind-DateRange="_dateRange" MinDate="@DateTime.Now.AddDays(-1)" PickerClosed="ReloadAvailableRoomsAtDates"/>
     <br/>
     <Alert @ref="_alert"></Alert>
     <MudButton Variant="Variant.Filled" Color="Color.Primary" ButtonType="ButtonType.Submit">Submit</MudButton>
@@ -45,7 +45,7 @@ Formularz tworzenia rezerwacji
     private int _selectedRoomId;
 
     private Alert _alert = new();
-    
+
     protected override async Task OnInitializedAsync()
     {
         await ReloadAvailableRoomsAtDates();
@@ -98,4 +98,5 @@ Formularz tworzenia rezerwacji
         _reservation = new Reservation();
         await ReloadAvailableRoomsAtDates();
     }
+
 }
