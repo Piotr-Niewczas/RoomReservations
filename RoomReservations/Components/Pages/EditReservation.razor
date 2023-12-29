@@ -20,7 +20,7 @@
         }
     </MudCardContent>
     <MudCardActions>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveChanges">Save</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@_isDataIncorrect" OnClick="SaveChanges">Save</MudButton>
         <div style="flex-grow: 1;"></div>
         <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="GoBack">Go back</MudButton>
     </MudCardActions>
@@ -34,6 +34,7 @@
     private DateRange _dateRange = new();
 
     private Alert _alert = new();
+    private bool _isDataIncorrect = true;
 
     protected override Task OnInitializedAsync()
     {
@@ -56,6 +57,7 @@
         // If not, show alert
         if (collidingReservations.Count > 0)
         {
+            _isDataIncorrect = true;
             var collidingRoomNames = string.Join(", ", collidingReservations.SelectMany(r => r.RoomReservations.Select(rr => rr.Room.Name)).Distinct().ToList());
             _alert.ShowAlert(Severity.Error, $"Room '{collidingRoomNames}' is not available at the given dates");
             return;
@@ -64,6 +66,8 @@
         // If rooms are available, update the reservation dates
         _reservationToEdit.StartDate = _dateRange.Start ?? _reservationToEdit.StartDate;
         _reservationToEdit.EndDate = _dateRange.End ?? _reservationToEdit.EndDate;
+
+        _isDataIncorrect = false;
     }
 
     private async void SaveChanges()
@@ -79,6 +83,7 @@
 
         // Show success alert
         _alert.ShowAlert(Severity.Success, "Reservation updated successfully");
+        _isDataIncorrect = true; // Disable save button
     }
 
     private async void GoBack()
