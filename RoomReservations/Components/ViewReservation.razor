@@ -19,19 +19,13 @@
         <div style="flex-grow: 1;"></div>
         <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="@(() => DeleteReservation())">Delete</MudButton>
     </MudCardActions>
-    @if (_showAlert)
-    {
-        <MudAlert Severity=@_severity ShowCloseIcon="true" CloseIconClicked="() => _showAlert = false">@_message</MudAlert>
-    }
+    <Alert @ref="Alert"></Alert>
 </MudCard>
 
 
 @code {
     [Parameter] public Reservation ReservationToDisplay { get; set; } = new();
-
-    private bool _showAlert = false;
-    private Severity _severity = Severity.Info;
-    private string _message = "Your alert message goes here.";
+    private Alert Alert { get; set; } = new();
 
     private void NavigateToEditPage()
     {
@@ -44,23 +38,11 @@
         var result = await ReservationService.DeleteReservationAsync(ReservationToDisplay.Id);
         if (result) // If successful, refresh page
         {
-            ShowAlert(Severity.Success, "Reservation deleted successfully.");
+            Alert.ShowAlert(Severity.Success, "Reservation deleted successfully.");
             await Task.Delay(2000);
             NavigationManager.NavigateTo(NavigationManager.Uri, true);
         }
-        else ShowAlert(Severity.Error, "Could not delete reservation.");
-    }
-
-    private void HideAlert()
-    {
-        _showAlert = false;
-    }
-
-    private void ShowAlert(Severity severity, string message)
-    {
-        _severity = severity;
-        _message = message;
-        _showAlert = true;
+        else Alert.ShowAlert(Severity.Error, "Could not delete reservation.");
     }
 
 }
