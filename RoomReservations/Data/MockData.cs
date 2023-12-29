@@ -125,13 +125,13 @@ public static class MockData
 
     public static async Task AddMockUsersIfNonePresent(IServiceScope scope)
     {
-        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
         if (await userManager.Users.AnyAsync()) return; // If there are any users, don't add mock users
 
         foreach (var user in MockUsers)
         {
-            var applicationUser = new User
+            var applicationUser = new ApplicationUser
             {
                 UserName = user.UserName,
                 Email = user.Email
