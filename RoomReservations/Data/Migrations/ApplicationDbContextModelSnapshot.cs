@@ -145,7 +145,7 @@ namespace RoomReservations.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("RoomReservations.Data.ApplicationUser", b =>
+            modelBuilder.Entity("RoomReservations.Models.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("TEXT");
@@ -224,7 +224,13 @@ namespace RoomReservations.Migrations
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Reservations");
                 });
@@ -323,7 +329,7 @@ namespace RoomReservations.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("RoomReservations.Data.ApplicationUser", null)
+                    b.HasOne("RoomReservations.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -332,7 +338,7 @@ namespace RoomReservations.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("RoomReservations.Data.ApplicationUser", null)
+                    b.HasOne("RoomReservations.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -347,7 +353,7 @@ namespace RoomReservations.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("RoomReservations.Data.ApplicationUser", null)
+                    b.HasOne("RoomReservations.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -356,11 +362,22 @@ namespace RoomReservations.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("RoomReservations.Data.ApplicationUser", null)
+                    b.HasOne("RoomReservations.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("RoomReservations.Models.Reservation", b =>
+                {
+                    b.HasOne("RoomReservations.Models.ApplicationUser", "User")
+                        .WithMany("Reservations")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("RoomReservations.Models.ReservationTransaction", b =>
@@ -401,6 +418,11 @@ namespace RoomReservations.Migrations
                     b.Navigation("Room");
                 });
 
+            modelBuilder.Entity("RoomReservations.Models.ApplicationUser", b =>
+                {
+                    b.Navigation("Reservations");
+                });
+
             modelBuilder.Entity("RoomReservations.Models.Reservation", b =>
                 {
                     b.Navigation("ReservationTransactions");
@@ -416,11 +438,6 @@ namespace RoomReservations.Migrations
             modelBuilder.Entity("RoomReservations.Models.Transaction", b =>
                 {
                     b.Navigation("ReservationTransactions");
-                });
-
-            modelBuilder.Entity("RoomReservations.Models.Room", b =>
-                {
-                    b.Navigation("RoomReservations");
                 });
 #pragma warning restore 612, 618
         }
