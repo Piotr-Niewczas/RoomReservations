@@ -1,4 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using RoomReservations.Data;
 using RoomReservations.Models;
 using RoomReservations.Tests.Models;
@@ -27,14 +30,25 @@ public class ReservationServiceTests
         }
     ];
 
+    private readonly ApplicationUser _user = new() { Email = "test@test.com", UserName = "test@test.com" };
+
     private ApplicationDbContext _context = null!;
     private ReservationService _reservationService = null!;
+    private UserManager<ApplicationUser> _userManager = null!;
 
     [TestInitialize]
-    public void Initialize()
+    public async Task Initialize()
     {
         _context = TestsContextOptions.TestingContext;
         _reservationService = new ReservationService(_context);
+
+        var userStore = new UserStore<ApplicationUser>(_context);
+        _userManager = new UserManager<ApplicationUser>(userStore, null!, new PasswordHasher<ApplicationUser>(),
+            Array.Empty<IUserValidator<ApplicationUser>>(), Array.Empty<IPasswordValidator<ApplicationUser>>(),
+            new UpperInvariantLookupNormalizer(),
+            new IdentityErrorDescriber(), null!, new Logger<UserManager<ApplicationUser>>(new LoggerFactory()));
+
+        await _userManager.CreateAsync(_user);
     }
 
     [TestCleanup]
@@ -59,7 +73,9 @@ public class ReservationServiceTests
                     {
                         Room = _rooms[0]
                     }
-                ]
+                ],
+                UserId = _user.Id,
+                User = _user
             },
 
             new Reservation
@@ -72,7 +88,9 @@ public class ReservationServiceTests
                     {
                         Room = _rooms[1]
                     }
-                ]
+                ],
+                UserId = _user.Id,
+                User = _user
             }
         ];
         _context.Reservations.AddRange(reservations);
@@ -115,7 +133,9 @@ public class ReservationServiceTests
         Reservation reservation = new()
         {
             StartDate = date.AddDays(1),
-            EndDate = date.AddDays(2)
+            EndDate = date.AddDays(2),
+            UserId = _user.Id,
+            User = _user
         };
         List<Room> rooms = new();
 
@@ -136,7 +156,9 @@ public class ReservationServiceTests
         Reservation reservation = new()
         {
             StartDate = date.AddDays(1),
-            EndDate = date.AddDays(10)
+            EndDate = date.AddDays(10),
+            UserId = _user.Id,
+            User = _user
         };
         var result0 = await _reservationService.AddReservationAsync(reservation, oneRoom);
         Assert.IsTrue(result0);
@@ -145,7 +167,9 @@ public class ReservationServiceTests
         Reservation overlapingReservation = new()
         {
             StartDate = date.AddDays(5),
-            EndDate = date.AddDays(15)
+            EndDate = date.AddDays(15),
+            UserId = _user.Id,
+            User = _user
         };
 
         var result = _reservationService.AddReservationAsync(overlapingReservation, oneRoom);
@@ -176,7 +200,9 @@ public class ReservationServiceTests
                 {
                     Room = _rooms[2]
                 }
-            ]
+            ],
+            UserId = _user.Id,
+            User = _user
         };
         _context.Reservations.Add(reservation);
         await _context.SaveChangesAsync();
@@ -191,7 +217,9 @@ public class ReservationServiceTests
                 {
                     Room = _rooms[1]
                 }
-            ]
+            ],
+            UserId = _user.Id,
+            User = _user
         };
 
         var result = await _reservationService.UpdateReservationAsync(updatedReservation);
@@ -223,7 +251,9 @@ public class ReservationServiceTests
                 {
                     Room = _rooms[1]
                 }
-            ]
+            ],
+            UserId = _user.Id,
+            User = _user
         };
 
         var result = await _reservationService.UpdateReservationAsync(updatedReservation);
@@ -246,7 +276,9 @@ public class ReservationServiceTests
                 {
                     Room = _rooms[0]
                 }
-            ]
+            ],
+            UserId = _user.Id,
+            User = _user
         };
         _context.Reservations.Add(reservation);
         await _context.SaveChangesAsync();
@@ -282,7 +314,9 @@ public class ReservationServiceTests
                     {
                         Room = _rooms[0]
                     }
-                ]
+                ],
+                UserId = _user.Id,
+                User = _user
             },
             new Reservation
             {
@@ -294,7 +328,9 @@ public class ReservationServiceTests
                     {
                         Room = _rooms[1]
                     }
-                ]
+                ],
+                UserId = _user.Id,
+                User = _user
             },
             new Reservation
             {
@@ -310,7 +346,9 @@ public class ReservationServiceTests
                     {
                         Room = _rooms[2]
                     }
-                ]
+                ],
+                UserId = _user.Id,
+                User = _user
             }
         ];
         _context.Reservations.AddRange(reservations);
@@ -341,7 +379,9 @@ public class ReservationServiceTests
                     {
                         Room = _rooms[0]
                     }
-                ]
+                ],
+                UserId = _user.Id,
+                User = _user
             },
             new Reservation
             {
@@ -353,7 +393,9 @@ public class ReservationServiceTests
                     {
                         Room = _rooms[0]
                     }
-                ]
+                ],
+                UserId = _user.Id,
+                User = _user
             }
         ];
         _context.Reservations.AddRange(reservations);
