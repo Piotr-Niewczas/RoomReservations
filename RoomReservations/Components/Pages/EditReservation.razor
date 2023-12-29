@@ -24,10 +24,7 @@
         <div style="flex-grow: 1;"></div>
         <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="CancelChanges">Cancel</MudButton>
     </MudCardActions>
-    @if (_showAlert)
-    {
-        <MudAlert Severity=@_severity ShowCloseIcon="true" CloseIconClicked="() => _showAlert = false">@_message</MudAlert>
-    }
+    <Alert @ref="_alert"></Alert>
 </MudCard>
 
 @code {
@@ -36,9 +33,7 @@
     Reservation _reservationToEdit = new();
     private DateRange _dateRange = new();
 
-    private bool _showAlert;
-    private Severity _severity = Severity.Info;
-    private string _message = "Your alert message goes here.";
+    private Alert _alert = new();
 
     protected override Task OnInitializedAsync()
     {
@@ -61,7 +56,7 @@
         if (collidingReservations.Count > 0)
         {
             var collidingRoomNames = string.Join(", ", collidingReservations.SelectMany(r => r.RoomReservations.Select(rr => rr.Room.Name)).Distinct().ToList());
-            ShowAlert(Severity.Error, $"Room '{collidingRoomNames}' is not available at the given dates");
+            _alert.ShowAlert(Severity.Error, $"Room '{collidingRoomNames}' is not available at the given dates");
             return;
         }
 
@@ -77,12 +72,12 @@
         if (!wasSuccessful)
         {
             // Show error alert
-            ShowAlert(Severity.Error, "An error occured while updating the reservation");
+            _alert.ShowAlert(Severity.Error, "An error occured while updating the reservation");
             return;
         }
 
         // Show success alert
-        ShowAlert(Severity.Success, "Reservation updated successfully");
+        _alert.ShowAlert(Severity.Success, "Reservation updated successfully");
     }
 
     private async void CancelChanges()
@@ -90,17 +85,4 @@
         // Navigate to previous page user was on using JS
         await JsRuntime.InvokeVoidAsync("history.back");
     }
-
-    private void HideAlert()
-    {
-        _showAlert = false;
-    }
-
-    private void ShowAlert(Severity severity, string message)
-    {
-        _severity = severity;
-        _message = message;
-        _showAlert = true;
-    }
-
 }
