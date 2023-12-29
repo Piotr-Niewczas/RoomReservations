@@ -1,4 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using RoomReservations.Data;
 using RoomReservations.Models;
 using RoomReservations.Tests.Models;
@@ -9,6 +12,7 @@ namespace RoomReservations.Tests.Data.ReservationsService;
 public class ReservationQueryTests
 {
     private readonly DateTime _date = DateTime.Now;
+
 
     private readonly List<Room> _rooms =
     [
@@ -29,14 +33,27 @@ public class ReservationQueryTests
         }
     ];
 
+    private readonly ApplicationUser _user = new() { Email = "test@test.com", UserName = "test@test.com" };
+
     private ApplicationDbContext _context = null!;
     private ReservationService _reservationService = null!;
 
+    private UserManager<ApplicationUser> _userManager = null!;
+
     [TestInitialize]
-    public void Initialize()
+    public async Task Initialize()
     {
         _context = TestsContextOptions.TestingContext;
         _reservationService = new ReservationService(_context);
+
+        var userStore = new UserStore<ApplicationUser>(_context);
+        _userManager = new UserManager<ApplicationUser>(userStore, null, new PasswordHasher<ApplicationUser>(),
+            Array.Empty<IUserValidator<ApplicationUser>>(), Array.Empty<IPasswordValidator<ApplicationUser>>(),
+            new UpperInvariantLookupNormalizer(),
+            new IdentityErrorDescriber(), null, new Logger<UserManager<ApplicationUser>>(new LoggerFactory()));
+
+
+        await _userManager.CreateAsync(_user);
     }
 
     [TestCleanup]
@@ -60,7 +77,9 @@ public class ReservationQueryTests
                     {
                         Room = _rooms[0]
                     }
-                ]
+                ],
+                UserId = _user.Id,
+                User = _user
             },
 
             new Reservation
@@ -73,7 +92,9 @@ public class ReservationQueryTests
                     {
                         Room = _rooms[1]
                     }
-                ]
+                ],
+                UserId = _user.Id,
+                User = _user
             }
         ];
         _context.Reservations.AddRange(reservations);
@@ -103,7 +124,9 @@ public class ReservationQueryTests
                     {
                         Room = _rooms[0]
                     }
-                ]
+                ],
+                UserId = _user.Id,
+                User = _user
             },
 
             new Reservation
@@ -116,7 +139,9 @@ public class ReservationQueryTests
                     {
                         Room = _rooms[1]
                     }
-                ]
+                ],
+                UserId = _user.Id,
+                User = _user
             }
         ];
         _context.Reservations.AddRange(reservations);
@@ -137,12 +162,16 @@ public class ReservationQueryTests
         _context.Reservations.Add(new Reservation
         {
             StartDate = date.AddDays(-2),
-            EndDate = date.AddDays(7)
+            EndDate = date.AddDays(7),
+            UserId = _user.Id,
+            User = _user
         });
         _context.Reservations.Add(new Reservation
         {
             StartDate = date,
-            EndDate = date.AddDays(10)
+            EndDate = date.AddDays(10),
+            UserId = _user.Id,
+            User = _user
         });
         await _context.SaveChangesAsync();
 
@@ -161,17 +190,23 @@ public class ReservationQueryTests
         _context.Reservations.Add(new Reservation
         {
             StartDate = date,
-            EndDate = date.AddDays(10)
+            EndDate = date.AddDays(10),
+            UserId = _user.Id,
+            User = _user
         });
         _context.Reservations.Add(new Reservation
         {
             StartDate = date,
-            EndDate = date.AddDays(7)
+            EndDate = date.AddDays(7),
+            UserId = _user.Id,
+            User = _user
         });
         _context.Reservations.Add(new Reservation
         {
             StartDate = date.AddDays(-2),
-            EndDate = date.AddDays(7)
+            EndDate = date.AddDays(7),
+            UserId = _user.Id,
+            User = _user
         });
         await _context.SaveChangesAsync();
 
@@ -194,12 +229,16 @@ public class ReservationQueryTests
         _context.Reservations.Add(new Reservation
         {
             StartDate = date.AddDays(-2),
-            EndDate = date
+            EndDate = date,
+            UserId = _user.Id,
+            User = _user
         });
         _context.Reservations.Add(new Reservation
         {
             StartDate = date.AddDays(-4),
-            EndDate = date.AddDays(-1)
+            EndDate = date.AddDays(-1),
+            UserId = _user.Id,
+            User = _user
         });
         await _context.SaveChangesAsync();
 
@@ -223,13 +262,17 @@ public class ReservationQueryTests
         {
             StartDate = date.AddDays(-2),
             EndDate = date,
-            IsPaid = isPaid
+            IsPaid = isPaid,
+            UserId = _user.Id,
+            User = _user
         });
         _context.Reservations.Add(new Reservation
         {
             StartDate = date.AddDays(-4),
             EndDate = date.AddDays(-1),
-            IsPaid = !isPaid
+            IsPaid = !isPaid,
+            UserId = _user.Id,
+            User = _user
         });
         await _context.SaveChangesAsync();
 
@@ -277,7 +320,9 @@ public class ReservationQueryTests
                     {
                         Room = _context.Rooms.First(r => r.Name == rooms[0].Name)
                     }
-                ]
+                ],
+                UserId = _user.Id,
+                User = _user
             },
             new Reservation
             {
@@ -293,7 +338,9 @@ public class ReservationQueryTests
                     {
                         Room = _context.Rooms.First(r => r.Name == rooms[1].Name)
                     }
-                ]
+                ],
+                UserId = _user.Id,
+                User = _user
             },
             new Reservation
             {
@@ -305,7 +352,9 @@ public class ReservationQueryTests
                     {
                         Room = _context.Rooms.First(r => r.Name == rooms[1].Name)
                     }
-                ]
+                ],
+                UserId = _user.Id,
+                User = _user
             }
         ];
 
@@ -341,19 +390,25 @@ public class ReservationQueryTests
         {
             Id = idToFind,
             StartDate = date.AddDays(-2),
-            EndDate = date
+            EndDate = date,
+            UserId = _user.Id,
+            User = _user
         });
         _context.Reservations.Add(new Reservation
         {
             Id = idToFind + 1,
             StartDate = date.AddDays(-4),
-            EndDate = date.AddDays(-1)
+            EndDate = date.AddDays(-1),
+            UserId = _user.Id,
+            User = _user
         });
         _context.Reservations.Add(new Reservation
         {
             Id = idToFind - 1,
             StartDate = date.AddDays(-40),
-            EndDate = date.AddDays(-10)
+            EndDate = date.AddDays(-10),
+            UserId = _user.Id,
+            User = _user
         });
         await _context.SaveChangesAsync();
 
@@ -379,13 +434,17 @@ public class ReservationQueryTests
         {
             Id = idToFind - 1,
             StartDate = date.AddDays(-2),
-            EndDate = date
+            EndDate = date,
+            UserId = _user.Id,
+            User = _user
         });
         _context.Reservations.Add(new Reservation
         {
             Id = idToFind + 1,
             StartDate = date.AddDays(-4),
-            EndDate = date.AddDays(-1)
+            EndDate = date.AddDays(-1),
+            UserId = _user.Id,
+            User = _user
         });
         await _context.SaveChangesAsync();
 
