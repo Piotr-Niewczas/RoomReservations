@@ -71,8 +71,10 @@ public class AddReservationToDbTest
         _context.Reservations.Add(reservation);
         _context.SaveChanges();
 
-        var reservationFromDb = _context.Reservations.Include(r => r.RoomReservations).ThenInclude(rr => rr.Room)
+        var reservationFromDb = _context.Reservations
+            .Include(r => r.RoomReservations).ThenInclude(rr => rr.Room)
             .Include(r => r.ReservationTransactions).ThenInclude(rt => rt.Transaction)
+            .Include(r => r.User)
             .FirstOrDefault(r => r.Id == reservation.Id);
 
         Assert.IsNotNull(reservationFromDb);
@@ -88,6 +90,7 @@ public class AddReservationToDbTest
         Assert.AreEqual(reservation.ReservationTransactions.Count, reservationFromDb.ReservationTransactions.Count);
         Assert.AreEqual(reservation.ReservationTransactions.First().Transaction.Amount,
             reservationFromDb.ReservationTransactions.First().Transaction.Amount);
+        Assert.AreEqual(_user.Id, reservationFromDb.UserId);
     }
 
 
