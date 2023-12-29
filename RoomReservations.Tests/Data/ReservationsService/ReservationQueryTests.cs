@@ -52,7 +52,6 @@ public class ReservationQueryTests
             new UpperInvariantLookupNormalizer(),
             new IdentityErrorDescriber(), null!, new Logger<UserManager<ApplicationUser>>(new LoggerFactory()));
 
-
         await _userManager.CreateAsync(_user);
     }
 
