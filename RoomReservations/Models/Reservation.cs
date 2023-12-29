@@ -1,4 +1,6 @@
-﻿namespace RoomReservations.Models;
+﻿using RoomReservations.Data;
+
+namespace RoomReservations.Models;
 
 public class Reservation
 {
@@ -8,6 +10,6 @@ public class Reservation
     public bool IsPaid { get; set; } = false;
     public List<RoomReservation> RoomReservations { get; set; } = [];
     public List<ReservationTransaction> ReservationTransactions { get; set; } = [];
-    public int UserId { get; set; }
-    public User User { get; set; } = null!;
+    public string UserId { get; set; }
+    public ApplicationUser User { get; set; } = null!;
 }
