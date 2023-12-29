@@ -10,7 +10,7 @@ namespace RoomReservations.Tests.Data;
 [TestClass]
 public class AvailableRoomServiceTests
 {
-    private readonly ApplicationUser user = new() { Email = "test@test.com", UserName = "test@test.com" };
+    private readonly ApplicationUser _user = new() { Email = "test@test.com", UserName = "test@test.com" };
     private AvailableRoomService _availableRoomService = null!;
     private ApplicationDbContext _context = null!;
 
@@ -29,7 +29,7 @@ public class AvailableRoomServiceTests
             new IdentityErrorDescriber(), null, new Logger<UserManager<ApplicationUser>>(new LoggerFactory()));
 
 
-        await _userManager.CreateAsync(user);
+        await _userManager.CreateAsync(_user);
     }
 
     [TestCleanup]
@@ -62,8 +62,8 @@ public class AvailableRoomServiceTests
                     Room = room
                 }
             ],
-            UserId = user.Id,
-            User = user
+            UserId = _user.Id,
+            User = _user
         };
         _context.Add(reservation);
         await _context.SaveChangesAsync();
@@ -100,8 +100,8 @@ public class AvailableRoomServiceTests
                     Room = room
                 }
             ],
-            UserId = user.Id,
-            User = user
+            UserId = _user.Id,
+            User = _user
         };
         _context.Add(reservation);
         await _context.SaveChangesAsync();
@@ -148,8 +148,8 @@ public class AvailableRoomServiceTests
                     Room = rooms[0]
                 }
             ],
-            UserId = user.Id,
-            User = user
+            UserId = _user.Id,
+            User = _user
         };
         _context.Add(reservation);
         await _context.SaveChangesAsync();
