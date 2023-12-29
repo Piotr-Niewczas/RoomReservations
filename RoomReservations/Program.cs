@@ -84,6 +84,17 @@ public class Program
         // Add additional endpoints required by the Identity /Account Razor components.
         app.MapAdditionalIdentityEndpoints();
 
-        app.Run();
+        using (var scope = app.Services.CreateScope())
+        {
+            var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+
+            foreach (var role in RoleNames.Roles)
+                if (!await roleManager.RoleExistsAsync(role))
+                    await roleManager.CreateAsync(new IdentityRole(role));
+
+            await MockData.AddMockUsersIfNonePresent(scope);
+        }
+
+        await app.RunAsync();
     }
 }
