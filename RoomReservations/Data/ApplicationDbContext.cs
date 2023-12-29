@@ -45,5 +45,11 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .HasOne(rt => rt.Transaction)
             .WithMany(t => t.ReservationTransactions)
             .HasForeignKey(rt => rt.TransactionId);
+
+        // Configure User-Reservation relationship
+        modelBuilder.Entity<Reservation>()
+            .HasOne(r => r.User)
+            .WithMany(u => u.Reservations)
+            .HasForeignKey(r => r.UserId);
     }
 }
