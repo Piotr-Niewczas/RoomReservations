@@ -1,4 +1,7 @@
-﻿using RoomReservations.Data;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using RoomReservations.Data;
 using RoomReservations.Models;
 using RoomReservations.Tests.Models;
 
@@ -7,14 +10,26 @@ namespace RoomReservations.Tests.Data;
 [TestClass]
 public class AvailableRoomServiceTests
 {
+    private readonly ApplicationUser user = new() { Email = "test@test.com", UserName = "test@test.com" };
     private AvailableRoomService _availableRoomService = null!;
     private ApplicationDbContext _context = null!;
 
+    private UserManager<ApplicationUser> _userManager = null!;
+
     [TestInitialize]
-    public void Initialize()
+    public async Task Initialize()
     {
         _context = TestsContextOptions.TestingContext;
         _availableRoomService = new AvailableRoomService(_context);
+
+        var userStore = new UserStore<ApplicationUser>(_context);
+        _userManager = new UserManager<ApplicationUser>(userStore, null, new PasswordHasher<ApplicationUser>(),
+            Array.Empty<IUserValidator<ApplicationUser>>(), Array.Empty<IPasswordValidator<ApplicationUser>>(),
+            new UpperInvariantLookupNormalizer(),
+            new IdentityErrorDescriber(), null, new Logger<UserManager<ApplicationUser>>(new LoggerFactory()));
+
+
+        await _userManager.CreateAsync(user);
     }
 
     [TestCleanup]
@@ -46,7 +61,9 @@ public class AvailableRoomServiceTests
                 {
                     Room = room
                 }
-            ]
+            ],
+            UserId = user.Id,
+            User = user
         };
         _context.Add(reservation);
         _context.SaveChanges();
@@ -82,7 +99,9 @@ public class AvailableRoomServiceTests
                 {
                     Room = room
                 }
-            ]
+            ],
+            UserId = user.Id,
+            User = user
         };
         _context.Add(reservation);
         _context.SaveChanges();
@@ -128,7 +147,9 @@ public class AvailableRoomServiceTests
                 {
                     Room = rooms[0]
                 }
-            ]
+            ],
+            UserId = user.Id,
+            User = user
         };
         _context.Add(reservation);
         _context.SaveChanges();
