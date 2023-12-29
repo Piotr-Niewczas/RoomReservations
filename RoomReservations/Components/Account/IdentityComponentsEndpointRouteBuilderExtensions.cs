@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
 using RoomReservations.Components.Account.Pages;
 using RoomReservations.Components.Account.Pages.Manage;
-using RoomReservations.Data;
+using RoomReservations.Models;
 
 namespace RoomReservations.Components.Account
 {

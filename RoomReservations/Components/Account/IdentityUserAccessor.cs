@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using RoomReservations.Data;
+using RoomReservations.Models;
 
 namespace RoomReservations.Components.Account
 {
