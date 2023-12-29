@@ -1,4 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using RoomReservations.Data;
 using RoomReservations.Models;
 
@@ -7,12 +10,22 @@ namespace RoomReservations.Tests.Models.Reservation;
 [TestClass]
 public class AddReservationToDbTest
 {
+    private readonly ApplicationUser _user = new() { Email = "test@test.com", UserName = "test@test.com" };
     private ApplicationDbContext _context = null!;
+    private UserManager<ApplicationUser> _userManager = null!;
 
     [TestInitialize]
-    public void Initialize()
+    public async Task Initialize()
     {
         _context = TestsContextOptions.TestingContext;
+
+        var userStore = new UserStore<ApplicationUser>(_context);
+        _userManager = new UserManager<ApplicationUser>(userStore, null!, new PasswordHasher<ApplicationUser>(),
+            Array.Empty<IUserValidator<ApplicationUser>>(), Array.Empty<IPasswordValidator<ApplicationUser>>(),
+            new UpperInvariantLookupNormalizer(),
+            new IdentityErrorDescriber(), null!, new Logger<UserManager<ApplicationUser>>(new LoggerFactory()));
+
+        await _userManager.CreateAsync(_user);
     }
 
     [TestMethod]
@@ -50,7 +63,9 @@ public class AddReservationToDbTest
                         AccountingDate = DateTime.Now.AddDays(3)
                     }
                 }
-            ]
+            ],
+            UserId = _user.Id,
+            User = _user
         };
 
         _context.Reservations.Add(reservation);
