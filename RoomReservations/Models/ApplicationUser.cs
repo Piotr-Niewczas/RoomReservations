@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using RoomReservations.Models;
 
-namespace RoomReservations.Data;
+namespace RoomReservations.Models;
 
 // Add profile data for application users by adding properties to the ApplicationUser class
 public class ApplicationUser : IdentityUser
