@@ -7,10 +7,19 @@
 @using RoomReservations.Data
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.Authorization
+@inject IJSRuntime JsRuntime
 @attribute [Authorize]
 
-<h3>List of all Reservations of this user</h3>
-<Alert @ref="_alert"></Alert>
+@if (!_showList)
+{
+    <MudText Typo="Typo.h2">Something went wrong.</MudText>
+    <MudAlert Severity="Severity.Error">@_listLoadError</MudAlert>
+    <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="GoBack">Go back</MudButton>
+    return;
+}
+
+
+<h3>List of your reservations:</h3>
 @foreach (var reservation in _reservations)
 {
     <ViewReservation ReservationToDisplay="reservation"></ViewReservation>
@@ -20,21 +29,25 @@
 
 @code {
     private List<Reservation> _reservations = [];
-    private Alert _alert = new();
+
+    private bool _showList;
+    private string _listLoadError = "Unknown error has occured";
 
     protected override async Task OnInitializedAsync()
     {
+        // please note that we cannot use _alert.ShowAlert() here because it is not yet initialized
+
         // Check if the user is logged in
         if (HttpContextAccessor.HttpContext is null)
         {
-            _alert.ShowAlert(Severity.Error, "Something went wrong");
+            _listLoadError = "Something went wrong";
             return;
         }
 
         var user = await UserManager.GetUserAsync(HttpContextAccessor.HttpContext.User);
         if (user is null)
         {
-            _alert.ShowAlert(Severity.Error, "Please log in to make a reservation");
+            _listLoadError = "Please log in to make a reservation";
             return;
         }
 
@@ -43,6 +56,13 @@
             .ThenInclude(rr => rr.Room)
             .Where(r => r.UserId == user.Id)
             .ToListAsync();
+        _showList = true;
+    }
+
+    private async void GoBack()
+    {
+        // Navigate to previous page user was on using JS
+        await JsRuntime.InvokeVoidAsync("history.back");
     }
 
 }
