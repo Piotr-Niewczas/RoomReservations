@@ -518,4 +518,39 @@ public class ReservationQueryTests
         Assert.AreEqual(result.First().UserId, _user.Id);
         Assert.AreEqual(result.First().User, _user);
     }
+
+    [TestMethod]
+    public async Task ReservationQuery_WithTransactions_ReturnsReservationWithTransactions()
+    {
+        var date = DateTime.Now;
+        _context.Reservations.Add(new Reservation
+        {
+            Id = 1,
+            StartDate = date.AddDays(-2),
+            EndDate = date,
+            UserId = _user.Id,
+            User = _user,
+            ReservationTransactions =
+            [
+                new ReservationTransaction
+                {
+                    Transaction = new Transaction
+                    {
+                        Amount = 100,
+                        EntryDate = DateTime.Now
+                    }
+                }
+            ]
+        });
+        await _context.SaveChangesAsync();
+
+        var result = await _reservationService.CreateReservationQuery()
+            .WithTransactions()
+            .ToListAsync();
+
+        Assert.IsNotNull(result);
+        Assert.AreEqual(result.Count, 1);
+        Assert.AreEqual(result.First().ReservationTransactions.Count, 1);
+        Assert.AreEqual(result.First().ReservationTransactions.First().Transaction.Amount, 100);
+    }
 }
