@@ -7,7 +7,7 @@
     <MudCardContent>
         <MudText Typo="Typo.h6">Reservation Details</MudText>
         <MudText>Reservation ID: @ReservationToDisplay.Id</MudText>
-        <MudText>Customer Name: NYI </MudText>
+        <MudText>Customer Name: @ReservationToDisplay.User.UserName </MudText>
         <MudText>Reservation Date: @ReservationToDisplay.StartDate.ToString("dd.MM") - @ReservationToDisplay.EndDate.ToString("dd.MM.yyyy")</MudText>
         @foreach (var rr in ReservationToDisplay.RoomReservations)
         {
