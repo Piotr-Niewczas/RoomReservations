@@ -2,16 +2,27 @@
 @using RoomReservations.Data
 @using RoomReservations.Models
 @using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Authorization
 @inject IReservationService ReservationService
 @inject IJSRuntime JsRuntime
+@inject UserManager<ApplicationUser> UserManager
+@inject IHttpContextAccessor HttpContextAccessor
+@attribute [Authorize]
 
-<h3>EditReservation</h3>
+@if (!_showForm)
+{
+    <MudText Typo="Typo.h2">Something went wrong.</MudText>
+    <MudAlert Severity="Severity.Error">@_formLoadError</MudAlert>
+    <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="GoBack">Go back</MudButton>
+    return;
+}
 
 <MudCard>
     <MudCardContent>
         <MudText Typo="Typo.h6">Edit Reservation</MudText>
         <MudText>Reservation ID: @_reservationToEdit.Id</MudText>
-        <MudText>Customer Name: NYI </MudText>
+        <MudText>Customer Name: @_reservationToEdit.User.UserName </MudText>
         <MudDateRangePicker Label="Reservation Date Picker" @bind-DateRange="_dateRange" MinDate="@DateTime.Now.AddDays(-1)" PickerClosed="DatePickerClosed"/>
         <MudText>Rooms:</MudText>
         @foreach (var rr in _reservationToEdit.RoomReservations)
@@ -35,13 +46,47 @@
 
     private Alert _alert = new();
     private bool _isDataIncorrect = true;
+    private bool _showForm;
+    private string _formLoadError = "Unknown error has occured";
 
-    protected override Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync()
     {
-        _reservationToEdit = ReservationService.CreateReservationQuery().WhereId(Id).WithRooms().ToListAsync().Result.First();
+        // please note that we cannot use _alert.ShowAlert() here because it is not yet initialized
+
+        var reservationsFromDb = await ReservationService.CreateReservationQuery().WhereId(Id).WithRooms().ToListAsync();
+        if (reservationsFromDb.Count != 1)
+        {
+            _formLoadError = "Reservation not found";
+            return;
+        }
+
+        _reservationToEdit = reservationsFromDb.FirstOrDefault()!; // We know there is one element in the list
+
+        // Check what user is logged in
+        if (HttpContextAccessor.HttpContext is null)
+        {
+            _formLoadError = "Something went wrong";
+            return;
+        }
+
+        var user = await UserManager.GetUserAsync(HttpContextAccessor.HttpContext.User);
+        if (user is null)
+        {
+            _formLoadError = "Please log in to edit a reservation";
+            return;
+        }
+
+        // Check if user is the owner of the reservation
+        if (_reservationToEdit.User != user)
+        {
+            _reservationToEdit = new Reservation(); // Clear the reservation
+            _formLoadError = "This reservation does not belong to you!";
+            return;
+        }
+
         _dateRange.Start = _reservationToEdit.StartDate;
         _dateRange.End = _reservationToEdit.EndDate;
-        return base.OnInitializedAsync();
+        _showForm = true;
     }
 
     private async void DatePickerClosed()
