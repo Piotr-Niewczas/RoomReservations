@@ -1,20 +1,17 @@
 ﻿@inject QueryFactory QueryFactory
-@inject UserManager<ApplicationUser> UserManager
-@inject IHttpContextAccessor HttpContextAccessor
 @page "/list-reservations"
 @using Microsoft.EntityFrameworkCore
 @using RoomReservations.Models
 @using RoomReservations.Data
-@using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.Authorization
-@inject IJSRuntime JsRuntime
+@inject SharedMethodsService SharedMethodsService
 @attribute [Authorize]
 
 @if (!_showList)
 {
     <MudText Typo="Typo.h2">Something went wrong.</MudText>
     <MudAlert Severity="Severity.Error">@_listLoadError</MudAlert>
-    <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="GoBack">Go back</MudButton>
+    <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="SharedMethodsService.GoBackAsync">Go back</MudButton>
     return;
 }
 
@@ -38,16 +35,11 @@
         // please note that we cannot use _alert.ShowAlert() here because it is not yet initialized
 
         // Check if the user is logged in
-        if (HttpContextAccessor.HttpContext is null)
-        {
-            _listLoadError = "Something went wrong";
-            return;
-        }
+        var (user, error) = await SharedMethodsService.GetCurrentUserAsync();
 
-        var user = await UserManager.GetUserAsync(HttpContextAccessor.HttpContext.User);
         if (user is null)
         {
-            _listLoadError = "Please log in to make a reservation";
+            _listLoadError = error == GetCurrentUserError.UserNotLoggedIn ? "Please log in to view your reservations" : "Unknown error has occured";
             return;
         }
 
@@ -57,12 +49,6 @@
             .Where(r => r.UserId == user.Id)
             .ToListAsync();
         _showList = true;
-    }
-
-    private async void GoBack()
-    {
-        // Navigate to previous page user was on using JS
-        await JsRuntime.InvokeVoidAsync("history.back");
     }
 
 }
