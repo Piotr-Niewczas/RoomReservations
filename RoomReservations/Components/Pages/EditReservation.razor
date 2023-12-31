@@ -2,19 +2,16 @@
 @using RoomReservations.Data
 @using RoomReservations.Models
 @using Microsoft.EntityFrameworkCore
-@using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.Authorization
 @inject IReservationService ReservationService
-@inject IJSRuntime JsRuntime
-@inject UserManager<ApplicationUser> UserManager
-@inject IHttpContextAccessor HttpContextAccessor
+@inject SharedMethodsService SharedMethodsService
 @attribute [Authorize]
 
 @if (!_showForm)
 {
     <MudText Typo="Typo.h2">Something went wrong.</MudText>
     <MudAlert Severity="Severity.Error">@_formLoadError</MudAlert>
-    <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="GoBack">Go back</MudButton>
+    <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="SharedMethodsService.GoBackAsync">Go back</MudButton>
     return;
 }
 
@@ -33,7 +30,7 @@
     <MudCardActions>
         <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@_isDataIncorrect" OnClick="SaveChanges">Save</MudButton>
         <div style="flex-grow: 1;"></div>
-        <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="GoBack">Go back</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="SharedMethodsService.GoBackAsync">Go back</MudButton>
     </MudCardActions>
     <Alert @ref="_alert"></Alert>
 </MudCard>
@@ -62,17 +59,11 @@
 
         _reservationToEdit = reservationsFromDb.FirstOrDefault()!; // We know there is one element in the list
 
-        // Check what user is logged in
-        if (HttpContextAccessor.HttpContext is null)
-        {
-            _formLoadError = "Something went wrong";
-            return;
-        }
+        var (user, error) = await SharedMethodsService.GetCurrentUserAsync();
 
-        var user = await UserManager.GetUserAsync(HttpContextAccessor.HttpContext.User);
         if (user is null)
         {
-            _formLoadError = "Please log in to edit a reservation";
+            _formLoadError = error == GetCurrentUserError.UserNotLoggedIn ? "Please log in to edit your reservation" : "Unknown error has occured";
             return;
         }
 
@@ -129,12 +120,6 @@
         // Show success alert
         _alert.ShowAlert(Severity.Success, "Reservation updated successfully");
         _isDataIncorrect = true; // Disable save button
-    }
-
-    private async void GoBack()
-    {
-        // Navigate to previous page user was on using JS
-        await JsRuntime.InvokeVoidAsync("history.back");
     }
 
 }
