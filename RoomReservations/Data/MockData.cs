@@ -9,7 +9,7 @@ public static class MockData
     private static readonly List<UserData> MockUsers =
     [
         new UserData("Admin123#", "admin@a.com", RoleNames.Admin),
-        new UserData("Receptionist123#", "recepcionist@r.com", RoleNames.Receptionist),
+        new UserData("Receptionist123#", "receptionist@r.com", RoleNames.Receptionist),
         new UserData("Employee123#", "employee@e.com", RoleNames.Employee),
         new UserData("Client123#", "client@c.com", RoleNames.Client)
     ];
