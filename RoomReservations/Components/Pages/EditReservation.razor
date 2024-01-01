@@ -45,6 +45,7 @@
     private bool _isDataIncorrect = true;
     private bool _showForm;
     private string _formLoadError = "Unknown error has occured";
+    private bool _isUserReceptionist;
 
     protected override async Task OnInitializedAsync()
     {
@@ -67,17 +68,19 @@
             return;
         }
 
-        // Check if user is the owner of the reservation
-        if (_reservationToEdit.User != user)
+        _isUserReceptionist = await SharedMethodsService.IsCurrentUserInRoleAsync(RoleNames.Receptionist);
+        // Check if user is the owner of the reservation or is a receptionist
+        if (_reservationToEdit.User == user || _isUserReceptionist)
+        {
+            _dateRange.Start = _reservationToEdit.StartDate;
+            _dateRange.End = _reservationToEdit.EndDate;
+            _showForm = true;
+        }
+        else
         {
             _reservationToEdit = new Reservation(); // Clear the reservation
             _formLoadError = "This reservation does not belong to you!";
-            return;
         }
-
-        _dateRange.Start = _reservationToEdit.StartDate;
-        _dateRange.End = _reservationToEdit.EndDate;
-        _showForm = true;
     }
 
     private async void DatePickerClosed()
