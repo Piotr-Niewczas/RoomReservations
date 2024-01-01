@@ -26,7 +26,7 @@
             <MudTableSortLabel SortBy="(Reservation context) => context.User.UserName">Creator</MudTableSortLabel>
         </MudTh>
         <MudTh>
-            <MudTableSortLabel SortBy="(Reservation context) => context.IsPaid">Creator</MudTableSortLabel>
+            <MudTableSortLabel SortBy="(Reservation context) => context.IsPaid">Is paid</MudTableSortLabel>
         </MudTh>
         <MudTh>Is in progress</MudTh>
         <MudTh>Edit</MudTh>
@@ -47,7 +47,7 @@
         </MudTd>
     </RowTemplate>
     <PagerContent>
-        <MudTablePager PageSizeOptions="new int[] { 15, 30, 100 }"/>
+        <MudTablePager PageSizeOptions="new[] { 15, 30, 100 }"/>
     </PagerContent>
 </MudTable>
 
