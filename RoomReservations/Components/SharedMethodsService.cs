@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.JSInterop;
 using RoomReservations.Models;
 
@@ -14,7 +15,8 @@ public enum GetCurrentUserError
 public class SharedMethodsService(
     UserManager<ApplicationUser> userManager,
     IHttpContextAccessor httpContextAccessor,
-    IJSRuntime jsRuntime)
+    IJSRuntime jsRuntime,
+    AuthenticationStateProvider authenticationStateProvider)
 {
     private ApplicationUser? _loggedInUser;
 
@@ -36,5 +38,12 @@ public class SharedMethodsService(
 
         _loggedInUser = user;
         return (_loggedInUser, GetCurrentUserError.Success);
+    }
+
+    public async Task<bool> IsCurrentUserInRoleAsync(string role)
+    {
+        var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
+        var roleUser = authState.User;
+        return roleUser.IsInRole(role);
     }
 }
