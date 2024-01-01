@@ -16,13 +16,11 @@
         <div style="flex-grow: 1;"></div>
         <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => NavigateToEditPage())">Edit</MudButton>
     </MudCardActions>
-    <Alert @ref="Alert"></Alert>
 </MudCard>
 
 
 @code {
     [Parameter] public Reservation ReservationToDisplay { get; set; } = new();
-    private Alert Alert { get; set; } = new();
 
     private void NavigateToEditPage()
     {
