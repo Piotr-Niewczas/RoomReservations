@@ -5,13 +5,20 @@
 @inject IAvailableRoomService AvailableRoomService
 @inject IReservationService ReservationService
 @inject SharedMethodsService SharedMethodsService
+@inject NavigationManager NavigationManager
 @attribute [Authorize]
 
 @rendermode InteractiveServer
 
-<h3>MakeReservation</h3>
+<h3>Formularz tworzenia rezerwacji</h3>
 
-Formularz tworzenia rezerwacji
+<MudOverlay Visible="_isOverlayVisible" DarkBackground="true" Absolute="true">
+    <MudPaper Class="pa-16 ma-2" Style="@("color:#4CAF50; background:#E0E0E0;")" Elevation="3">
+        <MudText Typo="Typo.h2">@_overlayMessage</MudText>
+        <br style="line-height: 3rem;"/>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ConfirmationOkClicked">See reservations</MudButton>
+    </MudPaper>
+</MudOverlay>
 
 <EditForm Model="@_reservation" OnSubmit="Submit" FormName="ReservationForm">
     <MudSelect T="int" Label="Select Room" @bind-Value="@_selectedRoomId">
@@ -49,6 +56,9 @@ Formularz tworzenia rezerwacji
     private int _selectedRoomId;
 
     private Alert _alert = new();
+
+    private bool _isOverlayVisible;
+    private string _overlayMessage = "Saving...";
 
     protected override async Task OnInitializedAsync()
     {
@@ -92,6 +102,7 @@ Formularz tworzenia rezerwacji
             return;
         }
 
+        _ = OpenOverlay();
         _reservation.StartDate = _dateRange.Start ?? DateTime.MinValue;
         _reservation.EndDate = _dateRange.End ?? DateTime.MinValue;
 
@@ -110,11 +121,30 @@ Formularz tworzenia rezerwacji
 
         var result = await ReservationService.AddReservationAsync(_reservation, _selectedRooms);
 
-        if (!result) _alert.ShowAlert(Severity.Error, "Something went wrong");
-        else _alert.ShowAlert(Severity.Success, "Reservation added successfully");
+        ChangeOverlayMessage(!result ? "Something went wrong" : "Reservation added successfully");
 
         _reservation = new Reservation();
         await ReloadAvailableRoomsAtDates();
+        _selectedRooms.Clear();
+    }
+
+    private async Task OpenOverlay()
+    {
+        _isOverlayVisible = true;
+        await Task.Delay(3000);
+        //_isOverlayVisible = false;
+        StateHasChanged();
+    }
+
+    private void ChangeOverlayMessage(string message)
+    {
+        _overlayMessage = message;
+        StateHasChanged();
+    }
+
+    private void ConfirmationOkClicked()
+    {
+        NavigationManager.NavigateTo("/list-reservations");
     }
 
 }
