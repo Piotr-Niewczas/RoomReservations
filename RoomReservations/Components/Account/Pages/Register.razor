@@ -46,9 +46,9 @@
 @code {
     private IEnumerable<IdentityError>? _identityErrors;
 
-    [SupplyParameterFromForm] private InputModel Input { get; set; } = new();
+    [SupplyParameterFromForm] private InputModel Input { get; } = new();
 
-    [SupplyParameterFromQuery] private string? ReturnUrl { get; set; }
+    [SupplyParameterFromQuery] private string? ReturnUrl { get; }
 
     private string? Message => _identityErrors is null ? null : $"Error: {string.Join(", ", _identityErrors.Select(error => error.Description))}";
 
@@ -70,10 +70,10 @@
         Logger.LogInformation("User created a new account with password.");
 
         // Give user the default role
-        await UserManager.AddToRoleAsync(user, "Client");
-        Logger.LogInformation("Gave user the 'Client' role.");
+        await UserManager.AddToRoleAsync(user, RoleNames.Client);
+        Logger.LogInformation($"Gave user the '{RoleNames.Client}' role.");
 
-        await SignInManager.SignInAsync(user, isPersistent: false);
+        await SignInManager.SignInAsync(user, false);
         RedirectManager.RedirectTo(ReturnUrl);
     }
 
