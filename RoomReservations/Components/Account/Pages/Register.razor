@@ -79,6 +79,10 @@
 
         Logger.LogInformation("User created a new account with password.");
 
+        // Give user the default role
+        await UserManager.AddToRoleAsync(user, "Client");
+        Logger.LogInformation("Gave user the 'Client' role.");
+
         var userId = await UserManager.GetUserIdAsync(user);
         var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
         code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
