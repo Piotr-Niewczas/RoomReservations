@@ -16,7 +16,12 @@
 }
 
 <MudCard>
-    <MudCardContent>
+    <MudCardContent Style="position: relative;">
+        <MudOverlay Visible="_isOverlayVisible" Style="background-color: rgba(0, 0, 0, 0.5) !important" Absolute="true">
+            <MudPaper Class="pa-16 ma-2" Elevation="3">
+                <MudText Typo="Typo.h4">Reservation deleted</MudText>
+            </MudPaper>
+        </MudOverlay>
         <MudText Typo="Typo.h6">Edit Reservation</MudText>
         <MudText>Reservation ID: @_reservationToEdit.Id</MudText>
         <MudText>Customer Name: @_reservationToEdit.User.UserName </MudText>
@@ -28,9 +33,19 @@
         }
     </MudCardContent>
     <MudCardActions>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@_isDataIncorrect" OnClick="SaveChanges">Save</MudButton>
-        <div style="flex-grow: 1;"></div>
-        <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="SharedMethodsService.GoBackAsync">Go back</MudButton>
+        <MudGrid Spacing="10" Justify="Justify.Center">
+            <MudItem>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(_isDataIncorrect || _isOverlayVisible)" OnClick="SaveChanges">Save</MudButton>
+            </MudItem>
+
+            <MudItem>
+                <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="@_isOverlayVisible" OnClick="DeleteReservation">Delete</MudButton>
+            </MudItem>
+
+            <MudItem>
+                <MudButton Variant="Variant.Filled" Color="@(_isOverlayVisible ? Color.Primary : Color.Default)" OnClick="SharedMethodsService.GoBackAsync">Go back</MudButton>
+            </MudItem>
+        </MudGrid>
     </MudCardActions>
     <Alert @ref="_alert"></Alert>
 </MudCard>
@@ -45,6 +60,7 @@
     private bool _isDataIncorrect = true;
     private bool _showForm;
     private string _formLoadError = "Unknown error has occured";
+    private bool _isOverlayVisible;
     private bool _isUserReceptionist;
 
     protected override async Task OnInitializedAsync()
@@ -109,7 +125,7 @@
         _isDataIncorrect = false;
     }
 
-    private async void SaveChanges()
+    private async Task SaveChanges()
     {
         var wasSuccessful = await ReservationService.UpdateReservationAsync(_reservationToEdit);
 
@@ -123,6 +139,16 @@
         // Show success alert
         _alert.ShowAlert(Severity.Success, "Reservation updated successfully");
         _isDataIncorrect = true; // Disable save button
+    }
+
+    private async Task DeleteReservation()
+    {
+        var result = await ReservationService.DeleteReservationAsync(_reservationToEdit.Id);
+        if (result)
+        {
+            _isOverlayVisible = true;
+        }
+        else _alert.ShowAlert(Severity.Error, "Could not delete reservation.");
     }
 
 }

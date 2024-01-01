@@ -3,10 +3,7 @@
 @inject NavigationManager NavigationManager
 @inject IReservationService ReservationService
 
-<MudCard Style="position: relative;">
-    <MudOverlay Visible="_isOverlayVisible" Style="background-color: rgba(255, 255, 255, 0.7) !important" Absolute="true">
-        <MudText Typo="Typo.h4">Reservation deleted</MudText>
-    </MudOverlay>
+<MudCard>
     <MudCardContent>
         <MudText Typo="Typo.h6">Reservation Details</MudText>
         <MudText>Reservation ID: @ReservationToDisplay.Id</MudText>
@@ -18,9 +15,8 @@
         }
     </MudCardContent>
     <MudCardActions>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => NavigateToEditPage())">Edit</MudButton>
         <div style="flex-grow: 1;"></div>
-        <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="@(() => DeleteReservation())">Delete</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => NavigateToEditPage())">Edit</MudButton>
     </MudCardActions>
     <Alert @ref="Alert"></Alert>
 </MudCard>
@@ -35,17 +31,6 @@
     {
         var url = "/edit-reservation/" + ReservationToDisplay.Id;
         NavigationManager.NavigateTo(url);
-    }
-
-    private async void DeleteReservation()
-    {
-        var result = await ReservationService.DeleteReservationAsync(ReservationToDisplay.Id);
-        if (result) // If successful, refresh page
-        {
-            _isOverlayVisible = true;
-            await Task.Delay(2000);
-        }
-        else Alert.ShowAlert(Severity.Error, "Could not delete reservation.");
     }
 
 }
