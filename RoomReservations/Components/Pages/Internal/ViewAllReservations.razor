@@ -7,7 +7,7 @@
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
-@attribute [Authorize(Roles = "Admin, Receptionist ,Employee")]
+@attribute [Authorize(Roles = $"{RoleNames.Receptionist}, {RoleNames.Admin}, {RoleNames.Employee}")]
 <h3>View All Reservations</h3>
 
 <MudTable Items="@_reservations" Hover="true" SortLabel="Sort By">
@@ -66,7 +66,7 @@
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
 
-        _canEdit = user.IsInRole("Receptionist") || user.IsInRole("Admin");
+        _canEdit = user.IsInRole(RoleNames.Receptionist);
     }
 
     private static string RoomsToString(IEnumerable<RoomReservation> rrs)
