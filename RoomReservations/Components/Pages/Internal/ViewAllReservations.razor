@@ -5,7 +5,7 @@
 @using Microsoft.AspNetCore.Authorization
 @inject IReservationService ReservationService
 @inject NavigationManager NavigationManager
-@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject SharedMethodsService SharedMethodsService
 
 @attribute [Authorize(Roles = $"{RoleNames.Receptionist}, {RoleNames.Admin}, {RoleNames.Employee}")]
 <h3>View All Reservations</h3>
@@ -63,10 +63,7 @@
             .WithUsers()
             .ToListAsync();
 
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
-
-        _canEdit = user.IsInRole(RoleNames.Receptionist);
+        _canEdit = await SharedMethodsService.IsCurrentUserInRoleAsync(RoleNames.Receptionist);
     }
 
     private static string RoomsToString(IEnumerable<RoomReservation> rrs)
