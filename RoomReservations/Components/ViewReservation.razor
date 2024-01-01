@@ -3,7 +3,10 @@
 @inject NavigationManager NavigationManager
 @inject IReservationService ReservationService
 
-<MudCard>
+<MudCard Style="position: relative;">
+    <MudOverlay Visible="_isOverlayVisible" Style="background-color: rgba(255, 255, 255, 0.7) !important" Absolute="true">
+        <MudText Typo="Typo.h4">Reservation deleted</MudText>
+    </MudOverlay>
     <MudCardContent>
         <MudText Typo="Typo.h6">Reservation Details</MudText>
         <MudText>Reservation ID: @ReservationToDisplay.Id</MudText>
@@ -26,6 +29,7 @@
 @code {
     [Parameter] public Reservation ReservationToDisplay { get; set; } = new();
     private Alert Alert { get; set; } = new();
+    private bool _isOverlayVisible = false;
 
     private void NavigateToEditPage()
     {
@@ -38,9 +42,9 @@
         var result = await ReservationService.DeleteReservationAsync(ReservationToDisplay.Id);
         if (result) // If successful, refresh page
         {
-            Alert.ShowAlert(Severity.Success, "Reservation deleted successfully.");
+            _isOverlayVisible = true;
             await Task.Delay(2000);
-            NavigationManager.NavigateTo(NavigationManager.Uri, true);
+            Alert.HideAlert();
         }
         else Alert.ShowAlert(Severity.Error, "Could not delete reservation.");
     }
