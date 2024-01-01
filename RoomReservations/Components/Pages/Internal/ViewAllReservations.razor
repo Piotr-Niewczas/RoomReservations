@@ -1,0 +1,78 @@
+﻿@page "/internal/ViewAllReservations"
+@using RoomReservations.Data
+@using RoomReservations.Models
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Authorization
+@inject IReservationService ReservationService
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+@attribute [Authorize(Roles = "Admin, Receptionist ,Employee")]
+<h3>View All Reservations</h3>
+
+<MudTable Items="@_reservations" Hover="true" SortLabel="Sort By">
+    <HeaderContent>
+        <MudTh>
+            <MudTableSortLabel SortBy="(Reservation context) => context.Id">Id</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="(Reservation context) => context.StartDate">Start date</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="(Reservation context) => context.EndDate">End date</MudTableSortLabel>
+        </MudTh>
+        <MudTh>Rooms</MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="(Reservation context) => context.User.UserName">Creator</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="(Reservation context) => context.IsPaid">Creator</MudTableSortLabel>
+        </MudTh>
+        <MudTh>Is in progress</MudTh>
+        <MudTh>Edit</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Id">@context.Id</MudTd>
+        <MudTd DataLabel="Start Date">@context.StartDate.ToShortDateString()</MudTd>
+        <MudTd DataLabel="End Date">@context.EndDate.ToShortDateString()</MudTd>
+        <MudTd DataLabel="Rooms">@RoomsToString(context.RoomReservations)</MudTd>
+        <MudTd DataLabel="Creator">@context.User.UserName</MudTd>
+        <MudTd DataLabel="Is Paid">@context.IsPaid</MudTd>
+        <MudTd DataLabel="Is in progress">NYI</MudTd>
+        <MudTd DataLabel="Edit">
+            <MudButton Disabled="@(!_canEdit)" Color="Color.Primary" Variant="Variant.Filled"
+                       OnClick="@(() => NavigationManager.NavigateTo($"/edit-reservation/{context.Id}"))">
+                Edit NYI
+            </MudButton>
+        </MudTd>
+    </RowTemplate>
+    <PagerContent>
+        <MudTablePager PageSizeOptions="new int[] { 15, 30, 100 }"/>
+    </PagerContent>
+</MudTable>
+
+@code {
+    List<Reservation> _reservations = [];
+    bool _canEdit;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _reservations = await ReservationService.CreateReservationQuery()
+            .WithRooms()
+            .WithTransactions()
+            .WithUsers()
+            .ToListAsync();
+
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        _canEdit = user.IsInRole("Receptionist") || user.IsInRole("Admin");
+    }
+
+    private static string RoomsToString(IEnumerable<RoomReservation> rrs)
+    {
+        var result = string.Join(", ", rrs.Select(rr => rr.Room.Name));
+        return result;
+    }
+
+}
