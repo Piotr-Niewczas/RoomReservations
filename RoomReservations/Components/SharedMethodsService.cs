@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components.Authorization;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.JSInterop;
 using RoomReservations.Models;
@@ -19,6 +20,7 @@ public class SharedMethodsService(
     AuthenticationStateProvider authenticationStateProvider)
 {
     private ApplicationUser? _loggedInUser;
+    private ClaimsPrincipal? _roleUser;
 
     public async void GoBackAsync()
     {
@@ -42,8 +44,12 @@ public class SharedMethodsService(
 
     public async Task<bool> IsCurrentUserInRoleAsync(string role)
     {
-        var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
-        var roleUser = authState.User;
-        return roleUser.IsInRole(role);
+        if (_roleUser is null)
+        {
+            var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
+            _roleUser = authState.User;
+        }
+
+        return _roleUser.IsInRole(role);
     }
 }
