@@ -14,25 +14,25 @@
     <nav class="flex-column">
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Strona główna
             </NavLink>
         </div>
 
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="rooms">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> List Rooms
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Nasze pokoje
             </NavLink>
         </div>
 
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="make-reservation">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Make reservation
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Złóż rezerwację
             </NavLink>
         </div>
 
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="list-reservations">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> List of all reservations
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Lista rezerwacji
             </NavLink>
         </div>
 
@@ -48,7 +48,7 @@
                         <AntiforgeryToken/>
                         <input type="hidden" name="ReturnUrl" value="@_currentUrl"/>
                         <button type="submit" class="nav-link">
-                            <span class="bi bi-arrow-bar-left-nav-menu" aria-hidden="true"></span> Logout
+                            <span class="bi bi-arrow-bar-left-nav-menu" aria-hidden="true"></span> Wyloguj
                         </button>
                     </form>
                 </div>
@@ -56,12 +56,12 @@
             <NotAuthorized>
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="Account/Register">
-                        <span class="bi bi-person-nav-menu" aria-hidden="true"></span> Register
+                        <span class="bi bi-person-nav-menu" aria-hidden="true"></span> Rejestracja
                     </NavLink>
                 </div>
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="Account/Login">
-                        <span class="bi bi-person-badge-nav-menu" aria-hidden="true"></span> Login
+                        <span class="bi bi-person-badge-nav-menu" aria-hidden="true"></span> Logowanie
                     </NavLink>
                 </div>
             </NotAuthorized>
