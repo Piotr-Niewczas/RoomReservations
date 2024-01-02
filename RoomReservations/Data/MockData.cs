@@ -8,10 +8,10 @@ public static class MockData
 {
     private static readonly List<UserData> MockUsers =
     [
-        new UserData("Admin123#", "admin@a.com", RoleNames.Admin),
-        new UserData("Receptionist123#", "receptionist@r.com", RoleNames.Receptionist),
-        new UserData("Employee123#", "employee@e.com", RoleNames.Employee),
-        new UserData("Client123#", "client@c.com", RoleNames.Client)
+        new UserData("Admin123#", "admin@a.com", RoleNames.Admin, "Admin", "Admin"),
+        new UserData("Receptionist123#", "receptionist@r.com", RoleNames.Receptionist, "Receptionist", "Receptionist"),
+        new UserData("Employee123#", "employee@e.com", RoleNames.Employee, "John", "Worker"),
+        new UserData("Client123#", "client@c.com", RoleNames.Client, "Mr", "Moneyhands", "123456789")
     ];
 
     private static readonly List<Room> MockRooms =
@@ -134,7 +134,10 @@ public static class MockData
             var applicationUser = new ApplicationUser
             {
                 UserName = user.Email,
-                Email = user.Email
+                Email = user.Email,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                PhoneNumber = user.PhoneNumber
             };
 
             var createResult = await userManager.CreateAsync(applicationUser, user.Password);
@@ -143,10 +146,19 @@ public static class MockData
         }
     }
 
-    private class UserData(string password, string email, string role)
+    private class UserData(
+        string password,
+        string email,
+        string role,
+        string firstName,
+        string lastName,
+        string? phoneNumber = null)
     {
         public string Password { get; } = password;
         public string Email { get; } = email;
         public string Role { get; } = role;
+        public string FirstName { get; } = firstName;
+        public string LastName { get; } = lastName;
+        public string? PhoneNumber { get; } = phoneNumber;
     }
 }
