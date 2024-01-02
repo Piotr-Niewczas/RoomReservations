@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Identity;
 
 namespace RoomReservations.Models;
 
@@ -6,4 +7,8 @@ namespace RoomReservations.Models;
 public class ApplicationUser : IdentityUser
 {
     public List<Reservation> Reservations { get; set; } = [];
+
+    [Required] public string FirstName { get; set; } = "";
+
+    [Required] public string LastName { get; set; } = "";
 }
