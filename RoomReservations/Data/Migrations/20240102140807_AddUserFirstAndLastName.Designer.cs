@@ -12,7 +12,7 @@ namespace RoomReservations.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
     [Migration("20240102140807_addUserFirstAndLastName")]
-    partial class addUserFirstAndLastName
+    partial class AddUserFirstAndLastName
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

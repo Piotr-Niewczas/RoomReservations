@@ -5,7 +5,7 @@
 namespace RoomReservations.Migrations
 {
     /// <inheritdoc />
-    public partial class addUserFirstAndLastName : Migration
+    public partial class AddUserFirstAndLastName : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
