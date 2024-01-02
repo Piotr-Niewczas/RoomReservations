@@ -33,12 +33,26 @@
         <AuthorizeView>
             <Authorized>
                 <div style="height: 1px; background-color: #ddd; margin: 10px 0;"></div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="list-reservations">
-                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Lista rezerwacji
-                    </NavLink>
-                </div>
+                <AuthorizeView Roles="Receptionist, Employee, Admin">
+                    <Authorized Context="context2">
+                        @* Employee only *@
+                        <div class="nav-item px-3">
+                            <NavLink class="nav-link" href="internal/ViewAllReservations">
+                                <span class="bi bi-gear-fill-nav-menu" aria-hidden="true"></span> Wszystkie rezerwacje
+                            </NavLink>
+                        </div>
+                    </Authorized>
+                    <NotAuthorized Context="context2">
+                        @* Not empolyee *@
+                        <div class="nav-item px-3">
+                            <NavLink class="nav-link" href="list-reservations">
+                                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Moje rezerwacje
+                            </NavLink>
+                        </div>
+                    </NotAuthorized>
+                </AuthorizeView>
                 <div style="height: 1px; background-color: #ddd; margin: 10px 0;"></div>
+
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="Account/Manage">
                         <span class="bi bi-person-fill-nav-menu" aria-hidden="true"></span> Moje konto
