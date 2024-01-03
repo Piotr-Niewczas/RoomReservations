@@ -53,6 +53,7 @@ public class Program
         builder.Services.AddScoped<IReservationService, ReservationService>();
         builder.Services.AddScoped<QueryFactory>();
         builder.Services.AddScoped<SharedMethodsService>();
+        builder.Services.AddScoped<UserService>();
 
         var app = builder.Build();
 
