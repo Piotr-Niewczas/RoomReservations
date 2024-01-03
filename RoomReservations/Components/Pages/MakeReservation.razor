@@ -90,6 +90,20 @@
 
     public async void Submit(EditContext context)
     {
+        // Get the current user
+        var (user, error) = await SharedMethodsService.GetCurrentUserAsync();
+        if (user is null)
+        {
+            var msg = error == GetCurrentUserError.UserNotLoggedIn ? "Please log in to make reservations" : "Unknown error has occured";
+            _alert.ShowAlert(Severity.Error, msg);
+            return;
+        }
+
+        await SaveReservation(user);
+    }
+
+    private async Task SaveReservation(ApplicationUser user)
+    {
         if (!_selectedRooms.Any())
         {
             _alert.ShowAlert(Severity.Error, "Please select at least one room");
@@ -105,15 +119,6 @@
         _ = OpenOverlay();
         _reservation.StartDate = _dateRange.Start ?? DateTime.MinValue;
         _reservation.EndDate = _dateRange.End ?? DateTime.MinValue;
-
-        // Get the current user
-        var (user, error) = await SharedMethodsService.GetCurrentUserAsync();
-        if (user is null)
-        {
-            var msg = error == GetCurrentUserError.UserNotLoggedIn ? "Please log in to make reservations" : "Unknown error has occured";
-            _alert.ShowAlert(Severity.Error, msg);
-            return;
-        }
 
         // Add the user to the reservation
         _reservation.User = user;
