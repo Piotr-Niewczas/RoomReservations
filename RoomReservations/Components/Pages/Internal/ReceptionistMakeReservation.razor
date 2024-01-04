@@ -114,6 +114,7 @@
 
     private async Task SearchForUser()
     {
+        _alert.HideAlert();
         var user = await UserService.FindUserByEmailAsync(_email.Value);
         if (user is null)
         {
