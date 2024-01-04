@@ -34,20 +34,25 @@
             <Authorized>
                 <div style="height: 1px; background-color: #ddd; margin: 10px 0;"></div>
                 <AuthorizeView Roles="Receptionist, Employee, Admin">
-                    <Authorized Context="context2">
+                    <Authorized Context="allEmployees">
                         @* Employee only *@
                         <div class="nav-item px-3">
                             <NavLink class="nav-link" href="internal/ViewAllReservations">
                                 <span class="bi bi-gear-fill-nav-menu" aria-hidden="true"></span> Wszystkie rezerwacje
                             </NavLink>
                         </div>
-                        <div class="nav-item px-3">
-                            <NavLink class="nav-link" href="internal/ReceptionistMakeReservation">
-                                <span class="bi bi-gear-fill-nav-menu" aria-hidden="true"></span> Utwórz rezerwację
-                            </NavLink>
-                        </div>
+                        <AuthorizeView Roles="Receptionist">
+                            <Authorized Context="justReceptionist">
+                                @* Recepctionist only *@
+                                <div class="nav-item px-3">
+                                    <NavLink class="nav-link" href="internal/ReceptionistMakeReservation">
+                                        <span class="bi bi-gear-fill-nav-menu" aria-hidden="true"></span> Utwórz rezerwację
+                                    </NavLink>
+                                </div>
+                            </Authorized>
+                        </AuthorizeView>
                     </Authorized>
-                    <NotAuthorized Context="context2">
+                    <NotAuthorized Context="allEmployees">
                         @* Not empolyee *@
                         <div class="nav-item px-3">
                             <NavLink class="nav-link" href="list-reservations">
