@@ -35,7 +35,7 @@
                 <div style="height: 1px; background-color: #ddd; margin: 10px 0;"></div>
                 <AuthorizeView Roles="Receptionist, Employee, Admin">
                     <Authorized Context="allEmployees">
-                        @* Employee only *@
+                        @* Employees only *@
                         <div class="nav-item px-3">
                             <NavLink class="nav-link" href="internal/ViewAllReservations">
                                 <span class="bi bi-gear-fill-nav-menu" aria-hidden="true"></span> Wszystkie rezerwacje
@@ -43,7 +43,7 @@
                         </div>
                         <AuthorizeView Roles="Receptionist">
                             <Authorized Context="justReceptionist">
-                                @* Recepctionist only *@
+                                @* Receptionist only *@
                                 <div class="nav-item px-3">
                                     <NavLink class="nav-link" href="internal/ReceptionistMakeReservation">
                                         <span class="bi bi-gear-fill-nav-menu" aria-hidden="true"></span> Utwórz rezerwację
