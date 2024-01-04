@@ -44,11 +44,14 @@
     <MudDateRangePicker Label="Basic range picker" @bind-DateRange="_dateRange" MinDate="@DateTime.Now.AddDays(-1)" PickerClosed="ReloadAvailableRoomsAtDates"/>
     <br/>
     <Alert @ref="_alert"></Alert>
-    <MudButton Variant="Variant.Filled" Color="Color.Primary" ButtonType="ButtonType.Submit">Submit</MudButton>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" ButtonType="ButtonType.Submit" Disabled="DisableSubmit">Submit</MudButton>
 </EditForm>
 
 
 @code {
+    ApplicationUser? User { get; set; }
+    [Parameter] public EventCallback HijackSubmit { get; set; }
+    [Parameter] public bool DisableSubmit { get; set; } = false;
     Reservation _reservation = new();
     List<Room> _availableRoomsFromDb = [];
     readonly List<Room> _selectedRooms = [];
@@ -90,30 +93,41 @@
 
     public async void Submit(EditContext context)
     {
-        // Get the current user
-        var (user, error) = await SharedMethodsService.GetCurrentUserAsync();
-        if (user is null)
+        if (HijackSubmit.HasDelegate)
         {
-            var msg = error == GetCurrentUserError.UserNotLoggedIn ? "Please log in to make reservations" : "Unknown error has occured";
-            _alert.ShowAlert(Severity.Error, msg);
+            await HijackSubmit.InvokeAsync(null);
             return;
         }
 
-        await SaveReservation(user);
+        if (User is null)
+        {
+            // Get the current user
+            var (user, error) = await SharedMethodsService.GetCurrentUserAsync();
+            if (user is null)
+            {
+                var msg = error == GetCurrentUserError.UserNotLoggedIn ? "Please log in to make reservations" : "Unknown error has occured";
+                _alert.ShowAlert(Severity.Error, msg);
+                return;
+            }
+
+            User = user;
+        }
+
+        _ = await SaveReservation(User);
     }
 
-    private async Task SaveReservation(ApplicationUser user)
+    public async Task<bool> SaveReservation(ApplicationUser user)
     {
         if (!_selectedRooms.Any())
         {
             _alert.ShowAlert(Severity.Error, "Please select at least one room");
-            return;
+            return false;
         }
 
         if (_dateRange.Start is null || _dateRange.End is null)
         {
             _alert.ShowAlert(Severity.Error, "Please select reservation dates");
-            return;
+            return false;
         }
 
         _ = OpenOverlay();
@@ -131,6 +145,7 @@
         _reservation = new Reservation();
         await ReloadAvailableRoomsAtDates();
         _selectedRooms.Clear();
+        return result;
     }
 
     private async Task OpenOverlay()
