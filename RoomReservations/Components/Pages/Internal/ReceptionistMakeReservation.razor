@@ -109,7 +109,7 @@
         }
 
         // place reservation with selected user
-        var result = await _makeReservation.SaveReservation(_userToPlaceReservation);
+        _ = await _makeReservation.SaveReservation(_userToPlaceReservation);
     }
 
     private async Task SearchForUser()
@@ -136,10 +136,10 @@
             return $"{fieldName} musi zawierać przynajmniej 2 znaki!";
         if (char.IsLower(arg[0]))
             return $"{fieldName} musi zaczynać się z dużej litery!";
-        if (Regex.IsMatch(arg, @"[0-9]"))
-            return $"{fieldName} nie może zawierać cyfr!";
+        if (Regex.IsMatch(arg, @"[\d\W]"))
+            return $"{fieldName} nie może zawierać cyfr i znaków specjalnych!";
 
-        return null;
+        return "";
     }
 
 }
