@@ -2,31 +2,31 @@
 @using RoomReservations.Models
 @using RoomReservations.Data
 @using System.Text.RegularExpressions
+@using Microsoft.AspNetCore.Authorization
 @using System.ComponentModel.DataAnnotations
 @inject UserService UserService
+@attribute [Authorize(Roles = RoleNames.Receptionist)]
 <h3>Tworzenie rezerwacji dla klienta</h3>
 
-<MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6" @ref="_tabs">
+<MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6" @ref="_tabs" Border="true">
     <MudTabPanel Text="Nowy klient">
-        @* TODO: What if they already exist? *@
         <MudForm @ref="_newUserForm" @bind-IsValid="@_success" @bind-Errors="@_errors">
             <MudTextField T="string" Label="Email klienta" Required="true" RequiredError="Email jest wymagany!"
                           @ref="_email"
                           Validation="@(new EmailAddressAttribute { ErrorMessage = "Adres email jest nie poprawny!" })"/>
 
-            <div class="d-flex justify-space-between">
+            <div class="d-flex justify-space-between gap-4">
                 <MudTextField T="string" Label="Imię klienta" Required="true" RequiredError="Imię jest wymagane"
                               @ref="_firstName"
-                              Validation="@(new Func<string, string>(arg => AtLeast2NoDigitFirstUpper(arg, "Imię")))"/>
+                              Validation="@(new Func<string, string>(arg => AtLeast2Len_NoDigit_FirstUpper(arg, "Imię")))"/>
 
                 <MudTextField T="string" Label="Nazwisko klienta" Required="true" RequiredError="Nazwisko jest wymagane"
                               @ref="_lastName"
-                              Validation="@(new Func<string, string>(arg => AtLeast2NoDigitFirstUpper(arg, "Nazwisko")))"/>
+                              Validation="@(new Func<string, string>(arg => AtLeast2Len_NoDigit_FirstUpper(arg, "Nazwisko")))"/>
             </div>
         </MudForm>
     </MudTabPanel>
     <MudTabPanel Text="Obecny klient">
-        @* TODO: Find matching client by email or names *@
         <MudTextField T="string" Label="Email klienta" Required="true" RequiredError="Email jest wymagany!"
                       @ref="_email"
                       Validation="@(new EmailAddressAttribute { ErrorMessage = "Adres email jest nie poprawny!" })"/>
@@ -50,7 +50,7 @@
 <Alert @ref="_alert"></Alert>
 <div style="padding-top: 3em">
     <MudPaper Class="pa-6" Elevation="2">
-        <MakeReservation @ref="_makeReservation" HijackSubmit="Submit"></MakeReservation>
+        <MakeReservation @ref="_makeReservation" HijackSubmit="Submit" RedirectUrl="/internal/ViewAllReservations"></MakeReservation>
     </MudPaper>
 </div>
 
@@ -112,11 +112,6 @@
         var result = await _makeReservation.SaveReservation(_userToPlaceReservation);
     }
 
-    private void UserCreationFormValidChanged(bool isValid)
-    {
-        //_isUserReady = isValid;
-    }
-
     private async Task SearchForUser()
     {
         var user = await UserService.FindUserByEmailAsync(_email.Value);
@@ -130,7 +125,7 @@
     }
 
 
-    private static string AtLeast2NoDigitFirstUpper(string arg, string fieldName)
+    private static string AtLeast2Len_NoDigit_FirstUpper(string arg, string fieldName)
     {
         if (string.IsNullOrWhiteSpace(arg))
         {
