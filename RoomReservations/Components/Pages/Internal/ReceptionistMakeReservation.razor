@@ -1,0 +1,150 @@
+﻿@page "/internal/ReceptionistMakeReservation"
+@using RoomReservations.Models
+@using RoomReservations.Data
+@using System.Text.RegularExpressions
+@using System.ComponentModel.DataAnnotations
+@inject UserService UserService
+<h3>Tworzenie rezerwacji dla klienta</h3>
+
+<MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6" @ref="_tabs">
+    <MudTabPanel Text="Nowy klient">
+        @* TODO: What if they already exist? *@
+        <MudForm @ref="_newUserForm" @bind-IsValid="@_success" @bind-Errors="@_errors">
+            <MudTextField T="string" Label="Email klienta" Required="true" RequiredError="Email jest wymagany!"
+                          @ref="_email"
+                          Validation="@(new EmailAddressAttribute { ErrorMessage = "Adres email jest nie poprawny!" })"/>
+
+            <div class="d-flex justify-space-between">
+                <MudTextField T="string" Label="Imię klienta" Required="true" RequiredError="Imię jest wymagane"
+                              @ref="_firstName"
+                              Validation="@(new Func<string, string>(arg => AtLeast2NoDigitFirstUpper(arg, "Imię")))"/>
+
+                <MudTextField T="string" Label="Nazwisko klienta" Required="true" RequiredError="Nazwisko jest wymagane"
+                              @ref="_lastName"
+                              Validation="@(new Func<string, string>(arg => AtLeast2NoDigitFirstUpper(arg, "Nazwisko")))"/>
+            </div>
+        </MudForm>
+    </MudTabPanel>
+    <MudTabPanel Text="Obecny klient">
+        @* TODO: Find matching client by email or names *@
+        <MudTextField T="string" Label="Email klienta" Required="true" RequiredError="Email jest wymagany!"
+                      @ref="_email"
+                      Validation="@(new EmailAddressAttribute { ErrorMessage = "Adres email jest nie poprawny!" })"/>
+        <div style="padding-top: 1em">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SearchForUser">Wyszukaj</MudButton>
+        </div>
+        @if (_userToPlaceReservation is not null)
+        {
+            <MudText Typo="Typo.h6">Znaleziono użytkownika:</MudText>
+            <MudGrid Spacing="3">
+                <MudItem>
+                    <MudText>Imię: @_userToPlaceReservation.FirstName</MudText>
+                </MudItem>
+                <MudItem>
+                    <MudText>Nazwisko: @_userToPlaceReservation.LastName</MudText>
+                </MudItem>
+            </MudGrid>
+        }
+    </MudTabPanel>
+</MudTabs>
+<Alert @ref="_alert"></Alert>
+<div style="padding-top: 3em">
+    <MudPaper Class="pa-6" Elevation="2">
+        <MakeReservation @ref="_makeReservation" HijackSubmit="Submit"></MakeReservation>
+    </MudPaper>
+</div>
+
+@code {
+    MudForm _newUserForm = new();
+    bool _success;
+    string[] _errors = [];
+    MudTextField<string> _firstName = new();
+    MudTextField<string> _lastName = new();
+    MudTextField<string> _email = new();
+    MakeReservation _makeReservation = new();
+    //private bool _isUserReady;
+
+    MudTabs _tabs = new();
+
+    ApplicationUser? _userToPlaceReservation;
+    Alert _alert = new();
+
+    private async Task Submit()
+    {
+        // check what upper tab is selected
+        if (_tabs.ActivePanelIndex == 0)
+        {
+            // new client
+            if (_newUserForm.Validate().IsCompletedSuccessfully == false)
+            {
+                _alert.ShowAlert(Severity.Error, "Formularz zawiera błędy!");
+                return;
+            }
+
+            // check if client that we want to create already exists
+            if (await UserService.FindUserByEmailAsync(_email.Value) is not null)
+            {
+                _alert.ShowAlert(Severity.Error, "Użytkownik o tym adresie email już istnieje!");
+                return;
+            }
+
+            // create new client
+            try
+            {
+                _userToPlaceReservation = await UserService.AddUserAsync(_email.Value, _firstName.Value, _lastName.Value);
+            }
+            catch (Exception e)
+            {
+                _alert.ShowAlert(Severity.Error, $"Wystąpił błąd podczas tworzenia użytkownika! {e.Message}");
+                return;
+            }
+
+            _alert.ShowAlert(Severity.Info, "Użytkownik został utworzony.");
+        }
+
+        if (_userToPlaceReservation is null)
+        {
+            _alert.ShowAlert(Severity.Error, "Nie wybrano użytkownika!");
+            return;
+        }
+
+        // place reservation with selected user
+        var result = await _makeReservation.SaveReservation(_userToPlaceReservation);
+    }
+
+    private void UserCreationFormValidChanged(bool isValid)
+    {
+        //_isUserReady = isValid;
+    }
+
+    private async Task SearchForUser()
+    {
+        var user = await UserService.FindUserByEmailAsync(_email.Value);
+        if (user is null)
+        {
+            _alert.ShowAlert(Severity.Error, $"Użytkownik o adresie email {_email.Value} nie istnieje!");
+            return;
+        }
+
+        _userToPlaceReservation = user;
+    }
+
+
+    private static string AtLeast2NoDigitFirstUpper(string arg, string fieldName)
+    {
+        if (string.IsNullOrWhiteSpace(arg))
+        {
+            return $"{fieldName} jest wymagane!";
+        }
+
+        if (arg.Length < 2)
+            return $"{fieldName} musi zawierać przynajmniej 2 znaki!";
+        if (char.IsLower(arg[0]))
+            return $"{fieldName} musi zaczynać się z dużej litery!";
+        if (Regex.IsMatch(arg, @"[0-9]"))
+            return $"{fieldName} nie może zawierać cyfr!";
+
+        return null;
+    }
+
+}
