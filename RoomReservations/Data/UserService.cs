@@ -6,6 +6,11 @@ namespace RoomReservations.Data;
 
 public class UserService(UserManager<ApplicationUser> userManager)
 {
+    public List<ApplicationUser> GetAllUsers()
+    {
+        return userManager.Users.ToList();
+    }
+
     public async Task<ApplicationUser> AddUserAsync(string email, string firstName, string lastName)
     {
         var user = new ApplicationUser

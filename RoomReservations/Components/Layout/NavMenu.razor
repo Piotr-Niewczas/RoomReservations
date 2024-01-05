@@ -8,7 +8,7 @@
     </div>
 </div>
 
-<input type="checkbox" title="Navigation menu" class="navbar-toggler"/>
+<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
 
 <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
     <nav class="flex-column">
@@ -36,6 +36,13 @@
                 <AuthorizeView Roles="Receptionist, Employee, Admin">
                     <Authorized Context="allEmployees">
                         @* Employees only *@
+                        <div class="nav-item px-3">
+                            <NavLink class="nav-link" href="internal/ViewAllUsers">
+                                <span class="bi bi-gear-fill-nav-menu" aria-hidden="true"></span> Wszyscy
+                                użytkownicy
+                            </NavLink>
+                        </div>
+                        <MudDivider></MudDivider>
                         <div class="nav-item px-3">
                             <NavLink class="nav-link" href="internal/ViewAllReservations">
                                 <span class="bi bi-gear-fill-nav-menu" aria-hidden="true"></span> Wszystkie rezerwacje
@@ -70,8 +77,8 @@
                 </div>
                 <div class="nav-item px-3">
                     <form action="Account/Logout" method="post">
-                        <AntiforgeryToken/>
-                        <input type="hidden" name="ReturnUrl" value="@_currentUrl"/>
+                        <AntiforgeryToken />
+                        <input type="hidden" name="ReturnUrl" value="@_currentUrl" />
                         <button type="submit" class="nav-link">
                             <span class="bi bi-arrow-bar-left-nav-menu" aria-hidden="true"></span> Wyloguj
                         </button>
