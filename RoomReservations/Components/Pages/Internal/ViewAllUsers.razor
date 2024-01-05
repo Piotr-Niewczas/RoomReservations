@@ -3,7 +3,6 @@
 @using RoomReservations.Data
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.Authorization
-@inject IReservationService ReservationService
 @inject NavigationManager NavigationManager
 @inject SharedMethodsService SharedMethodsService
 
@@ -68,6 +67,8 @@
 
     protected override async Task OnInitializedAsync()
     {
+        _canEdit = await SharedMethodsService.IsCurrentUserInRoleAsync(RoleNames.Admin);
+
         _users = UserService.GetAllUsers();
         foreach (var user in _users)
         {
