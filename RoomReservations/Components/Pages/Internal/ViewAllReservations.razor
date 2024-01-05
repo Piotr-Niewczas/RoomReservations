@@ -16,20 +16,20 @@
             <MudTableSortLabel SortBy="(Reservation context) => context.Id">Id</MudTableSortLabel>
         </MudTh>
         <MudTh>
-            <MudTableSortLabel SortBy="(Reservation context) => context.StartDate">Start date</MudTableSortLabel>
+            <MudTableSortLabel SortBy="(Reservation context) => context.StartDate">Data meldunku</MudTableSortLabel>
         </MudTh>
         <MudTh>
-            <MudTableSortLabel SortBy="(Reservation context) => context.EndDate">End date</MudTableSortLabel>
+            <MudTableSortLabel SortBy="(Reservation context) => context.EndDate">Data odmeldowania</MudTableSortLabel>
         </MudTh>
         <MudTh>Rooms</MudTh>
         <MudTh>
-            <MudTableSortLabel SortBy="(Reservation context) => context.User.UserName">Creator</MudTableSortLabel>
+            <MudTableSortLabel SortBy="(Reservation context) => context.User.UserName">Email klienta</MudTableSortLabel>
         </MudTh>
         <MudTh>
-            <MudTableSortLabel SortBy="(Reservation context) => context.IsPaid">Is paid</MudTableSortLabel>
+            <MudTableSortLabel SortBy="(Reservation context) => context.IsPaid">Opłacono</MudTableSortLabel>
         </MudTh>
-        <MudTh>Is in progress</MudTh>
-        <MudTh>Edit</MudTh>
+        <MudTh>Czy jest w trakcie</MudTh>
+        <MudTh>Edycja</MudTh>
     </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="Id">@context.Id</MudTd>
@@ -37,17 +37,17 @@
         <MudTd DataLabel="End Date">@context.EndDate.ToShortDateString()</MudTd>
         <MudTd DataLabel="Rooms">@RoomsToString(context.RoomReservations)</MudTd>
         <MudTd DataLabel="Creator">@context.User.UserName</MudTd>
-        <MudTd DataLabel="Is Paid">@context.IsPaid</MudTd>
+        <MudTd DataLabel="Is Paid">@(context.IsPaid ? "Prawda" : "Fałsz")</MudTd>
         <MudTd DataLabel="Is in progress">NYI</MudTd>
         <MudTd DataLabel="Edit">
             <MudButton Disabled="@(!_canEdit)" Color="Color.Primary" Variant="Variant.Filled"
-                       OnClick="@(() => NavigationManager.NavigateTo($"/edit-reservation/{context.Id}"))">
-                Edit
+                OnClick="@(() => NavigationManager.NavigateTo($"/edit-reservation/{context.Id}"))">
+                Edytuj
             </MudButton>
         </MudTd>
     </RowTemplate>
     <PagerContent>
-        <MudTablePager PageSizeOptions="new[] { 15, 30, 100 }"/>
+        <MudTablePager PageSizeOptions="new[] { 15, 30, 100 }" />
     </PagerContent>
 </MudTable>
 
@@ -58,10 +58,10 @@
     protected override async Task OnInitializedAsync()
     {
         _reservations = await ReservationService.CreateReservationQuery()
-            .WithRooms()
-            .WithTransactions()
-            .WithUsers()
-            .ToListAsync();
+        .WithRooms()
+        .WithTransactions()
+        .WithUsers()
+        .ToListAsync();
 
         _canEdit = await SharedMethodsService.IsCurrentUserInRoleAsync(RoleNames.Receptionist);
     }
