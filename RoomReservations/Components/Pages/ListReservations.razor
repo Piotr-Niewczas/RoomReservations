@@ -9,14 +9,14 @@
 
 @if (!_showList)
 {
-    <MudText Typo="Typo.h2">Something went wrong.</MudText>
+    <MudText Typo="Typo.h2">Coś poszło nie tak.</MudText>
     <MudAlert Severity="Severity.Error">@_listLoadError</MudAlert>
-    <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="SharedMethodsService.GoBackAsync">Go back</MudButton>
+    <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="SharedMethodsService.GoBackAsync">Cofnij</MudButton>
     return;
 }
 
 
-<h3>List of your reservations:</h3>
+<h3>Twoje rezerwacje:</h3>
 @foreach (var reservation in _reservations)
 {
     <ViewReservation ReservationToDisplay="reservation"></ViewReservation>
@@ -28,7 +28,7 @@
     private List<Reservation> _reservations = [];
 
     private bool _showList;
-    private string _listLoadError = "Unknown error has occured";
+    private string _listLoadError = "Wystąpił nieznany błąd";
 
     protected override async Task OnInitializedAsync()
     {
@@ -39,7 +39,7 @@
 
         if (user is null)
         {
-            _listLoadError = error == GetCurrentUserError.UserNotLoggedIn ? "Please log in to view your reservations" : "Unknown error has occured";
+            _listLoadError = error == GetCurrentUserError.UserNotLoggedIn ? "Zaloguj się, aby przeglądać rezerwacje" : "Wystąpił nieznany błąd";
             return;
         }
 
