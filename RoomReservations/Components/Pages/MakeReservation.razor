@@ -16,12 +16,12 @@
     <MudPaper Class="pa-16 ma-2" Style="@("color:#4CAF50; background:#E0E0E0;")" Elevation="3">
         <MudText Typo="Typo.h2">@_overlayMessage</MudText>
         <br style="line-height: 3rem;"/>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ConfirmationOkClicked">See reservations</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ConfirmationOkClicked">Zobacz rezerwacje</MudButton>
     </MudPaper>
 </MudOverlay>
 
 <EditForm Model="@_reservation" OnSubmit="Submit" FormName="ReservationForm">
-    <MudSelect T="int" Label="Select Room" @bind-Value="@_selectedRoomId">
+    <MudSelect T="int" Label="Wybierz pokój" @bind-Value="@_selectedRoomId">
         @foreach (var room in _availableRoomsFromDb)
         {
             <MudSelectItem T="int" Value="@room.Id">@room.Name</MudSelectItem>
@@ -29,11 +29,11 @@
     </MudSelect>
     <br/>
     <br/>
-    <MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="AddSelectedRoom">Add Room</MudButton>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="AddSelectedRoom">Dodaj pokój</MudButton>
     <br/>
     <MudPaper Width="300px">
         <MudList Clickable="false">
-            <MudListSubheader>Selected rooms</MudListSubheader>
+            <MudListSubheader>Wybrane pokoje</MudListSubheader>
             @foreach (var selectedRoom in _selectedRooms)
             {
                 <MudListItem>@selectedRoom.Name</MudListItem>
@@ -41,10 +41,10 @@
         </MudList>
     </MudPaper>
     <br/>
-    <MudDateRangePicker Label="Basic range picker" @bind-DateRange="_dateRange" MinDate="@DateTime.Now.AddDays(-1)" PickerClosed="ReloadAvailableRoomsAtDates"/>
+    <MudDateRangePicker Label="Wybierz datę rezerwacji" @bind-DateRange="_dateRange" MinDate="@DateTime.Now.AddDays(-1)" PickerClosed="ReloadAvailableRoomsAtDates"/>
     <br/>
     <Alert @ref="_alert"></Alert>
-    <MudButton Variant="Variant.Filled" Color="Color.Primary" ButtonType="ButtonType.Submit" Disabled="DisableSubmit">Submit</MudButton>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" ButtonType="ButtonType.Submit" Disabled="DisableSubmit">Rezerwuj</MudButton>
 </EditForm>
 
 
@@ -62,7 +62,7 @@
     private Alert _alert = new();
 
     private bool _isOverlayVisible;
-    private string _overlayMessage = "Saving...";
+    private string _overlayMessage = "Zapisywanie...";
 
     protected override async Task OnInitializedAsync()
     {
@@ -106,7 +106,7 @@
             var (user, error) = await SharedMethodsService.GetCurrentUserAsync();
             if (user is null)
             {
-                var msg = error == GetCurrentUserError.UserNotLoggedIn ? "Please log in to make reservations" : "Unknown error has occured";
+                var msg = error == GetCurrentUserError.UserNotLoggedIn ? "Zaloguj się, aby dokonać rezerwacji" : "Wystąpił nieoczekiwany błąd";
                 _alert.ShowAlert(Severity.Error, msg);
                 return;
             }
@@ -121,13 +121,13 @@
     {
         if (!_selectedRooms.Any())
         {
-            _alert.ShowAlert(Severity.Error, "Please select at least one room");
+            _alert.ShowAlert(Severity.Error, "Wybierz przynajmniej jeden pokój");
             return false;
         }
 
         if (_dateRange.Start is null || _dateRange.End is null)
         {
-            _alert.ShowAlert(Severity.Error, "Please select reservation dates");
+            _alert.ShowAlert(Severity.Error, "Wybierz datę rezerwacji");
             return false;
         }
 
@@ -141,7 +141,7 @@
 
         var result = await ReservationService.AddReservationAsync(_reservation, _selectedRooms);
 
-        ChangeOverlayMessage(!result ? "Something went wrong" : "Reservation added successfully");
+        ChangeOverlayMessage(!result ? "Coś poszło nie tak" : "Pomyślnie dodano rezerwację");
 
         _reservation = new Reservation();
         await ReloadAvailableRoomsAtDates();
