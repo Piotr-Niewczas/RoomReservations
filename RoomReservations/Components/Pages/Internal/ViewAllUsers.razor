@@ -51,7 +51,7 @@
         <MudTd DataLabel="Roles">@_usersToRoles[context]</MudTd>
         <MudTd DataLabel="Edit">
             <MudButton Disabled="@(!_canEdit)" Color="Color.Primary" Variant="Variant.Filled"
-                       OnClick="@(() => NavigationManager.NavigateTo($"/edit-user/{context.Id}"))">
+                       OnClick="@(() => NavigationManager.NavigateTo($"/internal/edit-user/{context.Id}"))">
                 Edytuj
             </MudButton>
         </MudTd>
