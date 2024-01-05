@@ -4,17 +4,17 @@
 <MudCard>
     <MudCardContent>
         <MudText Typo="Typo.h6">Reservation Details</MudText>
-        <MudText>Reservation ID: @ReservationToDisplay.Id</MudText>
-        <MudText>Customer Name: @ReservationToDisplay.User.UserName </MudText>
-        <MudText>Reservation Date: @ReservationToDisplay.StartDate.ToString("dd.MM") - @ReservationToDisplay.EndDate.ToString("dd.MM.yyyy")</MudText>
+        <MudText>ID rezerwacji: @ReservationToDisplay.Id</MudText>
+        <MudText>Email klienta: @ReservationToDisplay.User.UserName </MudText>
+        <MudText>Data rezerwacji: @ReservationToDisplay.StartDate.ToString("dd.MM") - @ReservationToDisplay.EndDate.ToString("dd.MM.yyyy")</MudText>
         @foreach (var rr in ReservationToDisplay.RoomReservations)
         {
-            <MudText>Room Name: @rr.Room.Name</MudText>
+            <MudText>Nazwa pokoju: @rr.Room.Name</MudText>
         }
     </MudCardContent>
     <MudCardActions>
         <div style="flex-grow: 1;"></div>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => NavigateToEditPage())">Edit</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => NavigateToEditPage())">Edytuj</MudButton>
     </MudCardActions>
 </MudCard>
 
