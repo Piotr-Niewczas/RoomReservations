@@ -1,0 +1,136 @@
+﻿@page "/internal/edit-user/{id}"
+@using RoomReservations.Models
+@using Microsoft.AspNetCore.Identity
+@using System.Text.RegularExpressions
+@using Microsoft.AspNetCore.Authorization
+@using System.ComponentModel.DataAnnotations
+@inject UserManager<ApplicationUser> UserManager
+@inject SharedMethodsService SharedMethodsService
+
+@attribute [Authorize(Roles = RoleNames.Admin)]
+<h3>Edytuj dane użytkownika</h3>
+
+@if (_userToEdit is null)
+{
+    <p>Użytkownik nie istnieje</p>
+    return;
+}
+<MudForm @ref="_editUserForm" Style="position: relative">
+    <MudOverlay Visible="_isDeletedOverlayVisible" Style="background-color: rgba(0, 0, 0, 0.5) !important" Absolute="true">
+        <MudPaper Class="pa-16 ma-2" Elevation="3">
+            <MudText Typo="Typo.h4">Użytkownik usunięty</MudText>
+        </MudPaper>
+    </MudOverlay>
+    <MudTextField T="string" Label="Email klienta" Required="true" RequiredError="Email jest wymagany!"
+                  @bind-Text="_userToEdit.Email"
+                  Validation="@(new EmailAddressAttribute { ErrorMessage = "Adres email jest nie poprawny!" })"/>
+
+    <div class="d-flex justify-space-between gap-4">
+        <MudTextField T="string" Label="Imię klienta" Required="true" RequiredError="Imię jest wymagane"
+                      @bind-Text="_userToEdit.FirstName"
+                      Validation="@(new Func<string, string>(arg => AtLeast2Len_NoDigit_FirstUpper(arg, "Imię")))"/>
+
+        <MudTextField T="string" Label="Nazwisko klienta" Required="true" RequiredError="Nazwisko jest wymagane"
+                      @bind-Text="_userToEdit.LastName"
+                      Validation="@(new Func<string, string>(arg => AtLeast2Len_NoDigit_FirstUpper(arg, "Nazwisko")))"/>
+    </div>
+
+    <MudTextField T="string" Label="Nr tel klienta" Required="false"
+                  @bind-Text="_userToEdit.PhoneNumber"
+                  Validation="@(new PhoneAttribute { ErrorMessage = "Nr tel jest nie poprawny!" })"/>
+
+    <MudSelect T="string" Label="Rola" @bind-Value="@_selectedRoleName">
+        @foreach (var role in RoleNames.Roles)
+        {
+            <MudSelectItem T="string" Value="@role">@role</MudSelectItem>
+        }
+    </MudSelect>
+</MudForm>
+<MudGrid Spacing="10" Justify="Justify.Center" Style="padding-top: 1em">
+    <MudItem>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(_editUserForm.IsValid || _isDeletedOverlayVisible)" OnClick="SaveUser">Zapisz</MudButton>
+    </MudItem>
+
+    <MudItem>
+        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="@_isDeletedOverlayVisible" OnClick="DeleteUser">Usuń</MudButton>
+    </MudItem>
+
+    <MudItem>
+        <MudButton Variant="Variant.Filled" Color="@(_isDeletedOverlayVisible ? Color.Primary : Color.Default)" OnClick="SharedMethodsService.GoBackAsync">Wróć</MudButton>
+    </MudItem>
+</MudGrid>
+<Alert @ref="_alert"></Alert>
+
+@code {
+    [Parameter] public string Id { get; set; } = string.Empty;
+    MudForm _editUserForm = new();
+    ApplicationUser? _userToEdit = new();
+    string _selectedRoleName = "";
+    Alert _alert = new();
+    bool _isDeletedOverlayVisible;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _userToEdit = await UserManager.FindByIdAsync(Id);
+        if (_userToEdit is not null)
+        {
+            _selectedRoleName = (await UserManager.GetRolesAsync(_userToEdit)).FirstOrDefault() ?? "Brak roli";
+        }
+    }
+
+    private async Task SaveUser()
+    {
+        if (_userToEdit is null)
+        {
+            return;
+        }
+
+        if (_editUserForm.Validate().IsCompletedSuccessfully == false)
+        {
+            _alert.ShowAlert(Severity.Error, "Formularz zawiera błędy!");
+            return;
+        }
+
+        _userToEdit.UserName = _userToEdit.Email;
+        var result = await UserManager.UpdateAsync(_userToEdit);
+        if (result.Succeeded)
+        {
+            await UserManager.RemoveFromRolesAsync(_userToEdit, await UserManager.GetRolesAsync(_userToEdit));
+            await UserManager.AddToRoleAsync(_userToEdit, _selectedRoleName);
+            _alert.ShowAlert(Severity.Success, "Zapisano pomyślnie");
+        }
+        else
+        {
+            _alert.ShowAlert(Severity.Error, "Wystąpił błąd: " + result.Errors.FirstOrDefault()?.Description);
+        }
+    }
+
+    private async Task DeleteUser()
+    {
+        if (_userToEdit is null)
+        {
+            return;
+        }
+
+        _isDeletedOverlayVisible = true;
+        await UserManager.DeleteAsync(_userToEdit);
+    }
+
+    private static string AtLeast2Len_NoDigit_FirstUpper(string arg, string fieldName)
+    {
+        if (string.IsNullOrWhiteSpace(arg))
+        {
+            return $"{fieldName} jest wymagane!";
+        }
+
+        if (arg.Length < 2)
+            return $"{fieldName} musi zawierać przynajmniej 2 znaki!";
+        if (char.IsLower(arg[0]))
+            return $"{fieldName} musi zaczynać się z dużej litery!";
+        if (Regex.IsMatch(arg, @"[\d\W]"))
+            return $"{fieldName} nie może zawierać cyfr i znaków specjalnych!";
+
+        return "";
+    }
+
+}
