@@ -1,0 +1,92 @@
+@page "/internal/ViewAllUsers"
+@using RoomReservations.Data
+@using RoomReservations.Models
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Authorization
+@inject IReservationService ReservationService
+@inject NavigationManager NavigationManager
+@inject SharedMethodsService SharedMethodsService
+
+@inject UserService UserService;
+@inject UserManager<ApplicationUser> UserManager;
+@using Microsoft.AspNetCore.Identity;
+
+
+@attribute [Authorize(Roles = $"{RoleNames.Receptionist}, {RoleNames.Admin}, {RoleNames.Employee}")]
+<h3>View All Reservations</h3>
+
+<MudTable Items="@_users" Hover="true" SortLabel="Sort By">
+    <HeaderContent>
+        <MudTh>
+            <MudTableSortLabel SortBy="((ApplicationUser, List<string>) context) => context.Item1.Id">Id</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="((ApplicationUser, List<string>) context) => context.Item1.FirstName">Imię
+            </MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="((ApplicationUser, List<string>) context) => context.Item1.LastName">Nazwisko
+            </MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="((ApplicationUser, List<string>) context) => context.Item1.Email">Email
+            </MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="((ApplicationUser, List<string>) context) => context.Item1.UserName">Nazwa
+                użytkownika
+            </MudTableSortLabel>
+        </MudTh>
+        <MudTh>Role</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Id">@context.Item1.Id</MudTd>
+        <MudTd DataLabel="First name">@context.FirstName</MudTd>
+        <MudTd DataLabel="Last name">@context.LastName</MudTd>
+        @* <MudTd DataLabel="Roles">@context.Role</MudTd> *@
+        <MudTd DataLabel="Edit">
+            <MudButton Disabled="@(!_canEdit)" Color="Color.Primary" Variant="Variant.Filled"
+                OnClick="@(() => NavigationManager.NavigateTo($"/edit-user/{context.Id}"))">
+                Edytuj
+            </MudButton>
+        </MudTd>
+    </RowTemplate>
+    <PagerContent>
+        <MudTablePager PageSizeOptions="new[] { 15, 30, 100 }" />
+    </PagerContent>
+</MudTable>
+
+@code {
+    List<(ApplicationUser, List<string>)> _users = [];
+    bool _canEdit;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Get all users and map them to a tuple of (ApplicationUser, string) where string is the role
+        var users = UserManager.Users.ToList();
+
+        // Get user roles
+        foreach (var user in users)
+        {
+            var userTuple = (user, new List<string>());
+            // If role is empty, set it to "User"
+            var role = await UserManager.GetRolesAsync(userTuple.Item1);
+            if (role == null)
+            {
+                userTuple.Item2 = new List<string> { "User" };
+            }
+            else
+            {
+                userTuple.Item2 = role.ToList();
+            }
+
+        }
+
+        _canEdit = await SharedMethodsService.IsCurrentUserInRoleAsync(RoleNames.Admin);
+    }
+
+    private static string RolesToString(IEnumerable<string> roles)
+    {
+        return string.Join(", ", roles);
+    }
+}
