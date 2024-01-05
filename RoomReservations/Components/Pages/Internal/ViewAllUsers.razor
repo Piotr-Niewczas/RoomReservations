@@ -1,7 +1,7 @@
 @page "/internal/ViewAllUsers"
-@using RoomReservations.Data
 @using RoomReservations.Models
-@using Microsoft.EntityFrameworkCore
+@using RoomReservations.Data
+@using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.Authorization
 @inject IReservationService ReservationService
 @inject NavigationManager NavigationManager
@@ -9,7 +9,6 @@
 
 @inject UserService UserService;
 @inject UserManager<ApplicationUser> UserManager;
-@using Microsoft.AspNetCore.Identity;
 
 
 @attribute [Authorize(Roles = $"{RoleNames.Receptionist}, {RoleNames.Admin}, {RoleNames.Employee}")]
@@ -18,75 +17,68 @@
 <MudTable Items="@_users" Hover="true" SortLabel="Sort By">
     <HeaderContent>
         <MudTh>
-            <MudTableSortLabel SortBy="((ApplicationUser, List<string>) context) => context.Item1.Id">Id</MudTableSortLabel>
+            <MudTableSortLabel SortBy="(ApplicationUser context) => context.Id">Id</MudTableSortLabel>
         </MudTh>
         <MudTh>
-            <MudTableSortLabel SortBy="((ApplicationUser, List<string>) context) => context.Item1.FirstName">Imię
+            <MudTableSortLabel SortBy="(ApplicationUser context) => context.FirstName">
+                Imię
             </MudTableSortLabel>
         </MudTh>
         <MudTh>
-            <MudTableSortLabel SortBy="((ApplicationUser, List<string>) context) => context.Item1.LastName">Nazwisko
+            <MudTableSortLabel SortBy="(ApplicationUser context) => context.LastName">
+                Nazwisko
             </MudTableSortLabel>
         </MudTh>
         <MudTh>
-            <MudTableSortLabel SortBy="((ApplicationUser, List<string>) context) => context.Item1.Email">Email
+            <MudTableSortLabel SortBy="(ApplicationUser context) => context.Email ?? string.Empty">
+                Email
             </MudTableSortLabel>
         </MudTh>
         <MudTh>
-            <MudTableSortLabel SortBy="((ApplicationUser, List<string>) context) => context.Item1.UserName">Nazwa
-                użytkownika
+            <MudTableSortLabel SortBy="(ApplicationUser context) => _usersToRoles[context]">
+                Role
             </MudTableSortLabel>
         </MudTh>
-        <MudTh>Role</MudTh>
+        <MudTh>
+            Edytuj
+        </MudTh>
     </HeaderContent>
     <RowTemplate>
-        <MudTd DataLabel="Id">@context.Item1.Id</MudTd>
+        <MudTd DataLabel="Id">@context.Id</MudTd>
         <MudTd DataLabel="First name">@context.FirstName</MudTd>
         <MudTd DataLabel="Last name">@context.LastName</MudTd>
-        @* <MudTd DataLabel="Roles">@context.Role</MudTd> *@
+        <MudTd DataLabel="Email">@context.Email</MudTd>
+        <MudTd DataLabel="Roles">@_usersToRoles[context]</MudTd>
         <MudTd DataLabel="Edit">
             <MudButton Disabled="@(!_canEdit)" Color="Color.Primary" Variant="Variant.Filled"
-                OnClick="@(() => NavigationManager.NavigateTo($"/edit-user/{context.Id}"))">
+                       OnClick="@(() => NavigationManager.NavigateTo($"/edit-user/{context.Id}"))">
                 Edytuj
             </MudButton>
         </MudTd>
     </RowTemplate>
     <PagerContent>
-        <MudTablePager PageSizeOptions="new[] { 15, 30, 100 }" />
+        <MudTablePager PageSizeOptions="new[] { 15, 30, 100 }"/>
     </PagerContent>
 </MudTable>
 
 @code {
-    List<(ApplicationUser, List<string>)> _users = [];
+    readonly Dictionary<ApplicationUser, string> _usersToRoles = new();
+    List<ApplicationUser> _users = [];
     bool _canEdit;
 
     protected override async Task OnInitializedAsync()
     {
-        // Get all users and map them to a tuple of (ApplicationUser, string) where string is the role
-        var users = UserManager.Users.ToList();
-
-        // Get user roles
-        foreach (var user in users)
+        _users = UserService.GetAllUsers();
+        foreach (var user in _users)
         {
-            var userTuple = (user, new List<string>());
-            // If role is empty, set it to "User"
-            var role = await UserManager.GetRolesAsync(userTuple.Item1);
-            if (role == null)
-            {
-                userTuple.Item2 = new List<string> { "User" };
-            }
-            else
-            {
-                userTuple.Item2 = role.ToList();
-            }
-
+            _usersToRoles.Add(user, await GetRolesForUser(user));
         }
-
-        _canEdit = await SharedMethodsService.IsCurrentUserInRoleAsync(RoleNames.Admin);
     }
 
-    private static string RolesToString(IEnumerable<string> roles)
+    private async Task<string> GetRolesForUser(ApplicationUser user)
     {
+        var roles = await UserManager.GetRolesAsync(user);
         return string.Join(", ", roles);
     }
+
 }
