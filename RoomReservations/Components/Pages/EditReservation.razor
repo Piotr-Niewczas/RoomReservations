@@ -9,9 +9,9 @@
 
 @if (!_showForm)
 {
-    <MudText Typo="Typo.h2">Something went wrong.</MudText>
+    <MudText Typo="Typo.h2">Coś poszło nie tak.</MudText>
     <MudAlert Severity="Severity.Error">@_formLoadError</MudAlert>
-    <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="SharedMethodsService.GoBackAsync">Go back</MudButton>
+    <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="SharedMethodsService.GoBackAsync">Wróć</MudButton>
     return;
 }
 
@@ -19,14 +19,14 @@
     <MudCardContent Style="position: relative;">
         <MudOverlay Visible="_isOverlayVisible" Style="background-color: rgba(0, 0, 0, 0.5) !important" Absolute="true">
             <MudPaper Class="pa-16 ma-2" Elevation="3">
-                <MudText Typo="Typo.h4">Reservation deleted</MudText>
+                <MudText Typo="Typo.h4">Rezerwacja usunięta</MudText>
             </MudPaper>
         </MudOverlay>
-        <MudText Typo="Typo.h6">Edit Reservation</MudText>
-        <MudText>Reservation ID: @_reservationToEdit.Id</MudText>
-        <MudText>Customer Name: @_reservationToEdit.User.UserName </MudText>
-        <MudDateRangePicker Label="Reservation Date Picker" @bind-DateRange="_dateRange" MinDate="@DateTime.Now.AddDays(-1)" PickerClosed="DatePickerClosed"/>
-        <MudText>Rooms:</MudText>
+        <MudText Typo="Typo.h6">Edytuj rezerwację</MudText>
+        <MudText>ID rezerwacji: @_reservationToEdit.Id</MudText>
+        <MudText>Email klienta: @_reservationToEdit.User.UserName </MudText>
+        <MudDateRangePicker Label="Zmień datę rezerwacji" @bind-DateRange="_dateRange" MinDate="@DateTime.Now.AddDays(-1)" PickerClosed="DatePickerClosed"/>
+        <MudText>Pokoje:</MudText>
         @foreach (var rr in _reservationToEdit.RoomReservations)
         {
             <MudText>"@rr.Room.Name"</MudText>
@@ -35,15 +35,15 @@
     <MudCardActions>
         <MudGrid Spacing="10" Justify="Justify.Center">
             <MudItem>
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(_isDataIncorrect || _isOverlayVisible)" OnClick="SaveChanges">Save</MudButton>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(_isDataIncorrect || _isOverlayVisible)" OnClick="SaveChanges">Zapisz</MudButton>
             </MudItem>
 
             <MudItem>
-                <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="@_isOverlayVisible" OnClick="DeleteReservation">Delete</MudButton>
+                <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="@_isOverlayVisible" OnClick="DeleteReservation">Odwołaj rezerwację</MudButton>
             </MudItem>
 
             <MudItem>
-                <MudButton Variant="Variant.Filled" Color="@(_isOverlayVisible ? Color.Primary : Color.Default)" OnClick="SharedMethodsService.GoBackAsync">Go back</MudButton>
+                <MudButton Variant="Variant.Filled" Color="@(_isOverlayVisible ? Color.Primary : Color.Default)" OnClick="SharedMethodsService.GoBackAsync">Wróć</MudButton>
             </MudItem>
         </MudGrid>
     </MudCardActions>
@@ -59,7 +59,7 @@
     private Alert _alert = new();
     private bool _isDataIncorrect = true;
     private bool _showForm;
-    private string _formLoadError = "Unknown error has occured";
+    private string _formLoadError = "Wystąpił nieznany błąd";
     private bool _isOverlayVisible;
     private bool _isUserReceptionist;
 
@@ -70,7 +70,7 @@
         var reservationsFromDb = await ReservationService.CreateReservationQuery().WhereId(Id).WithRooms().ToListAsync();
         if (reservationsFromDb.Count != 1)
         {
-            _formLoadError = "Reservation not found";
+            _formLoadError = "Rezerwacja o podanym ID nie istnieje";
             return;
         }
 
@@ -80,7 +80,7 @@
 
         if (user is null)
         {
-            _formLoadError = error == GetCurrentUserError.UserNotLoggedIn ? "Please log in to edit your reservation" : "Unknown error has occured";
+            _formLoadError = error == GetCurrentUserError.UserNotLoggedIn ? "Zaloguj się, aby edytować rezerwacje" : "Wystąpił nieznany błąd";
             return;
         }
 
@@ -95,7 +95,7 @@
         else
         {
             _reservationToEdit = new Reservation(); // Clear the reservation
-            _formLoadError = "This reservation does not belong to you!";
+            _formLoadError = "Ta rezerwacja nie należy do Ciebie";
         }
     }
 
@@ -114,7 +114,7 @@
         {
             _isDataIncorrect = true;
             var collidingRoomNames = string.Join(", ", collidingReservations.SelectMany(r => r.RoomReservations.Select(rr => rr.Room.Name)).Distinct().ToList());
-            _alert.ShowAlert(Severity.Error, $"Room '{collidingRoomNames}' is not available at the given dates");
+            _alert.ShowAlert(Severity.Error, $"Pokój '{collidingRoomNames}' nie jest dostępny w podanym terminie");
             return;
         }
 
@@ -132,12 +132,12 @@
         if (!wasSuccessful)
         {
             // Show error alert
-            _alert.ShowAlert(Severity.Error, "An error occured while updating the reservation");
+            _alert.ShowAlert(Severity.Error, "Wystąpił błąd podczas aktualizacji rezerwacji");
             return;
         }
 
         // Show success alert
-        _alert.ShowAlert(Severity.Success, "Reservation updated successfully");
+        _alert.ShowAlert(Severity.Success, "Zaktualizowano rezerwację pomyślnie");
         _isDataIncorrect = true; // Disable save button
     }
 
@@ -148,7 +148,7 @@
         {
             _isOverlayVisible = true;
         }
-        else _alert.ShowAlert(Severity.Error, "Could not delete reservation.");
+        else _alert.ShowAlert(Severity.Error, "Nie udało się usunąć rezerwacji");
     }
 
 }
