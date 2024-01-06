@@ -84,8 +84,14 @@ public class ReservationService(ApplicationDbContext context) : IReservationServ
 
     public async Task<bool> DeleteReservationAsync(int id)
     {
-        var reservation = await context.Reservations.FindAsync(id);
+        var reservation = await context.Reservations.Include(r => r.ReservationTransactions)
+            .ThenInclude(rt => rt.Transaction)
+            .FirstOrDefaultAsync(r => r.Id == id);
         if (reservation == null) return false;
+
+        // Delete all transactions, as they are not deleted automatically
+        foreach (var reservationTransaction in reservation.ReservationTransactions)
+            context.Transactions.Remove(reservationTransaction.Transaction);
 
         context.Reservations.Remove(reservation);
         await context.SaveChangesAsync();
