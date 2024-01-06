@@ -31,6 +31,7 @@ public class TransactionService(ApplicationDbContext context) : ITransactionServ
             }
         };
         reservation.ReservationTransactions.Add(reservationTransaction);
+        UpdateReservationPaidStatus(reservation);
         await context.SaveChangesAsync();
         return reservationTransaction.Transaction.Id;
     }
@@ -39,13 +40,25 @@ public class TransactionService(ApplicationDbContext context) : ITransactionServ
     {
         var reservationTransaction = context.ReservationTransactions
             .Include(rt => rt.Transaction)
+            .Include(rt => rt.Reservation)
             .First(rt => rt.Transaction.Id == transactionId);
         reservationTransaction.Transaction.AccountingDate = DateTime.Now;
+        UpdateReservationPaidStatus(reservationTransaction.Reservation);
         await context.SaveChangesAsync();
     }
 
     public IQueryable<Transaction> CreateTransactionQuery()
     {
         return new QueryFactory(context).Create<Transaction>();
+    }
+
+    /// <summary>
+    /// When all positive transactions are paid, set reservation as paid. Does not save changes.
+    /// </summary>
+    /// <param name="reservation"></param>
+    private static void UpdateReservationPaidStatus(Reservation reservation)
+    {
+        reservation.IsPaid = reservation.ReservationTransactions.Where(rt => rt.Transaction.Amount > 0)
+            .All(rt => rt.Transaction.AccountingDate != null);
     }
 }
