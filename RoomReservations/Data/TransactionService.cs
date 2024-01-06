@@ -15,6 +15,8 @@ public interface ITransactionService
 
     Task PayTransactionAsync(int transactionId);
     IQueryable<Transaction> CreateTransactionQuery();
+    Task<Transaction> CreateAdjustmentTransactionAsync(Reservation reservation, decimal howMuchShouldBeLeft);
+    decimal GetTotalPaidForReservationAsync(Reservation reservation);
 }
 
 public class TransactionService(ApplicationDbContext context) : ITransactionService
@@ -47,13 +49,51 @@ public class TransactionService(ApplicationDbContext context) : ITransactionServ
         await context.SaveChangesAsync();
     }
 
+    /// <summary>
+    ///     Checks how much user has paid for the reservation and creates an adjustment transaction if necessary.
+    /// </summary>
+    /// <param name="reservation">Reservation to get transactions from.</param>
+    /// <param name="howMuchShouldBeLeft">What should be total amount paid by user. E.g. 0 for full refund.</param>
+    /// <returns>Transaction to cover difference</returns>
+    public async Task<Transaction> CreateAdjustmentTransactionAsync(Reservation reservation,
+        decimal howMuchShouldBeLeft)
+    {
+        var balance = GetTotalPaidForReservationAsync(reservation);
+
+        var diffTransaction = new Transaction
+        {
+            Amount = howMuchShouldBeLeft - balance,
+            EntryDate = DateTime.Now
+        };
+        if (howMuchShouldBeLeft - balance < 0) // If it's a refund, set accounting date to now
+            diffTransaction.AccountingDate = DateTime.Now;
+        reservation.ReservationTransactions.Add(new ReservationTransaction
+        {
+            Reservation = reservation,
+            Transaction = diffTransaction
+        });
+        UpdateReservationPaidStatus(reservation);
+        await context.SaveChangesAsync();
+
+        return diffTransaction;
+    }
+
+    public decimal GetTotalPaidForReservationAsync(Reservation reservation)
+    {
+        var transactions = reservation.ReservationTransactions
+            .Select(rt => rt.Transaction)
+            .ToList();
+        var balance = transactions.Sum(t => t.Amount);
+        return balance;
+    }
+
     public IQueryable<Transaction> CreateTransactionQuery()
     {
         return new QueryFactory(context).Create<Transaction>();
     }
 
     /// <summary>
-    /// When all positive transactions are paid, set reservation as paid. Does not save changes.
+    ///     When all positive transactions are paid, set reservation as paid. Does not save changes.
     /// </summary>
     /// <param name="reservation"></param>
     private static void UpdateReservationPaidStatus(Reservation reservation)
