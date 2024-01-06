@@ -5,6 +5,7 @@
 @using Microsoft.AspNetCore.Authorization
 @inject IReservationService ReservationService
 @inject SharedMethodsService SharedMethodsService
+@inject ITransactionService TransactionService
 @attribute [Authorize]
 
 @if (!_showForm)
@@ -17,9 +18,25 @@
 
 <MudCard>
     <MudCardContent Style="position: relative;">
-        <MudOverlay Visible="_isOverlayVisible" Style="background-color: rgba(0, 0, 0, 0.5) !important" Absolute="true">
+        <MudOverlay Visible="_isDeletedOverlayVisible" Style="background-color: rgba(0, 0, 0, 0.5) !important" Absolute="true">
             <MudPaper Class="pa-16 ma-2" Elevation="3">
                 <MudText Typo="Typo.h4">Rezerwacja usunięta</MudText>
+                <MudText>
+                    Kwota rezerwacji w wysokości
+                    @if (_transaction != null) @_transaction.Amount
+                    zostanie zwrócona na konto.
+                </MudText>
+            </MudPaper>
+        </MudOverlay>
+        <MudOverlay Visible="_isPaymentOverlayVisible" Style="background-color: rgba(0, 0, 0, 0.5) !important" Absolute="true">
+            <MudPaper Class="pa-16 ma-2" Elevation="3">
+                @if (_transaction is not null)
+                {
+                    <MudText Typo="Typo.h4">@(_transaction.Amount > 0 ? "Wymagana dopłata" : "") </MudText>
+                    <PaymentWindow Amount="@_transaction.Amount" TransactionId="_transaction.Id"
+                                   OnPaymentCompleted="() => _isPaymentOverlayVisible = false">
+                    </PaymentWindow>
+                }
             </MudPaper>
         </MudOverlay>
         <MudText Typo="Typo.h6">Edytuj rezerwację</MudText>
@@ -31,19 +48,24 @@
         {
             <MudText>"@rr.Room.Name"</MudText>
         }
+        <div style="padding-top: 2em;">
+            <MudText>Zapłacono: @_amountAlreadyPaid</MudText>
+            <MudText>Koszt po edycji: @_amountAfterEdit</MudText>
+            <MudText>Różnica do zapłaty: @(_amountAfterEdit - _amountAlreadyPaid) </MudText>
+        </div>
     </MudCardContent>
     <MudCardActions>
         <MudGrid Spacing="10" Justify="Justify.Center">
             <MudItem>
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(_isDataIncorrect || _isOverlayVisible)" OnClick="SaveChanges">Zapisz</MudButton>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(_isDataIncorrect || _isDeletedOverlayVisible)" OnClick="SaveChanges">Zapisz</MudButton>
             </MudItem>
 
             <MudItem>
-                <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="@_isOverlayVisible" OnClick="DeleteReservation">Odwołaj rezerwację</MudButton>
+                <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="@_isDeletedOverlayVisible" OnClick="DeleteReservation">Odwołaj rezerwację</MudButton>
             </MudItem>
 
             <MudItem>
-                <MudButton Variant="Variant.Filled" Color="@(_isOverlayVisible ? Color.Primary : Color.Default)" OnClick="SharedMethodsService.GoBackAsync">Wróć</MudButton>
+                <MudButton Variant="Variant.Filled" Color="@(_isDeletedOverlayVisible ? Color.Primary : Color.Default)" OnClick="SharedMethodsService.GoBackAsync">Wróć</MudButton>
             </MudItem>
         </MudGrid>
     </MudCardActions>
@@ -60,14 +82,19 @@
     private bool _isDataIncorrect = true;
     private bool _showForm;
     private string _formLoadError = "Wystąpił nieznany błąd";
-    private bool _isOverlayVisible;
+    private bool _isDeletedOverlayVisible;
     private bool _isUserReceptionist;
+
+    private Transaction? _transaction;
+    private decimal _amountAlreadyPaid;
+    private decimal _amountAfterEdit;
+    private bool _isPaymentOverlayVisible;
 
     protected override async Task OnInitializedAsync()
     {
         // please note that we cannot use _alert.ShowAlert() here because it is not yet initialized
 
-        var reservationsFromDb = await ReservationService.CreateReservationQuery().WhereId(Id).WithRooms().ToListAsync();
+        var reservationsFromDb = await ReservationService.CreateReservationQuery().WhereId(Id).WithRooms().WithTransactions().ToListAsync();
         if (reservationsFromDb.Count != 1)
         {
             _formLoadError = "Rezerwacja o podanym ID nie istnieje";
@@ -96,7 +123,11 @@
         {
             _reservationToEdit = new Reservation(); // Clear the reservation
             _formLoadError = "Ta rezerwacja nie należy do Ciebie";
+            return;
         }
+
+        _amountAlreadyPaid = TransactionService.GetTotalPaidForReservationAsync(_reservationToEdit);
+        _amountAfterEdit = _amountAlreadyPaid;
     }
 
     private async void DatePickerClosed()
@@ -123,6 +154,7 @@
         _reservationToEdit.EndDate = _dateRange.End ?? _reservationToEdit.EndDate;
 
         _isDataIncorrect = false;
+        RecalculateTotalPrice();
     }
 
     private async Task SaveChanges()
@@ -139,16 +171,34 @@
         // Show success alert
         _alert.ShowAlert(Severity.Success, "Zaktualizowano rezerwację pomyślnie");
         _isDataIncorrect = true; // Disable save button
+
+        // Check if need to create a transaction
+        if (_amountAfterEdit != _amountAlreadyPaid)
+        {
+            _transaction = await TransactionService.CreateAdjustmentTransactionAsync(_reservationToEdit, _amountAfterEdit);
+            _isPaymentOverlayVisible = true;
+        }
     }
 
     private async Task DeleteReservation()
     {
+        _transaction = await TransactionService.CreateAdjustmentTransactionAsync(_reservationToEdit, 0);
         var result = await ReservationService.DeleteReservationAsync(_reservationToEdit.Id);
         if (result)
         {
-            _isOverlayVisible = true;
+            _isDeletedOverlayVisible = true;
         }
         else _alert.ShowAlert(Severity.Error, "Nie udało się usunąć rezerwacji");
+    }
+
+    private void RecalculateTotalPrice()
+    {
+        _amountAfterEdit = 0;
+        var stayLength = Math.Ceiling((_dateRange.End - _dateRange.Start)?.TotalDays ?? -1);
+        foreach (var room in _reservationToEdit.RoomReservations.Select(rr => rr.Room))
+        {
+            _amountAfterEdit += room.PricePerNight * (decimal)stayLength;
+        }
     }
 
 }
