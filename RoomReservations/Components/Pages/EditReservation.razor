@@ -32,10 +32,17 @@
             <MudPaper Class="pa-16 ma-2" Elevation="3">
                 @if (_transaction is not null)
                 {
-                    <MudText Typo="Typo.h4">@(_transaction.Amount > 0 ? "Wymagana dopłata" : "") </MudText>
-                    <PaymentWindow Amount="@_transaction.Amount" TransactionId="_transaction.Id"
-                                   OnPaymentCompleted="() => _isPaymentOverlayVisible = false">
-                    </PaymentWindow>
+                    @if (_isTransactionCompleted)
+                    {
+                        <MudText Color="Color.Success" Typo="Typo.h4">Zapłacono</MudText>
+                    }
+                    else
+                    {
+                        <MudText Typo="Typo.h4">@(_transaction.Amount > 0 ? "Wymagana dopłata" : "") </MudText>
+                        <PaymentWindow Amount="@_transaction.Amount" TransactionId="_transaction.Id"
+                                       IsCompleted="_isTransactionCompleted">
+                        </PaymentWindow>
+                    }
                 }
             </MudPaper>
         </MudOverlay>
@@ -49,9 +56,11 @@
             <MudText>"@rr.Room.Name"</MudText>
         }
         <div style="padding-top: 2em;">
-            <MudText>Zapłacono: @_amountAlreadyPaid</MudText>
-            <MudText>Koszt po edycji: @_amountAfterEdit</MudText>
-            <MudText>Różnica do zapłaty: @(_amountAfterEdit - _amountAlreadyPaid) </MudText>
+            <MudText>Zapłacono: @_amountAlreadyPaid zł</MudText>
+            <MudText>Koszt po edycji: @_amountAfterEdit zł</MudText>
+            <MudText>
+                <b>Różnica do zapłaty: @(_amountAfterEdit - _amountAlreadyPaid) zł</b>
+            </MudText>
         </div>
     </MudCardContent>
     <MudCardActions>
@@ -72,9 +81,10 @@
     <Alert @ref="_alert"></Alert>
 </MudCard>
 
+@* ReSharper disable once UnassignedField.Compiler *@
+
 @code {
     [Parameter] public int Id { get; set; }
-
     Reservation _reservationToEdit = new();
     private DateRange _dateRange = new();
 
@@ -89,6 +99,7 @@
     private decimal _amountAlreadyPaid;
     private decimal _amountAfterEdit;
     private bool _isPaymentOverlayVisible;
+    private bool _isTransactionCompleted;
 
     protected override async Task OnInitializedAsync()
     {
@@ -202,3 +213,5 @@
     }
 
 }
+
+@* ReSharper restore UnassignedField.Compiler *@
