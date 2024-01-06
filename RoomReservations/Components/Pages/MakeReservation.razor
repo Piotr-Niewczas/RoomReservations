@@ -140,12 +140,8 @@
         _reservation.UserId = user.Id;
 
         var result = await ReservationService.AddReservationAsync(_reservation, _selectedRooms);
-
         ChangeOverlayMessage(!result ? "Coś poszło nie tak" : "Pomyślnie dodano rezerwację");
 
-        _reservation = new Reservation();
-        await ReloadAvailableRoomsAtDates();
-        _selectedRooms.Clear();
         return result;
     }
 
