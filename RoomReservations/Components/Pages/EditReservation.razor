@@ -81,8 +81,6 @@
     <Alert @ref="_alert"></Alert>
 </MudCard>
 
-@* ReSharper disable once UnassignedField.Compiler *@
-
 @code {
     [Parameter] public int Id { get; set; }
     Reservation _reservationToEdit = new();
@@ -99,8 +97,9 @@
     private decimal _amountAlreadyPaid;
     private decimal _amountAfterEdit;
     private bool _isPaymentOverlayVisible;
-    private bool _isTransactionCompleted;
-
+#pragma warning disable 0649
+    private bool _isTransactionCompleted; // IT IS ASSIGNED TO 
+#pragma warning restore 0649
     protected override async Task OnInitializedAsync()
     {
         // please note that we cannot use _alert.ShowAlert() here because it is not yet initialized
