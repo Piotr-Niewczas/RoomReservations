@@ -16,14 +16,20 @@
 <MudOverlay Visible="_isOverlayVisible" DarkBackground="true" Absolute="true">
     <MudPaper Class="pa-16 ma-2" Elevation="3">
         <MudText Typo="Typo.h2">@_overlayMessage</MudText>
+        <br style="line-height: 3rem;"/>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ConfirmationOkClicked">Zobacz rezerwacje</MudButton>
 
         @if (_showPaymentDialog || _transactionId is not null)
         {
-            <PaymentWindow TransactionId="@(_transactionId ?? int.MinValue)" Amount="_totalPrice"/>
+            <div style="padding-top: 4em;">
+                <MudText Typo="Typo.h4">Zapłać wygodnie tutaj</MudText>
+
+                <div style="padding-top: 1em">
+                    <PaymentWindow TransactionId="@(_transactionId ?? int.MinValue)" Amount="_totalPrice"/>
+                </div>
+            </div>
         }
 
-        <br style="line-height: 3rem;"/>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ConfirmationOkClicked">Zobacz rezerwacje</MudButton>
     </MudPaper>
 </MudOverlay>
 
