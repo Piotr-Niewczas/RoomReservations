@@ -1,0 +1,39 @@
+﻿@using RoomReservations.Data
+@inject ITransactionService TransactionService
+@inject SharedMethodsService SharedMethodsService
+
+@if (TransactionId == int.MinValue || Amount == decimal.MinValue)
+{
+    <MudText Color="Color.Error">Wystąpił błąd podczas ładowania strony!</MudText>
+    return;
+}
+<MudPaper Style="position: relative">
+    @if (Amount <= 0)
+    {
+        <MudText Typo="Typo.h3">Otrzymasz zwrot</MudText>
+        <MudText>W wysokości: @Amount zł</MudText>
+    }
+    else
+    {
+        <MudOverlay>
+            <MudText Color="Color.Success" Typo="Typo.h3">Zapłacono</MudText>
+        </MudOverlay>
+        <MudText Typo="Typo.h3">Oczekiwanie na zapłatę</MudText>
+        <MudText>Należność: @Amount zł</MudText>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Pay">Zapłać teraz</MudButton>
+    }
+    <MudButton Color="@(_isCompleted ? Color.Primary : Color.Default)" Variant="Variant.Filled" OnClick="SharedMethodsService.GoBackAsync">Wróć</MudButton>
+</MudPaper>
+
+@code {
+    [Parameter] public decimal Amount { get; set; } = decimal.MinValue;
+    [Parameter] public int TransactionId { get; set; } = int.MinValue;
+    private bool _isCompleted;
+
+    private async Task Pay()
+    {
+        await TransactionService.PayTransactionAsync(TransactionId);
+        _isCompleted = true;
+    }
+
+}
