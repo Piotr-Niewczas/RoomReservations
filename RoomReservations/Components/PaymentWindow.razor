@@ -14,7 +14,7 @@
 }
 else
 {
-    @if (_isCompleted)
+    @if (IsCompleted)
     {
         <MudText Color="Color.Success" Typo="Typo.h5">Zapłacono</MudText>
     }
@@ -31,12 +31,12 @@ else
     [Parameter] public decimal Amount { get; set; } = decimal.MinValue;
     [Parameter] public int TransactionId { get; set; } = int.MinValue;
     [Parameter] public EventCallback OnPaymentCompleted { get; set; }
-    private bool _isCompleted;
+    [Parameter] public bool IsCompleted { get; private set; }
 
     private async Task Pay()
     {
         await TransactionService.PayTransactionAsync(TransactionId);
-        _isCompleted = true;
+        IsCompleted = true;
 
         if (OnPaymentCompleted.HasDelegate)
         {
