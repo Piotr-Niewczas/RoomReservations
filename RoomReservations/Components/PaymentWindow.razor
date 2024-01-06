@@ -30,12 +30,18 @@ else
 @code {
     [Parameter] public decimal Amount { get; set; } = decimal.MinValue;
     [Parameter] public int TransactionId { get; set; } = int.MinValue;
+    [Parameter] public EventCallback OnPaymentCompleted { get; set; }
     private bool _isCompleted;
 
     private async Task Pay()
     {
         await TransactionService.PayTransactionAsync(TransactionId);
         _isCompleted = true;
+
+        if (OnPaymentCompleted.HasDelegate)
+        {
+            await OnPaymentCompleted.InvokeAsync();
+        }
     }
 
 }
