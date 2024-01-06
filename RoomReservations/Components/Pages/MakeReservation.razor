@@ -6,6 +6,7 @@
 @inject IReservationService ReservationService
 @inject SharedMethodsService SharedMethodsService
 @inject NavigationManager NavigationManager
+@inject ITransactionService TransactionService
 @attribute [Authorize]
 
 @rendermode InteractiveServer
@@ -13,8 +14,14 @@
 <h3>Formularz tworzenia rezerwacji</h3>
 
 <MudOverlay Visible="_isOverlayVisible" DarkBackground="true" Absolute="true">
-    <MudPaper Class="pa-16 ma-2" Style="@("color:#4CAF50; background:#E0E0E0;")" Elevation="3">
+    <MudPaper Class="pa-16 ma-2" Elevation="3">
         <MudText Typo="Typo.h2">@_overlayMessage</MudText>
+
+        @if (_showPaymentDialog || _transactionId is not null)
+        {
+            <PaymentWindow TransactionId="@(_transactionId ?? int.MinValue)" Amount="_totalPrice"/>
+        }
+
         <br style="line-height: 3rem;"/>
         <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ConfirmationOkClicked">Zobacz rezerwacje</MudButton>
     </MudPaper>
@@ -41,7 +48,9 @@
         </MudList>
     </MudPaper>
     <br/>
-    <MudDateRangePicker Label="Wybierz datę rezerwacji" @bind-DateRange="_dateRange" MinDate="@DateTime.Now.AddDays(-1)" PickerClosed="ReloadAvailableRoomsAtDates"/>
+    <MudDateRangePicker Label="Wybierz datę rezerwacji" @bind-DateRange="_dateRange" MinDate="@DateTime.Now.AddDays(-1)" PickerClosed="DatesChanged"/>
+    <br/>
+    <MudText>Całkowita kwota rezerwacji: @_totalPrice zł</MudText>
     <br/>
     <Alert @ref="_alert"></Alert>
     <MudButton Variant="Variant.Filled" Color="Color.Primary" ButtonType="ButtonType.Submit" Disabled="DisableSubmit">Rezerwuj</MudButton>
@@ -51,7 +60,7 @@
 @code {
     ApplicationUser? User { get; set; }
     [Parameter] public EventCallback HijackSubmit { get; set; }
-    [Parameter] public bool DisableSubmit { get; set; } = false;
+    [Parameter] public bool DisableSubmit { get; set; }
     [Parameter] public string RedirectUrl { get; set; } = "/list-reservations";
     Reservation _reservation = new();
     List<Room> _availableRoomsFromDb = [];
@@ -63,6 +72,10 @@
 
     private bool _isOverlayVisible;
     private string _overlayMessage = "Zapisywanie...";
+
+    private decimal _totalPrice;
+    private int? _transactionId;
+    private bool _showPaymentDialog;
 
     protected override async Task OnInitializedAsync()
     {
@@ -83,6 +96,13 @@
 
         // Clear the selection
         _selectedRoomId = 0;
+        RecalculateTotalPrice();
+    }
+
+    private async Task DatesChanged()
+    {
+        await ReloadAvailableRoomsAtDates();
+        RecalculateTotalPrice();
     }
 
     private async Task ReloadAvailableRoomsAtDates()
@@ -131,7 +151,7 @@
             return false;
         }
 
-        _ = OpenOverlay();
+        OpenOverlay();
         _reservation.StartDate = _dateRange.Start ?? DateTime.MinValue;
         _reservation.EndDate = _dateRange.End ?? DateTime.MinValue;
 
@@ -142,10 +162,16 @@
         var result = await ReservationService.AddReservationAsync(_reservation, _selectedRooms);
         ChangeOverlayMessage(!result ? "Coś poszło nie tak" : "Pomyślnie dodano rezerwację");
 
+        // create transaction to be paid if the reservation was added successfully
+        if (!result) return result;
+
+        _transactionId = await TransactionService.AddTransactionAsync(_reservation, _totalPrice);
+        _showPaymentDialog = true;
+
         return result;
     }
 
-    private async Task OpenOverlay()
+    private void OpenOverlay()
     {
         _isOverlayVisible = true;
         StateHasChanged();
@@ -160,6 +186,16 @@
     private void ConfirmationOkClicked()
     {
         NavigationManager.NavigateTo(RedirectUrl);
+    }
+
+    private void RecalculateTotalPrice()
+    {
+        _totalPrice = 0;
+        var stayLength = Math.Ceiling((_dateRange.End - _dateRange.Start)?.TotalDays ?? -1);
+        foreach (var room in _selectedRooms)
+        {
+            _totalPrice += room.PricePerNight * (decimal)stayLength;
+        }
     }
 
 }
