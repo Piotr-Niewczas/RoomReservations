@@ -31,7 +31,7 @@ else
     [Parameter] public decimal Amount { get; set; } = decimal.MinValue;
     [Parameter] public int TransactionId { get; set; } = int.MinValue;
     [Parameter] public EventCallback OnPaymentCompleted { get; set; }
-    [Parameter] public bool IsCompleted { get; private set; }
+    [Parameter] public bool IsCompleted { get; set; }
 
     private async Task Pay()
     {
