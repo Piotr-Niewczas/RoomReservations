@@ -11,7 +11,7 @@
 
 
 @attribute [Authorize(Roles = $"{RoleNames.Receptionist}, {RoleNames.Admin}, {RoleNames.Employee}")]
-<h3>View All Reservations</h3>
+<h3>Wszyscy użytkownicy</h3>
 
 <MudTable Items="@_users" Hover="true" SortLabel="Sort By">
     <HeaderContent>
@@ -56,7 +56,7 @@
         </MudTd>
     </RowTemplate>
     <PagerContent>
-        <MudTablePager PageSizeOptions="new[] { 15, 30, 100 }"/>
+        <MudTablePager PageSizeOptions="new[] { 15, 30, 100 }" RowsPerPageString="Wierszy na stronę:" InfoFormat="{first_item}-{last_item} z {all_items}"/>
     </PagerContent>
 </MudTable>
 
