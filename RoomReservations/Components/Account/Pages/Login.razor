@@ -97,10 +97,12 @@
 
     private sealed class InputModel
     {
-        [Required] [EmailAddress] public string Email { get; set; } = "";
+        [Required(ErrorMessage = "Email jest wymagany")]
+        [EmailAddress(ErrorMessage = "Podany email nie jest prawidłowy")]
+        public string Email { get; set; } = "";
 
-        [Required]
-        [DataType(DataType.Password)]
+        [Required(ErrorMessage = "Hasło jest wymagane")]
+        [DataType(DataType.Password, ErrorMessage = "Podane hasło nie jest prawidłowe")]
         public string Password { get; set; } = "";
 
         [Display(Name = "Remember me?")] public bool RememberMe { get; set; }
