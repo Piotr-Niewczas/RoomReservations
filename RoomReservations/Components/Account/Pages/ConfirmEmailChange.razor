@@ -8,9 +8,9 @@
 @inject SignInManager<ApplicationUser> SignInManager
 @inject IdentityRedirectManager RedirectManager
 
-<PageTitle>Confirm email change</PageTitle>
+<PageTitle>Potwierdź zmianę maila</PageTitle>
 
-<h1>Confirm email change</h1>
+<h1>Potwierdź zmianę maila</h1>
 
 <StatusMessage Message="@_message"/>
 
@@ -30,13 +30,13 @@
         if (UserId is null || Email is null || Code is null)
         {
             RedirectManager.RedirectToWithStatus(
-                "Account/Login", "Error: Invalid email change confirmation link.", HttpContext);
+                "Account/Login", "Błąd: Nieprawidłowy link potwierdzający zmianę maila.", HttpContext);
         }
 
         var user = await UserManager.FindByIdAsync(UserId);
         if (user is null)
         {
-            _message = "Unable to find user with Id '{userId}'";
+            _message = "Nie znaleziono użytkownika o podanym Id '{userId}'";
             return;
         }
 
@@ -44,7 +44,7 @@
         var result = await UserManager.ChangeEmailAsync(user, Email, code);
         if (!result.Succeeded)
         {
-            _message = "Error changing email.";
+            _message = "Błąd podczas zmieniania maila.";
             return;
         }
 
@@ -53,12 +53,12 @@
         var setUserNameResult = await UserManager.SetUserNameAsync(user, Email);
         if (!setUserNameResult.Succeeded)
         {
-            _message = "Error changing user name.";
+            _message = "Błąd zmiany nazwy użytkownika.";
             return;
         }
 
         await SignInManager.RefreshSignInAsync(user);
-        _message = "Thank you for confirming your email change.";
+        _message = "Dziękujemy za potwierdzenie zmiany maila.";
     }
 
 }
