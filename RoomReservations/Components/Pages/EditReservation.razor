@@ -39,7 +39,7 @@
                     else
                     {
                         <MudText Typo="Typo.h4">@(_transaction.Amount > 0 ? "Wymagana dopłata" : "") </MudText>
-                        <PaymentWindow Amount="@_transaction.Amount" TransactionId="_transaction.Id"
+                        <PaymentWindow Amount="@_transaction.Amount" TransactionIds="@( [_transaction.Id])"
                                        IsCompleted="_isTransactionCompleted">
                         </PaymentWindow>
                     }
