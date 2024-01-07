@@ -23,7 +23,7 @@
                 <MudText Typo="Typo.h4">Rezerwacja usunięta</MudText>
                 <MudText>
                     Kwota rezerwacji w wysokości
-                    @if (_transaction != null) @_transaction.Amount
+                    @_amountAlreadyPaid zł
                     zostanie zwrócona na konto.
                 </MudText>
             </MudPaper>
@@ -136,8 +136,8 @@
             return;
         }
 
-        _amountAlreadyPaid = TransactionService.GetTotalPaidForReservationAsync(_reservationToEdit);
-        _amountAfterEdit = _amountAlreadyPaid;
+        _amountAlreadyPaid = TransactionService.GetTotalPaidForReservation(_reservationToEdit, true);
+        RecalculateTotalPrice();
     }
 
     private async void DatePickerClosed()
