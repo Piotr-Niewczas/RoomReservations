@@ -16,7 +16,7 @@ public interface ITransactionService
     Task PayTransactionAsync(int transactionId);
     IQueryable<Transaction> CreateTransactionQuery();
     Task<Transaction> CreateAdjustmentTransactionAsync(Reservation reservation, decimal howMuchShouldBeLeft);
-    decimal GetTotalPaidForReservationAsync(Reservation reservation);
+    decimal GetTotalPaidForReservation(Reservation reservation, bool excludeUnpaid);
 }
 
 public class TransactionService(ApplicationDbContext context) : ITransactionService
@@ -50,7 +50,8 @@ public class TransactionService(ApplicationDbContext context) : ITransactionServ
     }
 
     /// <summary>
-    ///     Checks how much user has paid for the reservation and creates an adjustment transaction if necessary.
+    ///     Checks how much user has paid for the reservation and creates an adjustment transaction if necessary. Removes all
+    ///     unpaid transactions.
     /// </summary>
     /// <param name="reservation">Reservation to get transactions from.</param>
     /// <param name="howMuchShouldBeLeft">What should be total amount paid by user. E.g. 0 for full refund.</param>
@@ -58,7 +59,8 @@ public class TransactionService(ApplicationDbContext context) : ITransactionServ
     public async Task<Transaction> CreateAdjustmentTransactionAsync(Reservation reservation,
         decimal howMuchShouldBeLeft)
     {
-        var balance = GetTotalPaidForReservationAsync(reservation);
+        RemoveUnpaidTransactions(reservation);
+        var balance = GetTotalPaidForReservation(reservation, false);
 
         var diffTransaction = new Transaction
         {
@@ -78,18 +80,31 @@ public class TransactionService(ApplicationDbContext context) : ITransactionServ
         return diffTransaction;
     }
 
-    public decimal GetTotalPaidForReservationAsync(Reservation reservation)
+    public decimal GetTotalPaidForReservation(Reservation reservation, bool excludeUnpaid)
     {
         var transactions = reservation.ReservationTransactions
-            .Select(rt => rt.Transaction)
-            .ToList();
-        var balance = transactions.Sum(t => t.Amount);
+            .Select(rt => rt.Transaction);
+
+        if (excludeUnpaid) transactions = transactions.Where(t => t.AccountingDate != null);
+
+        var balance = transactions.ToList().Sum(t => t.Amount);
         return balance;
     }
 
     public IQueryable<Transaction> CreateTransactionQuery()
     {
         return new QueryFactory(context).Create<Transaction>();
+    }
+
+    private void RemoveUnpaidTransactions(Reservation reservation)
+    {
+        var unpaidTransactions = reservation.ReservationTransactions
+            .Where(rt => rt.Transaction.AccountingDate == null)
+            .Select(rt => rt.Transaction)
+            .ToList();
+        foreach (var unpaidTransaction in unpaidTransactions)
+            context.Transactions.Remove(unpaidTransaction);
+        context.SaveChanges();
     }
 
     /// <summary>
