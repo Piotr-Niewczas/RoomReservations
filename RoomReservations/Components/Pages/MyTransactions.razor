@@ -1,0 +1,50 @@
+﻿@page "/transactions"
+@using Microsoft.EntityFrameworkCore
+@using RoomReservations.Models
+@using RoomReservations.Data
+@inject SharedMethodsService SharedMethodsService
+@inject QueryFactory QueryFactory
+
+@if (!_showList)
+{
+    <MudText Typo="Typo.h2">Coś poszło nie tak.</MudText>
+    <MudAlert Severity="Severity.Error">@_listLoadError</MudAlert>
+    <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="SharedMethodsService.GoBackAsync">Cofnij</MudButton>
+    return;
+}
+<h3>Twoje transakcje</h3>
+@foreach (var reservation in _reservations)
+{
+    <TransactionsForReservation Reservation="reservation"></TransactionsForReservation>
+    <br/>
+}
+
+
+@code {
+    private bool _showList;
+    private string _listLoadError = "Wystąpił nieznany błąd";
+    private List<Reservation> _reservations = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        var (user, error) = await SharedMethodsService.GetCurrentUserAsync();
+
+        if (user is null)
+        {
+            _listLoadError = error == GetCurrentUserError.UserNotLoggedIn ? "Zaloguj się, aby przeglądać transakcje" : "Wystąpił nieznany błąd";
+            return;
+        }
+
+        _reservations = await QueryFactory.Create<Reservation>()
+            .Include(r => r.ReservationTransactions)
+            .ThenInclude(rt => rt.Transaction)
+            .Where(r => r.UserId == user.Id)
+            .ToListAsync();
+
+        // put the most recent reservations first
+        _reservations.Sort((r1, r2) => r1.StartDate.CompareTo(r2.StartDate));
+
+        _showList = true;
+    }
+
+}
