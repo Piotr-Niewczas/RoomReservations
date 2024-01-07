@@ -1,0 +1,63 @@
+﻿@page "/pay-reservation/{id:int}"
+@using RoomReservations.Data
+@using RoomReservations.Models
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Authorization
+@inject SharedMethodsService SharedMethodsService
+@inject IReservationService ReservationService
+@attribute [Authorize]
+
+<h3>Zapłać za rezerwację</h3>
+
+@if (!_showForm)
+{
+    <MudText Typo="Typo.h2">Coś poszło nie tak.</MudText>
+    <MudAlert Severity="Severity.Error">@_formLoadError</MudAlert>
+    <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="SharedMethodsService.GoBackAsync">Wróć</MudButton>
+    return;
+}
+
+<TransactionsForReservation Reservation="_reservation"></TransactionsForReservation>
+<br/>
+<MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="SharedMethodsService.GoBackAsync">Wróć</MudButton>
+
+@code {
+    [Parameter] public int Id { get; set; }
+    private bool _showForm;
+    private string _formLoadError = "Wystąpił nieznany błąd";
+    private Reservation _reservation = new();
+    private bool _isUserReceptionist;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var reservationsFromDb = await ReservationService.CreateReservationQuery().WhereId(Id).WithRooms().WithTransactions().ToListAsync();
+        if (reservationsFromDb.Count != 1)
+        {
+            _formLoadError = "Rezerwacja o podanym ID nie istnieje";
+            return;
+        }
+
+        _reservation = reservationsFromDb.FirstOrDefault()!; // We know there is one element in the list
+
+        var (user, error) = await SharedMethodsService.GetCurrentUserAsync();
+
+        if (user is null)
+        {
+            _formLoadError = error == GetCurrentUserError.UserNotLoggedIn ? "Zaloguj się, aby edytować rezerwacje" : "Wystąpił nieznany błąd";
+            return;
+        }
+
+        _isUserReceptionist = await SharedMethodsService.IsCurrentUserInRoleAsync(RoleNames.Receptionist);
+        // Check if user is the owner of the reservation or is a receptionist
+        if (_reservation.User == user || _isUserReceptionist)
+        {
+            _showForm = true;
+        }
+        else
+        {
+            _reservation = new Reservation(); // Clear the reservation
+            _formLoadError = "Ta rezerwacja nie należy do Ciebie";
+        }
+    }
+
+}
