@@ -3,7 +3,7 @@
 
 <MudCard>
     <MudCardContent>
-        <MudText Typo="Typo.h6">Reservation Details</MudText>
+        <MudText Typo="Typo.h5">Szczegóły rezerwacji</MudText>
         <MudText>ID rezerwacji: @ReservationToDisplay.Id</MudText>
         <MudText>Email klienta: @ReservationToDisplay.User.UserName </MudText>
         <MudText>Data rezerwacji: @ReservationToDisplay.StartDate.ToString("dd.MM") - @ReservationToDisplay.EndDate.ToString("dd.MM.yyyy")</MudText>
@@ -11,10 +11,21 @@
         {
             <MudText>Nazwa pokoju: @rr.Room.Name</MudText>
         }
+        @if (ReservationToDisplay.IsPaid)
+        {
+            <MudText Typo="Typo.h6" Color="Color.Success">Opłacona</MudText>
+        }
+        else
+        {
+            <MudText Typo="Typo.h6" Color="Color.Warning">Nieopłacona</MudText>
+        }
     </MudCardContent>
-    <MudCardActions>
-        <div style="flex-grow: 1;"></div>
+    <MudCardActions Class="d-flex justify-start flex-grow-1 gap-4">
         <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => NavigateToEditPage())">Edytuj</MudButton>
+        <MudButton Variant="@(ReservationToDisplay.IsPaid ? Variant.Outlined : Variant.Filled)" Color="Color.Primary"
+                   OnClick="@(() => NavigateToPayPage())">
+            @(ReservationToDisplay.IsPaid ? "Historia płatności" : "Zapłać")
+        </MudButton>
     </MudCardActions>
 </MudCard>
 
@@ -25,6 +36,12 @@
     private void NavigateToEditPage()
     {
         var url = "/edit-reservation/" + ReservationToDisplay.Id;
+        NavigationManager.NavigateTo(url);
+    }
+
+    private void NavigateToPayPage()
+    {
+        var url = "/pay-reservation/" + ReservationToDisplay.Id;
         NavigationManager.NavigateTo(url);
     }
 

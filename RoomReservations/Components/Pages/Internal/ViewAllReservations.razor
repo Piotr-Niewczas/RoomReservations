@@ -30,6 +30,7 @@
         </MudTh>
         <MudTh>Czy jest w trakcie</MudTh>
         <MudTh>Edycja</MudTh>
+        <MudTh>Transakcje</MudTh>
     </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="Id">@context.Id</MudTd>
@@ -41,13 +42,19 @@
         <MudTd DataLabel="Is in progress">NYI</MudTd>
         <MudTd DataLabel="Edit">
             <MudButton Disabled="@(!_canEdit)" Color="Color.Primary" Variant="Variant.Filled"
-                OnClick="@(() => NavigationManager.NavigateTo($"/edit-reservation/{context.Id}"))">
+                       OnClick="@(() => NavigationManager.NavigateTo($"/edit-reservation/{context.Id}"))">
                 Edytuj
+            </MudButton>
+        </MudTd>
+        <MudTd DataLabel="Transactions">
+            <MudButton Variant="@(context.IsPaid ? Variant.Outlined : Variant.Filled)" Color="Color.Primary"
+                       OnClick="@(() => NavigationManager.NavigateTo($"/pay-reservation/{context.Id}"))">
+                @(context.IsPaid ? "Historia" : "Opłać")
             </MudButton>
         </MudTd>
     </RowTemplate>
     <PagerContent>
-        <MudTablePager PageSizeOptions="new[] { 15, 30, 100 }" />
+        <MudTablePager PageSizeOptions="new[] { 15, 30, 100 }"/>
     </PagerContent>
 </MudTable>
 
@@ -58,10 +65,10 @@
     protected override async Task OnInitializedAsync()
     {
         _reservations = await ReservationService.CreateReservationQuery()
-        .WithRooms()
-        .WithTransactions()
-        .WithUsers()
-        .ToListAsync();
+            .WithRooms()
+            .WithTransactions()
+            .WithUsers()
+            .ToListAsync();
 
         _canEdit = await SharedMethodsService.IsCurrentUserInRoleAsync(RoleNames.Receptionist);
     }
