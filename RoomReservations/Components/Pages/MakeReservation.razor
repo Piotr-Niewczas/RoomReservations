@@ -25,7 +25,7 @@
                 <MudText Typo="Typo.h4">Zapłać wygodnie tutaj</MudText>
 
                 <div style="padding-top: 1em">
-                    <PaymentWindow TransactionId="@(_transactionId ?? int.MinValue)" Amount="_totalPrice"/>
+                    <PaymentWindow TransactionIds="@( [_transactionId ?? -1])" Amount="_totalPrice"/>
                 </div>
             </div>
         }
