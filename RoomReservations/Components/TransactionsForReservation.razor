@@ -1,0 +1,72 @@
+﻿@using RoomReservations.Models
+<MudPaper Class="pa-4 ma-1">
+    <div class="flex-auto ">
+        <MudText>Rezerwacja nr: @Reservation.Id</MudText>
+        <MudText>Rezerwacja od: @Reservation.StartDate.ToString("dd.MM.yyyy") do: @Reservation.EndDate.ToString("dd.MM.yyyy")</MudText>
+    </div>
+    <MudDivider/>
+    <div style="padding: 1em">
+        <MudSimpleTable Dense="true" Style="overflow-x: auto;">
+            <thead>
+            <tr>
+                <th>Data wpisu</th>
+                <th>Data otrzymania</th>
+                <th>Wartość</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var transaction in Reservation.ReservationTransactions.Select(rt => rt.Transaction))
+            {
+                <tr>
+                    <td>
+                        <MudText>@transaction.EntryDate.ToString("dd.MM.yyyy")</MudText>
+                    </td>
+                    @if (transaction.AccountingDate is not null)
+                    {
+                        <td>
+                            <MudText>@transaction.AccountingDate.Value.ToString("dd.MM.yyyy")</MudText>
+                        </td>
+                    }
+                    else
+                    {
+                        <td>
+                            <MudText Color="Color.Warning">Brak</MudText>
+                        </td>
+                    }
+                    <td>
+                        <MudText Color="@(@transaction.Amount < 0 ? Color.Success : Color.Default)">@transaction.Amount zł</MudText>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </MudSimpleTable>
+    </div>
+    @if (Reservation.IsPaid)
+    {
+        <MudText Color="Color.Success">Rezerwacja opłacona</MudText>
+    }
+    else
+    {
+        <div>
+            <MudText Color="Color.Warning">Rezerwacja nieopłacona</MudText>
+            <div style="padding: 1em">
+                <PaymentWindow TransactionIds="@(_unpaidTransactions.Select(t => t.Id))"
+                               Amount="@(_unpaidTransactions.Sum(t => t.Amount))"
+                               OnPaymentCompleted="StateHasChanged">
+                </PaymentWindow>
+            </div>
+        </div>
+    }
+</MudPaper>
+
+@code {
+    [Parameter] [EditorRequired] public Reservation Reservation { get; set; } = null!;
+    private List<Transaction> _unpaidTransactions = [];
+
+    protected override void OnInitialized()
+    {
+        _unpaidTransactions = Reservation.ReservationTransactions.Select(rt => rt.Transaction)
+            .Where(t => t.AccountingDate is null).ToList();
+    }
+
+}
