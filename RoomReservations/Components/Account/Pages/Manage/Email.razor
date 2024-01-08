@@ -8,6 +8,7 @@
 
 @inject UserManager<ApplicationUser> UserManager
 @inject IEmailSender<ApplicationUser> EmailSender
+@inject SignInManager<ApplicationUser> SignInManager
 @inject IdentityUserAccessor UserAccessor
 @inject NavigationManager NavigationManager
 
@@ -18,7 +19,7 @@
 <StatusMessage Message="@_message"/>
 <div class="row">
     <div class="col-md-6">
-        <form @onsubmit="OnSendEmailVerificationAsync" @formname="send-verification" id="send-verification-form" method="post">
+        <form @formname="send-verification" id="send-verification-form" method="post">
             <AntiforgeryToken/>
         </form>
         <EditForm Model="Input" FormName="change-email" OnValidSubmit="OnValidSubmitAsync" method="post">
@@ -71,14 +72,26 @@
             _message = "Twój email nie został zmieniony.";
             return;
         }
-    }
 
-    private async Task OnSendEmailVerificationAsync()
-    {
-        if (_email is null)
+        var userId = await UserManager.GetUserIdAsync(_user);
+        var result = await UserManager.SetEmailAsync(_user, Input.NewEmail);
+        if (!result.Succeeded)
         {
+            _message = result.Errors.FirstOrDefault()?.Description ?? "Błąd zmiany maila.";
             return;
         }
+
+        // In our UI email and user name are one and the same, so when we update the email
+        // we need to update the user name.
+        var setUserNameResult = await UserManager.SetUserNameAsync(_user, Input.NewEmail);
+        if (!setUserNameResult.Succeeded)
+        {
+            _message = "Błąd zmiany nazwy użytkownika.";
+            return;
+        }
+
+        await SignInManager.RefreshSignInAsync(_user);
+        _message = "Dziękujemy za potwierdzenie zmiany maila.";
     }
 
     private sealed class InputModel
