@@ -1,7 +1,64 @@
 ﻿@page "/"
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Strona główna</PageTitle>
 
-<h1>Hello, world!</h1>
+<MudText Color="Color.Primary" Typo="Typo.h1" Align="Align.Center">Witamy w Kaktus Hotel!</MudText>
 
-Welcome to your new app.
+<MudContainer MaxWidth="MaxWidth.Medium">
+    <MudGrid Justify="Justify.Center">
+        <MudItem xs="12" sm="6">
+            <div style="position: relative; top: 50%; transform: translateY(-50%);">
+                <MudText Align="Align.Right">
+                    Kaktus Hotel to wyjątkowe miejsce, które łączy w sobie meksykański styl i nowoczesny komfort.
+                    Nasze pokoje są kolorowe, przestronne i pełne roślinności, która dodaje uroku i świeżości.
+                    Każdy pokój ma własną łazienkę, telewizor, lodówkę i bezpłatne Wi-Fi.
+                    Z naszych okien można podziwiać piękny widok na miasto i park.
+                </MudText>
+            </div>
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <MudImage Fluid="true" Height="500" Width="300" Src="img/home/outside.jpeg" Alt="outside" Class="rounded-lg"/>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" Class="d-flex align-content-end">
+            <MudImage style="display: -webkit-box; margin-left: auto;" Fluid="true" Height="500" Width="300" Src="img/home/pankaktus.jpg" Alt="founder" Class="rounded-lg"/>
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <div style="position: relative; top: 50%; transform: translateY(-50%);">
+                <MudText Align="Align.Left">
+                    Kaktus Hotel powstał z pasji do podróżowania i poznawania innych kultur.
+                    Nasz założyciel, Pan Kaktus, był zafascynowany Meksykiem i jego architekturą.
+                    Postanowił stworzyć hotel, który by odzwierciedlał jego zamiłowanie do tego kraju i jego ludzi.
+                    Dlatego nasz hotel jest pełen kolorów, obrazów i kaktusów, które są symbolem Meksyku.
+                </MudText>
+            </div>
+        </MudItem>
+
+        <MudItem xs="12" sm="6">
+            <div style="position: relative; top: 50%; transform: translateY(-50%);">
+                <MudText Align="Align.Right">
+                    Nasz hotel oferuje nie tylko nocleg, ale także wiele atrakcji i udogodnień dla naszych gości.
+                    Możesz skorzystać z naszej restauracji, która serwuje pyszne dania kuchni meksykańskiej i polskiej.
+                    Możesz też zrelaksować się w naszym spa, które oferuje masaże, zabiegi kosmetyczne i saunę.
+                    A jeśli chcesz aktywnie spędzić czas, zapraszamy do naszej siłowni, basenu lub sali gier.
+                </MudText>
+            </div>
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <MudImage Fluid="true" Height="500" Width="300" Src="img/home/restauracja.jpg" Alt="restaurant" Class="rounded-lg"/>
+        </MudItem>
+
+        <MudItem xs="12" sm="6">
+            <MudImage style="display: -webkit-box; margin-left: auto;" Fluid="true" Height="500" Width="300" Src="img/home/basen.jpeg" Alt="pool" Class="rounded-lg"/>
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <div style="position: relative; top: 50%; transform: translateY(-50%);">
+                <MudText Align="Align.Left">
+                    Kaktus Hotel to idealne miejsce na wypoczynek, podróż służbową lub romantyczną randkę.
+                    Zapewniamy miłą atmosferę, profesjonalną obsługę i konkurencyjne ceny.
+                    Zarezerwuj swój pokój już dziś i dołącz do grona naszych zadowolonych gości!
+                </MudText>
+            </div>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
