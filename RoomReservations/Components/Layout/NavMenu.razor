@@ -21,7 +21,7 @@
 
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="make-reservation">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Złóż rezerwację
+                <span class="bi bi-book-plus-nav-menu" aria-hidden="true"></span> Złóż rezerwację
             </NavLink>
         </div>
 
@@ -33,14 +33,14 @@
                         @* Employees only *@
                         <div class="nav-item px-3">
                             <NavLink class="nav-link" href="internal/ViewAllUsers">
-                                <span class="bi bi-gear-fill-nav-menu" aria-hidden="true"></span> Wszyscy
+                                <span class="bi bi-account-multiple-outline-nav-menu" aria-hidden="true"></span> Wszyscy
                                 użytkownicy
                             </NavLink>
                         </div>
                         <MudDivider></MudDivider>
                         <div class="nav-item px-3">
                             <NavLink class="nav-link" href="internal/ViewAllReservations">
-                                <span class="bi bi-gear-fill-nav-menu" aria-hidden="true"></span> Wszystkie rezerwacje
+                                <span class="bi bi-text-box-multiple-nav-menu" aria-hidden="true"></span> Wszystkie rezerwacje
                             </NavLink>
                         </div>
                         <AuthorizeView Roles="Receptionist">
@@ -48,7 +48,7 @@
                                 @* Receptionist only *@
                                 <div class="nav-item px-3">
                                     <NavLink class="nav-link" href="internal/ReceptionistMakeReservation">
-                                        <span class="bi bi-gear-fill-nav-menu" aria-hidden="true"></span> Utwórz rezerwację
+                                        <span class="bi bi-book-plus-multiple-nav-menu" aria-hidden="true"></span> Utwórz rezerwację
                                     </NavLink>
                                 </div>
                             </Authorized>
@@ -59,7 +59,7 @@
                 @* Everyone that is logged in *@
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="list-reservations">
-                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Moje rezerwacje
+                        <span class="bi bi-account-card-nav-menu" aria-hidden="true"></span> Moje rezerwacje
                     </NavLink>
                 </div>
                 <div class="nav-item px-3">
