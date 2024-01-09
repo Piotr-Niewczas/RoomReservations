@@ -16,7 +16,7 @@
     return;
 }
 
-<MudCard>
+<MudCard Style="max-width: 1000px">
     <MudCardContent Style="position: relative;">
         <MudOverlay Visible="_isDeletedOverlayVisible" Style="background-color: rgba(0, 0, 0, 0.5) !important" Absolute="true">
             <MudPaper Class="pa-16 ma-2" Elevation="3">
@@ -49,7 +49,29 @@
         <MudText Typo="Typo.h6">Edytuj rezerwację</MudText>
         <MudText>ID rezerwacji: @_reservationToEdit.Id</MudText>
         <MudText>Email klienta: @_reservationToEdit.User.UserName </MudText>
-        <MudDateRangePicker Label="Zmień datę rezerwacji" @bind-DateRange="_dateRange" MinDate="@DateTime.Now.AddDays(-1)" PickerClosed="DatePickerClosed"/>
+        <MudDivider/>
+        @if (_onlyEditEndDateForward)
+        {
+            <MudGrid>
+                <MudItem xs="6">
+                    <div style="position: relative; top: 50%; transform: translateY(-50%);">
+                        <MudText>Data rozpoczęcia rezerwacji: @_dateRange.Start?.ToString("dd.MM.yyyy")</MudText>
+                    </div>
+                </MudItem>
+                <MudItem xs="6">
+                    <MudDatePicker Label="Data zakończenia: " @bind-Date="_dateRange.End" MinDate="@_originalEndDate"
+                                   PickerClosed="DatePickerClosed" ReadOnly="@(!_reservationToEdit.IsPaid)"
+                                   HelperText="@(_reservationToEdit.IsPaid ? "" : "Rezerwacja nie jest opłacona, więc nie możesz jej wydłużyć")"/>
+                </MudItem>
+            </MudGrid>
+        }
+        else
+        {
+            <MudDateRangePicker Label="Zmień datę rezerwacji" @bind-DateRange="_dateRange" MinDate="@DateTime.Now.AddDays(-1)" PickerClosed="DatePickerClosed"/>
+        }
+        <MudDivider/>
+
+
         <MudText>Pokoje:</MudText>
         @foreach (var rr in _reservationToEdit.RoomReservations)
         {
@@ -82,7 +104,7 @@
 </MudCard>
 
 @code {
-    [Parameter] public int Id { get; set; }
+    [Parameter] [EditorRequired] public int Id { get; set; }
     Reservation _reservationToEdit = new();
     private DateRange _dateRange = new();
 
@@ -100,6 +122,10 @@
 #pragma warning disable 0649
     private bool _isTransactionCompleted; // IT IS ASSIGNED TO 
 #pragma warning restore 0649
+
+    private bool _onlyEditEndDateForward;
+    private DateTime _originalEndDate;
+
     protected override async Task OnInitializedAsync()
     {
         // please note that we cannot use _alert.ShowAlert() here because it is not yet initialized
@@ -138,6 +164,13 @@
 
         _amountAlreadyPaid = TransactionService.GetTotalPaidForReservation(_reservationToEdit, true);
         RecalculateTotalPrice();
+
+        // If user is not a receptionist and the reservation starts in less than 7 days
+        if (!_isUserReceptionist && _reservationToEdit.StartDate < DateTime.Now.AddDays(7))
+        {
+            _onlyEditEndDateForward = true;
+            _originalEndDate = _reservationToEdit.EndDate;
+        }
     }
 
     private async void DatePickerClosed()
