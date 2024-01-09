@@ -1,9 +1,19 @@
 ﻿@using RoomReservations.Models
 @inject NavigationManager NavigationManager
 
-<MudCard>
+<MudCard Style="max-width: 800px">
     <MudCardContent>
-        <MudText Typo="Typo.h5">Szczegóły rezerwacji</MudText>
+        <MudGrid>
+            <MudItem xs="12" sm="6">
+                <MudText Typo="Typo.h5">Szczegóły rezerwacji</MudText>
+            </MudItem>
+            @if (ReservationToDisplay.IsInProgress)
+            {
+                <MudItem xs="12" sm="6">
+                    <MudText Typo="Typo.h5" Align="Align.Right" Color="Color.Info">W trakcie</MudText>
+                </MudItem>
+            }
+        </MudGrid>
         <MudText>ID rezerwacji: @ReservationToDisplay.Id</MudText>
         <MudText>Email klienta: @ReservationToDisplay.User.UserName </MudText>
         <MudText>Data rezerwacji: @ReservationToDisplay.StartDate.ToString("dd.MM") - @ReservationToDisplay.EndDate.ToString("dd.MM.yyyy")</MudText>
