@@ -34,6 +34,8 @@
 </MudOverlay>
 
 <EditForm Model="@_reservation" OnSubmit="Submit" FormName="ReservationForm">
+    <MudDateRangePicker Label="Wybierz datę rezerwacji" @bind-DateRange="_dateRange" MinDate="@DateTime.Now.AddDays(-1)" PickerClosed="DatesChanged"/>
+    <br/>
     <MudSelect T="int" Label="Wybierz pokój" @bind-Value="@_selectedRoomId">
         @foreach (var room in _availableRoomsFromDb)
         {
@@ -53,8 +55,6 @@
             }
         </MudList>
     </MudPaper>
-    <br/>
-    <MudDateRangePicker Label="Wybierz datę rezerwacji" @bind-DateRange="_dateRange" MinDate="@DateTime.Now.AddDays(-1)" PickerClosed="DatesChanged"/>
     <br/>
     <MudText>Całkowita kwota rezerwacji: @_totalPrice zł</MudText>
     <br/>
