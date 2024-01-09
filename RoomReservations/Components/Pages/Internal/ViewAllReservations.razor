@@ -28,7 +28,9 @@
         <MudTh>
             <MudTableSortLabel SortBy="(Reservation context) => context.IsPaid">Opłacono</MudTableSortLabel>
         </MudTh>
-        <MudTh>Czy jest w trakcie</MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="(Reservation context) => IsItInProgress(context)">Czy jest w trakcie</MudTableSortLabel>
+        </MudTh>
         <MudTh>Edycja</MudTh>
         <MudTh>Transakcje</MudTh>
     </HeaderContent>
@@ -38,8 +40,26 @@
         <MudTd DataLabel="End Date">@context.EndDate.ToShortDateString()</MudTd>
         <MudTd DataLabel="Rooms">@RoomsToString(context.RoomReservations)</MudTd>
         <MudTd DataLabel="Creator">@context.User.UserName</MudTd>
-        <MudTd DataLabel="Is Paid">@(context.IsPaid ? "Prawda" : "Fałsz")</MudTd>
-        <MudTd DataLabel="Is in progress">NYI</MudTd>
+        <MudTd DataLabel="Is Paid">
+            @if (context.IsPaid)
+            {
+                <MudIcon Icon="@Icons.Material.Filled.Check" Color="Color.Success"/>
+            }
+            else
+            {
+                <MudIcon Icon="@Icons.Material.Filled.Clear" Color="Color.Error"/>
+            }
+        </MudTd>
+        <MudTd DataLabel="Is in progress">
+            @if (IsItInProgress(context))
+            {
+                <MudIcon Icon="@Icons.Material.Filled.Check" Color="Color.Success"/>
+            }
+            else
+            {
+                <MudIcon Icon="@Icons.Material.Filled.Clear" Color="Color.Error"/>
+            }
+        </MudTd>
         <MudTd DataLabel="Edit">
             <MudButton Disabled="@(!_canEdit)" Color="Color.Primary" Variant="Variant.Filled"
                        OnClick="@(() => NavigationManager.NavigateTo($"/edit-reservation/{context.Id}"))">
@@ -77,6 +97,11 @@
     {
         var result = string.Join(", ", rrs.Select(rr => rr.Room.Name));
         return result;
+    }
+
+    private static bool IsItInProgress(Reservation reservation)
+    {
+        return reservation.StartDate <= DateTime.Now && reservation.EndDate >= DateTime.Now;
     }
 
 }
