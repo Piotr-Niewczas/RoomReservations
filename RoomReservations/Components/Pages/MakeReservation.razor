@@ -33,34 +33,67 @@
     </MudPaper>
 </MudOverlay>
 
-<EditForm Model="@_reservation" OnSubmit="Submit" FormName="ReservationForm">
-    <MudDateRangePicker Label="Wybierz datę rezerwacji" @bind-DateRange="_dateRange" MinDate="@DateTime.Now.AddDays(-1)" PickerClosed="DatesChanged"/>
-    <br/>
-    <MudSelect T="int" Label="Wybierz pokój" @bind-Value="@_selectedRoomId">
-        @foreach (var room in _availableRoomsFromDb)
-        {
-            <MudSelectItem T="int" Value="@room.Id">@room.Name</MudSelectItem>
-        }
-    </MudSelect>
-    <br/>
-    <br/>
-    <MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="AddSelectedRoom">Dodaj pokój</MudButton>
-    <br/>
-    <MudPaper Width="300px">
-        <MudList Clickable="false">
-            <MudListSubheader>Wybrane pokoje</MudListSubheader>
-            @foreach (var selectedRoom in _selectedRooms)
-            {
-                <MudListItem>@selectedRoom.Name</MudListItem>
-            }
-        </MudList>
-    </MudPaper>
-    <br/>
-    <MudText>Całkowita kwota rezerwacji: @_totalPrice zł</MudText>
-    <br/>
-    <Alert @ref="_alert"></Alert>
-    <MudButton Variant="Variant.Filled" Color="Color.Primary" ButtonType="ButtonType.Submit" Disabled="DisableSubmit">Rezerwuj</MudButton>
-</EditForm>
+<MudGrid>
+    <MudItem xs="6">
+        <EditForm Model="@_reservation" OnSubmit="Submit" FormName="ReservationForm">
+            <MudPaper Class="pa-8 ma-2">
+                <MudDateRangePicker Label="Wybierz datę rezerwacji" @bind-DateRange="_dateRange" MinDate="@DateTime.Now.AddDays(-1)" PickerClosed="DatesChanged"/>
+                <br/>
+                <MudSelect T="int" Label="Wybierz pokój" @bind-Value="@_selectedRoomId">
+                    @foreach (var room in _availableRoomsFromDb)
+                    {
+                        <MudSelectItem T="int" Value="@room.Id">@room.Name</MudSelectItem>
+                    }
+                </MudSelect>
+                <br/>
+                <br/>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="AddSelectedRoom">Dodaj pokój</MudButton>
+            </MudPaper>
+            <MudPaper Class="pa-8 ma-2">
+                <MudText>Całkowita kwota rezerwacji: @_totalPrice zł</MudText>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" ButtonType="ButtonType.Submit" Disabled="DisableSubmit">Rezerwuj</MudButton>
+            </MudPaper>
+            <Alert @ref="_alert"></Alert>
+        </EditForm>
+    </MudItem>
+    <MudItem xs="6">
+        <MudPaper Class="pa-8 ma-2">
+            <MudText>Wybrane pokoje:</MudText>
+            <MudSimpleTable Dense="true">
+                <thead>
+                <tr>
+                    <th>
+                        Nazwa
+                    </th>
+                    <th>
+                        Cena za noc
+                    </th>
+                    <th>
+                        Usuń
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var selectedRoom in _selectedRooms)
+                {
+                    <tr>
+                        <td>
+                            @selectedRoom.Name
+                        </td>
+                        <td>
+                            @selectedRoom.PricePerNight zł
+                        </td>
+                        <td>
+                            @* <MudButton Color="Color.Secondary" Variant="Variant.Text" OnClick="@(() => _selectedRooms.Remove(selectedRoom))">---</MudButton> *@
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Secondary" OnClick="@(() => RemoveSelectedRoom(selectedRoom))"/>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </MudSimpleTable>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
 
 
 @code {
@@ -102,6 +135,13 @@
 
         // Clear the selection
         _selectedRoomId = 0;
+        RecalculateTotalPrice();
+    }
+
+    private async Task RemoveSelectedRoom(Room room)
+    {
+        _selectedRooms.Remove(room);
+        await ReloadAvailableRoomsAtDates();
         RecalculateTotalPrice();
     }
 
