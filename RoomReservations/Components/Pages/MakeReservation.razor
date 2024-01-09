@@ -115,7 +115,7 @@
     {
         var start = _dateRange.Start ?? DateTime.MinValue.Date;
         var end = _dateRange.End ?? DateTime.MaxValue.Date;
-        _availableRoomsFromDb = await AvailableRoomService.GetAvailableRoomsAsync(start, end);
+        _availableRoomsFromDb = (await AvailableRoomService.GetAvailableRoomsAsync(start, end)).Except(_selectedRooms).ToList();
     }
 
     public async void Submit(EditContext context)
