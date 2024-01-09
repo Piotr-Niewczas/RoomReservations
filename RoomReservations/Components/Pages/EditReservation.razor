@@ -59,7 +59,8 @@
                     </div>
                 </MudItem>
                 <MudItem xs="6">
-                    <MudDatePicker Label="Data zakończenia: " @bind-Date="_dateRange.End" MinDate="@_originalEndDate"
+                    <MudDatePicker Label="Data zakończenia: " @bind-Date="_dateRange.End"
+                                   MinDate="@_originalEndDate" MaxDate="@_lastAvailableDate"
                                    PickerClosed="DatePickerClosed" ReadOnly="@(!_reservationToEdit.IsPaid)"
                                    HelperText="@(_reservationToEdit.IsPaid ? "" : "Rezerwacja nie jest opłacona, więc nie możesz jej wydłużyć")"/>
                 </MudItem>
@@ -67,7 +68,8 @@
         }
         else
         {
-            <MudDateRangePicker Label="Zmień datę rezerwacji" @bind-DateRange="_dateRange" MinDate="@DateTime.Now.AddDays(-1)" PickerClosed="DatePickerClosed"/>
+            <MudDateRangePicker Label="Zmień datę rezerwacji" @bind-DateRange="_dateRange" PickerClosed="DatePickerClosed"
+                                MinDate="@_firstAvailableDate" MaxDate="@_lastAvailableDate"/>
         }
         <MudDivider/>
 
@@ -125,6 +127,8 @@
 
     private bool _onlyEditEndDateForward;
     private DateTime _originalEndDate;
+    private DateTime _firstAvailableDate;
+    private DateTime _lastAvailableDate;
 
     protected override async Task OnInitializedAsync()
     {
@@ -171,6 +175,15 @@
             _onlyEditEndDateForward = true;
             _originalEndDate = _reservationToEdit.EndDate;
         }
+
+        _firstAvailableDate = await FirstAvailableDateForRooms();
+        // if date is in the past, change to current one
+        if (_firstAvailableDate < DateTime.Now.AddDays(-1))
+        {
+            _firstAvailableDate = DateTime.Now.AddDays(-1);
+        }
+
+        _lastAvailableDate = await LastAvailableDateForRooms();
     }
 
     private async void DatePickerClosed()
@@ -242,6 +255,48 @@
         {
             _amountAfterEdit += room.PricePerNight * (decimal)stayLength;
         }
+    }
+
+    private IQueryable<Reservation> ReservationsContainingAnyOfRoomsButNotThisOne()
+    {
+        return ReservationService.CreateReservationQuery()
+            // Get all reservations that have any of the rooms in the current reservation
+            .Where(r => r.RoomReservations
+                .Any(rr => _reservationToEdit.RoomReservations
+                    .Select(rr2 => rr2.Room)
+                    .Contains(rr.Room)))
+            // Exclude the current reservation
+            .Where(r => r.Id != _reservationToEdit.Id);
+    }
+
+    private async Task<DateTime> FirstAvailableDateForRooms()
+    {
+        var reservationBeforeThis = await ReservationsContainingAnyOfRoomsButNotThisOne()
+            // Get all reservations that end before the current reservation starts
+            .Where(r => r.EndDate <= _reservationToEdit.StartDate)
+            // Order by end date
+            .OrderBy(r => r.EndDate)
+            // Get the first one
+            .FirstOrDefaultAsync();
+
+        // If there is no reservation after this one, return the min date,
+        // otherwise return the end date of the next reservation
+        return reservationBeforeThis?.EndDate.AddDays(1) ?? DateTime.MinValue;
+    }
+
+    private async Task<DateTime> LastAvailableDateForRooms()
+    {
+        var reservationAfterThis = await ReservationsContainingAnyOfRoomsButNotThisOne()
+            // Get all reservations that start after the current reservation ends
+            .Where(r => r.StartDate >= _reservationToEdit.EndDate)
+            // Order by start date
+            .OrderBy(r => r.StartDate)
+            // Get the first one
+            .FirstOrDefaultAsync();
+
+        // If there is no reservation after this one, return the max date,
+        // otherwise return the start date of the next reservation
+        return reservationAfterThis?.StartDate.AddDays(-1) ?? DateTime.MaxValue;
     }
 
 }
