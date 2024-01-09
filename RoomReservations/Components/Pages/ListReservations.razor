@@ -47,6 +47,7 @@
             .Include(r => r.RoomReservations)
             .ThenInclude(rr => rr.Room)
             .Where(r => r.UserId == user.Id)
+            .OrderBy(r => r.StartDate)
             .ToListAsync();
         _showList = true;
     }
