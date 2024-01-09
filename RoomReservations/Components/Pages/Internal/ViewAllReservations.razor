@@ -29,7 +29,7 @@
             <MudTableSortLabel SortBy="(Reservation context) => context.IsPaid">Opłacono</MudTableSortLabel>
         </MudTh>
         <MudTh>
-            <MudTableSortLabel SortBy="(Reservation context) => IsItInProgress(context)">Czy jest w trakcie</MudTableSortLabel>
+            <MudTableSortLabel SortBy="(Reservation context) => context.IsInProgress">Czy jest w trakcie</MudTableSortLabel>
         </MudTh>
         <MudTh>Edycja</MudTh>
         <MudTh>Transakcje</MudTh>
@@ -51,7 +51,7 @@
             }
         </MudTd>
         <MudTd DataLabel="Is in progress">
-            @if (IsItInProgress(context))
+            @if (context.IsInProgress)
             {
                 <MudIcon Icon="@Icons.Material.Filled.Check" Color="Color.Success"/>
             }
@@ -97,11 +97,6 @@
     {
         var result = string.Join(", ", rrs.Select(rr => rr.Room.Name));
         return result;
-    }
-
-    private static bool IsItInProgress(Reservation reservation)
-    {
-        return reservation.StartDate <= DateTime.Now && reservation.EndDate >= DateTime.Now;
     }
 
 }
