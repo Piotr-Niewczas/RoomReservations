@@ -10,4 +10,5 @@ public class Reservation
     public List<ReservationTransaction> ReservationTransactions { get; set; } = [];
     public string UserId { get; set; } = string.Empty;
     public ApplicationUser User { get; set; } = null!;
+    public bool IsInProgress => StartDate <= DateTime.Now && EndDate >= DateTime.Now;
 }
