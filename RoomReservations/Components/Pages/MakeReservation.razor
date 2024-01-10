@@ -37,9 +37,14 @@
     <MudItem xs="12" md="6">
         <EditForm Model="@_reservation" OnSubmit="Submit" FormName="ReservationForm">
             <MudPaper Class="pa-8 ma-2">
-                <MudDateRangePicker Label="Wybierz datę rezerwacji" @bind-DateRange="_dateRange" MinDate="@DateTime.Now.AddDays(-1)" PickerClosed="DatesChanged"/>
+                <MudDateRangePicker Label="Wybierz datę rezerwacji" DateRange="_dateRange"
+                                    MinDate="@DateTime.Now.AddDays(-1)"
+                                    DateRangeChanged="@(async value => { _dateRange = value; await DatesChanged(); })"
+                                    IsDateDisabledFunc="@(IsDateAvailable)"
+                                    PickerVariant="PickerVariant.Static" Orientation="Orientation.Landscape"/>
                 <br/>
-                <MudSelect T="int" Label="Wybierz pokój" @bind-Value="@_selectedRoomId">
+                <MudSelect T="int" Label="Wybierz pokój" Clearable="true" Value="@_selectedRoomId"
+                           ValueChanged="@(value => { _selectedRoomId = value; StateHasChanged(); })">
                     @foreach (var room in _availableRoomsFromDb)
                     {
                         <MudSelectItem T="int" Value="@room.Id">@room.Name</MudSelectItem>
@@ -117,6 +122,8 @@
     private decimal _totalPrice;
     private int? _transactionId;
     private bool _showPaymentDialog;
+
+    private IEnumerable<Reservation>? _currentReservationsForRooms;
 
     protected override async Task OnInitializedAsync()
     {
@@ -244,6 +251,19 @@
         {
             _totalPrice += room.PricePerNight * (decimal)stayLength;
         }
+    }
+
+    private bool IsDateAvailable(DateTime date)
+    {
+        var roomsToFind = _selectedRooms.ToList();
+
+        var selectedRoom = _availableRoomsFromDb.FirstOrDefault(room => room.Id == _selectedRoomId);
+        if (selectedRoom is not null) roomsToFind.Add(selectedRoom);
+
+        // this could be optimized by using a dictionary of rooms and their reservations
+        _currentReservationsForRooms = ReservationService.AllReservationsForAnyOfRooms(roomsToFind).ToList();
+
+        return !_currentReservationsForRooms.All(r => r.StartDate > date || r.EndDate < date);
     }
 
 }
