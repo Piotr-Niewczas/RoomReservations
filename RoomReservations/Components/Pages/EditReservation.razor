@@ -138,6 +138,8 @@
     private DateTime _lastAvailableDate;
     private bool _ignoreAvailableDates;
 
+    private IEnumerable<Reservation>? _reservationsForRooms;
+
     protected override async Task OnInitializedAsync()
     {
         // please note that we cannot use _alert.ShowAlert() here because it is not yet initialized
@@ -267,13 +269,7 @@
 
     private IQueryable<Reservation> ReservationsContainingAnyOfRoomsButNotThisOne()
     {
-        return ReservationService.CreateReservationQuery()
-            // Get all reservations that have any of the rooms in the current reservation
-            .Where(r => r.RoomReservations
-                .Any(rr => _reservationToEdit.RoomReservations
-                    .Select(rr2 => rr2.Room)
-                    .Contains(rr.Room)))
-            // Exclude the current reservation
+        return ReservationService.AllReservationsForAnyOfRooms(_reservationToEdit.RoomReservations.Select(rr => rr.Room).ToList())
             .Where(r => r.Id != _reservationToEdit.Id);
     }
 
