@@ -12,24 +12,22 @@
     <MudTabPanel Text="Nowy klient">
         <MudForm @ref="_newUserForm" @bind-IsValid="@_success" @bind-Errors="@_errors">
             <MudTextField T="string" Label="Email klienta" Required="true" RequiredError="Email jest wymagany!"
-                          @ref="_email"
-                          Validation="@(new EmailAddressAttribute { ErrorMessage = "Adres email jest nie poprawny!" })"/>
+                @bind-Value="Input.Email"
+                Validation="@(new EmailAddressAttribute { ErrorMessage = "Adres email jest nie poprawny!" })" />
 
             <div class="d-flex justify-space-between gap-4">
                 <MudTextField T="string" Label="Imię klienta" Required="true" RequiredError="Imię jest wymagane"
-                              @ref="_firstName"
-                              Validation="@(new Func<string, string>(arg => AtLeast2Len_NoDigit_FirstUpper(arg, "Imię")))"/>
+                    @bind-Value="Input.FirstName" />
 
                 <MudTextField T="string" Label="Nazwisko klienta" Required="true" RequiredError="Nazwisko jest wymagane"
-                              @ref="_lastName"
-                              Validation="@(new Func<string, string>(arg => AtLeast2Len_NoDigit_FirstUpper(arg, "Nazwisko")))"/>
+                    @bind-Value="Input.LastName" />
             </div>
         </MudForm>
     </MudTabPanel>
     <MudTabPanel Text="Obecny klient">
         <MudTextField T="string" Label="Email klienta" Required="true" RequiredError="Email jest wymagany!"
-                      @ref="_email"
-                      Validation="@(new EmailAddressAttribute { ErrorMessage = "Adres email jest nie poprawny!" })"/>
+            @bind-Value="Input.Email"
+            Validation="@(new EmailAddressAttribute { ErrorMessage = "Adres email jest nie poprawny!" })" />
         <div style="padding-top: 1em">
             <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SearchForUser">Wyszukaj</MudButton>
         </div>
@@ -50,7 +48,8 @@
 <Alert @ref="_alert"></Alert>
 <div style="padding-top: 3em">
     <MudPaper Class="pa-6" Elevation="2">
-        <MakeReservation @ref="_makeReservation" HijackSubmit="Submit" RedirectUrl="/internal/ViewAllReservations"></MakeReservation>
+        <MakeReservation @ref="_makeReservation" HijackSubmit="Submit" RedirectUrl="/internal/ViewAllReservations">
+        </MakeReservation>
     </MudPaper>
 </div>
 
@@ -58,9 +57,7 @@
     MudForm _newUserForm = new();
     bool _success;
     string[] _errors = [];
-    MudTextField<string> _firstName = new();
-    MudTextField<string> _lastName = new();
-    MudTextField<string> _email = new();
+    [SupplyParameterFromForm] private InputModel Input { get; set; } = new();
     MakeReservation _makeReservation = new();
 
     MudTabs _tabs = new();
@@ -81,7 +78,7 @@
             }
 
             // check if client that we want to create already exists
-            if (await UserService.FindUserByEmailAsync(_email.Value) is not null)
+            if (await UserService.FindUserByEmailAsync(Input.Email) is not null)
             {
                 _alert.ShowAlert(Severity.Error, "Użytkownik o tym adresie email już istnieje!");
                 return;
@@ -90,7 +87,7 @@
             // create new client
             try
             {
-                _userToPlaceReservation = await UserService.AddUserAsync(_email.Value, _firstName.Value, _lastName.Value);
+                _userToPlaceReservation = await UserService.AddUserAsync(Input.Email, Input.FirstName, Input.LastName);
             }
             catch (Exception e)
             {
@@ -114,10 +111,10 @@
     private async Task SearchForUser()
     {
         _alert.HideAlert();
-        var user = await UserService.FindUserByEmailAsync(_email.Value);
+        var user = await UserService.FindUserByEmailAsync(Input.Email);
         if (user is null)
         {
-            _alert.ShowAlert(Severity.Error, $"Użytkownik o adresie email {_email.Value} nie istnieje!");
+            _alert.ShowAlert(Severity.Error, $"Użytkownik o adresie email {Input.Email} nie istnieje!");
             return;
         }
 
@@ -140,6 +137,24 @@
             return $"{fieldName} nie może zawierać cyfr i znaków specjalnych!";
 
         return "";
+    }
+
+    private sealed class InputModel
+    {
+        [Required(ErrorMessage = "Email jest wymagany")]
+        [EmailAddress(ErrorMessage = "Niepoprawny adres email")]
+        [Display(Name = "Email")]
+        public string Email { get; set; } = "";
+
+        [Required(ErrorMessage = "Imię jest wymagane")]
+        [DataType(DataType.Text)]
+        [Display(Name = "Imię")]
+        public string FirstName { get; set; } = "";
+
+        [Required(ErrorMessage = "Nazwisko jest wymagane")]
+        [DataType(DataType.Text)]
+        [Display(Name = "Nazwisko")]
+        public string LastName { get; set; } = "";
     }
 
 }
