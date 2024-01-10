@@ -69,15 +69,15 @@
         else
         {
             <MudDateRangePicker Label="Zmień datę rezerwacji" @bind-DateRange="_dateRange" PickerClosed="DatePickerClosed"
-                                MinDate="@(_ignoreAvailbleDates ? null : _firstAvailableDate)"
-                                MaxDate="@(_ignoreAvailbleDates ? null : _lastAvailableDate)"/>
+                                MinDate="@(_ignoreAvailableDates ? null : _firstAvailableDate)"
+                                MaxDate="@(_ignoreAvailableDates ? null : _lastAvailableDate)"/>
         }
         <MudDivider/>
         @if (_isUserReceptionist)
         {
             <div class="d-flex justify-end flex-grow-1 align-center gap-4">
                 <MudText>Wyłącz ograniczenia daty</MudText>
-                <MudSwitch @bind-Checked="@_ignoreAvailbleDates" Color="Color.Primary" Class="mr-0"/>
+                <MudSwitch @bind-Checked="@_ignoreAvailableDates" Color="Color.Primary" Class="mr-0"/>
             </div>
         }
 
@@ -136,7 +136,7 @@
     private DateTime _originalEndDate;
     private DateTime _firstAvailableDate;
     private DateTime _lastAvailableDate;
-    private bool _ignoreAvailbleDates;
+    private bool _ignoreAvailableDates;
 
     protected override async Task OnInitializedAsync()
     {
