@@ -12,6 +12,8 @@ public interface IReservationService
 
     IQueryable<Reservation>
         ReservationsForAnyOfRoomsInDateRange(List<Room> rooms, DateTime startDate, DateTime endDate);
+
+    public IQueryable<Reservation> AllReservationsForAnyOfRooms(List<Room> rooms);
 }
 
 public class ReservationService(ApplicationDbContext context) : IReservationService
@@ -107,8 +109,15 @@ public class ReservationService(ApplicationDbContext context) : IReservationServ
     public IQueryable<Reservation> ReservationsForAnyOfRoomsInDateRange(List<Room> rooms, DateTime startDate,
         DateTime endDate)
     {
+        var reservations = AllReservationsForAnyOfRooms(rooms)
+            .Where(r => r.StartDate <= endDate && r.EndDate >= startDate);
+
+        return reservations;
+    }
+
+    public IQueryable<Reservation> AllReservationsForAnyOfRooms(List<Room> rooms)
+    {
         var reservations = context.Reservations
-            .Where(r => !(startDate > r.EndDate || endDate < r.StartDate))
             .Where(r => r.RoomReservations.Any(roomInRes => rooms.Contains(roomInRes.Room)))
             .Include(r => r.RoomReservations)
             .ThenInclude(rr => rr.Room);
@@ -119,5 +128,10 @@ public class ReservationService(ApplicationDbContext context) : IReservationServ
     private bool ReservationExists(int id)
     {
         return context.Reservations.Any(e => e.Id == id);
+    }
+
+    public static bool IsAnyAtDate(DateTime date, IEnumerable<Reservation> reservations)
+    {
+        return reservations.Any(r => r.StartDate <= date && r.EndDate >= date);
     }
 }
