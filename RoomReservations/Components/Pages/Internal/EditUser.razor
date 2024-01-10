@@ -16,30 +16,26 @@
     return;
 }
 <MudForm @ref="_editUserForm" Style="position: relative">
-    <MudOverlay Visible="_isDeletedOverlayVisible" Style="background-color: rgba(0, 0, 0, 0.5) !important" Absolute="true">
+    <MudOverlay Visible="_isDeletedOverlayVisible" Style="background-color: rgba(0, 0, 0, 0.5) !important"
+        Absolute="true">
         <MudPaper Class="pa-16 ma-2" Elevation="3">
             <MudText Typo="Typo.h4">Użytkownik usunięty</MudText>
         </MudPaper>
     </MudOverlay>
     <MudTextField T="string" Label="Email klienta" Required="true" RequiredError="Email jest wymagany!"
-                  @bind-Text="_userToEdit.Email"
-                  Validation="@(new EmailAddressAttribute { ErrorMessage = "Adres email jest nie poprawny!" })"/>
+        @bind-Value="Input.Email" />
 
     <div class="d-flex justify-space-between gap-4">
         <MudTextField T="string" Label="Imię klienta" Required="true" RequiredError="Imię jest wymagane"
-                      @bind-Text="_userToEdit.FirstName"
-                      Validation="@(new Func<string, string>(arg => AtLeast2Len_NoDigit_FirstUpper(arg, "Imię")))"/>
+            @bind-Value="Input.FirstName" />
 
         <MudTextField T="string" Label="Nazwisko klienta" Required="true" RequiredError="Nazwisko jest wymagane"
-                      @bind-Text="_userToEdit.LastName"
-                      Validation="@(new Func<string, string>(arg => AtLeast2Len_NoDigit_FirstUpper(arg, "Nazwisko")))"/>
+            @bind-Text="Input.LastName" />
     </div>
 
-    <MudTextField T="string" Label="Nr tel klienta" Required="false"
-                  @bind-Text="_userToEdit.PhoneNumber"
-                  Validation="@(new PhoneAttribute { ErrorMessage = "Nr tel jest nie poprawny!" })"/>
+    <MudTextField T="string" Label="Nr tel klienta" Required="false" @bind-Value="Input.PhoneNumber" />
 
-    <MudSelect T="string" Label="Rola" @bind-Value="@_selectedRoleName">
+    <MudSelect T="string" Label="Rola" @bind-Value="@Input.Role">
         @foreach (var role in RoleNames.Roles)
         {
             <MudSelectItem T="string" Value="@role">@role</MudSelectItem>
@@ -48,15 +44,18 @@
 </MudForm>
 <MudGrid Spacing="10" Justify="Justify.Center" Style="padding-top: 1em">
     <MudItem>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(_editUserForm.IsValid || _isDeletedOverlayVisible)" OnClick="SaveUser">Zapisz</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary"
+            Disabled="@(_editUserForm.IsValid || _isDeletedOverlayVisible)" OnClick="SaveUser">Zapisz</MudButton>
     </MudItem>
 
     <MudItem>
-        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="@_isDeletedOverlayVisible" OnClick="DeleteUser">Usuń</MudButton>
+        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="@_isDeletedOverlayVisible"
+            OnClick="DeleteUser">Usuń</MudButton>
     </MudItem>
 
     <MudItem>
-        <MudButton Variant="Variant.Filled" Color="@(_isDeletedOverlayVisible ? Color.Primary : Color.Default)" OnClick="SharedMethodsService.GoBackAsync">Wróć</MudButton>
+        <MudButton Variant="Variant.Filled" Color="@(_isDeletedOverlayVisible ? Color.Primary : Color.Default)"
+            OnClick="SharedMethodsService.GoBackAsync">Wróć</MudButton>
     </MudItem>
 </MudGrid>
 <Alert @ref="_alert"></Alert>
@@ -65,7 +64,7 @@
     [Parameter] public string Id { get; set; } = string.Empty;
     MudForm _editUserForm = new();
     ApplicationUser? _userToEdit = new();
-    string _selectedRoleName = "";
+    [SupplyParameterFromForm] private InputModel Input { get; set; } = new();
     Alert _alert = new();
     bool _isDeletedOverlayVisible;
 
@@ -74,7 +73,11 @@
         _userToEdit = await UserManager.FindByIdAsync(Id);
         if (_userToEdit is not null)
         {
-            _selectedRoleName = (await UserManager.GetRolesAsync(_userToEdit)).FirstOrDefault() ?? "Brak roli";
+            Input.Email = _userToEdit.Email;
+            Input.FirstName = _userToEdit.FirstName;
+            Input.LastName = _userToEdit.LastName;
+            Input.PhoneNumber = _userToEdit.PhoneNumber;
+            Input.Role = (await UserManager.GetRolesAsync(_userToEdit)).FirstOrDefault() ?? "Brak roli";
         }
     }
 
@@ -91,12 +94,17 @@
             return;
         }
 
-        _userToEdit.UserName = _userToEdit.Email;
+        _userToEdit.UserName = Input.Email;
+        _userToEdit.Email = Input.Email;
+        _userToEdit.FirstName = Input.FirstName;
+        _userToEdit.LastName = Input.LastName;
+        _userToEdit.PhoneNumber = Input.PhoneNumber;
+
         var result = await UserManager.UpdateAsync(_userToEdit);
         if (result.Succeeded)
         {
             await UserManager.RemoveFromRolesAsync(_userToEdit, await UserManager.GetRolesAsync(_userToEdit));
-            await UserManager.AddToRoleAsync(_userToEdit, _selectedRoleName);
+            await UserManager.AddToRoleAsync(_userToEdit, Input.Role);
             _alert.ShowAlert(Severity.Success, "Zapisano pomyślnie");
         }
         else
@@ -116,21 +124,33 @@
         await UserManager.DeleteAsync(_userToEdit);
     }
 
-    private static string AtLeast2Len_NoDigit_FirstUpper(string arg, string fieldName)
+    private sealed class InputModel
     {
-        if (string.IsNullOrWhiteSpace(arg))
-        {
-            return $"{fieldName} jest wymagane!";
-        }
+        [Required(ErrorMessage = "Email jest wymagany")]
+        [EmailAddress(ErrorMessage = "Niepoprawny adres email")]
+        [Display(Name = "Email")]
+        public string Email { get; set; } = "";
 
-        if (arg.Length < 2)
-            return $"{fieldName} musi zawierać przynajmniej 2 znaki!";
-        if (char.IsLower(arg[0]))
-            return $"{fieldName} musi zaczynać się z dużej litery!";
-        if (Regex.IsMatch(arg, @"[\d\W]"))
-            return $"{fieldName} nie może zawierać cyfr i znaków specjalnych!";
+        [Required(ErrorMessage = "Imię jest wymagane")]
+        [DataType(DataType.Text)]
+        [Display(Name = "Imię")]
+        public string FirstName { get; set; } = "";
 
-        return "";
+        [Required(ErrorMessage = "Nazwisko jest wymagane")]
+        [DataType(DataType.Text)]
+        [Display(Name = "Nazwisko")]
+        public string LastName { get; set; } = "";
+
+        [Phone]
+        [Display(Name = "Phone number")]
+        public string? PhoneNumber { get; set; }
+
+        // Role
+        [Required(ErrorMessage = "Rola jest wymagana")]
+        [DataType(DataType.Text)]
+        [Display(Name = "Rola")]
+        public string Role { get; set; } = "";
+
     }
 
 }
