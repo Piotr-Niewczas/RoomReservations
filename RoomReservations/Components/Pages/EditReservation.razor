@@ -49,43 +49,42 @@
         <MudText Typo="Typo.h6">Edytuj rezerwację</MudText>
         <MudText>ID rezerwacji: @_reservationToEdit.Id</MudText>
         <MudText>Email klienta: @_reservationToEdit.User.UserName </MudText>
-        <MudDivider/>
-        @if (_onlyEditEndDateForward)
-        {
-            <MudGrid>
-                <MudItem xs="6">
-                    <div style="position: relative; top: 50%; transform: translateY(-50%);">
-                        <MudText>Data rozpoczęcia rezerwacji: @_dateRange.Start?.ToString("dd.MM.yyyy")</MudText>
-                    </div>
-                </MudItem>
-                <MudItem xs="6">
-                    <MudDatePicker Label="Data zakończenia: " @bind-Date="_dateRange.End"
-                                   MinDate="@_originalEndDate" MaxDate="@_lastAvailableDate"
-                                   PickerClosed="DatePickerClosed" ReadOnly="@(!_reservationToEdit.IsPaid)"
-                                   HelperText="@(_reservationToEdit.IsPaid ? "" : "Rezerwacja nie jest opłacona, więc nie możesz jej wydłużyć")"/>
-                </MudItem>
-            </MudGrid>
-        }
-        else
-        {
-            <MudDateRangePicker Label="Zmień datę rezerwacji" @bind-DateRange="_dateRange" PickerClosed="DatePickerClosed"
-                                MinDate="@(_ignoreAvailableDates ? null : _firstAvailableDate)"
-                                MaxDate="@(_ignoreAvailableDates ? null : _lastAvailableDate)"/>
-        }
-        <MudDivider/>
-        @if (_isUserReceptionist)
-        {
-            <div class="d-flex justify-end flex-grow-1 align-center gap-4">
-                <MudText>Wyłącz ograniczenia daty</MudText>
-                <MudSwitch @bind-Checked="@_ignoreAvailableDates" Color="Color.Primary" Class="mr-0"/>
-            </div>
-        }
 
-        <MudText>Pokoje:</MudText>
-        @foreach (var rr in _reservationToEdit.RoomReservations)
-        {
-            <MudText>"@rr.Room.Name"</MudText>
-        }
+        <div style="padding-top: 2em">
+            @if (_onlyEditEndDateForward)
+            {
+                <MudGrid>
+                    <MudItem xs="6">
+                        <div style="position: relative; top: 50%; transform: translateY(-50%);">
+                            <MudText>Data rozpoczęcia rezerwacji: @_dateRange.Start?.ToString("dd.MM.yyyy")</MudText>
+                        </div>
+                    </MudItem>
+                    <MudItem xs="6">
+                        <MudDatePicker Label="Data zakończenia: " @bind-Date="_dateRange.End"
+                                       MinDate="@_originalEndDate" MaxDate="@_lastAvailableDate"
+                                       PickerClosed="DatePickerClosed" ReadOnly="@(!_reservationToEdit.IsPaid)"
+                                       HelperText="@(_reservationToEdit.IsPaid ? "" : "Rezerwacja nie jest opłacona, więc nie możesz jej wydłużyć")"/>
+                    </MudItem>
+                </MudGrid>
+            }
+            else
+            {
+                <MudDateRangePicker Label="Zmień datę rezerwacji" @bind-DateRange="_dateRange" PickerClosed="DatePickerClosed"
+                                    MinDate="@(_isUserReceptionist ? DateTime.Now.AddDays(-1) : _firstAvailableDate)"
+                                    MaxDate="@(_isUserReceptionist ? null : _lastAvailableDate)"
+                                    IsDateDisabledFunc="@(_isUserReceptionist ? IsDateAvailable : null)"
+                                    PickerVariant="PickerVariant.Static" Orientation="Orientation.Landscape"/>
+            }
+        </div>
+
+        <div style="padding-top: 2em">
+            <MudText>Pokoje:</MudText>
+            @foreach (var rr in _reservationToEdit.RoomReservations)
+            {
+                <MudText>"@rr.Room.Name"</MudText>
+            }
+        </div>
+
         <div style="padding-top: 2em;">
             <MudText>Zapłacono: @_amountAlreadyPaid zł</MudText>
             <MudText>Koszt po edycji: @_amountAfterEdit zł</MudText>
@@ -136,7 +135,6 @@
     private DateTime _originalEndDate;
     private DateTime _firstAvailableDate;
     private DateTime _lastAvailableDate;
-    private bool _ignoreAvailableDates;
 
     private IEnumerable<Reservation>? _reservationsForRooms;
 
@@ -186,14 +184,17 @@
             _originalEndDate = _reservationToEdit.EndDate;
         }
 
-        _firstAvailableDate = await FirstAvailableDateForRooms();
-        // if date is in the past, change to current one
-        if (_firstAvailableDate < DateTime.Now.AddDays(-1))
+        if (!_isUserReceptionist)
         {
-            _firstAvailableDate = DateTime.Now.AddDays(-1);
-        }
+            _firstAvailableDate = await FirstAvailableDateForRooms();
+            // if date is in the past, change to current one
+            if (_firstAvailableDate < DateTime.Now.AddDays(-1))
+            {
+                _firstAvailableDate = DateTime.Now.AddDays(-1);
+            }
 
-        _lastAvailableDate = await LastAvailableDateForRooms();
+            _lastAvailableDate = await LastAvailableDateForRooms();
+        }
     }
 
     private async void DatePickerClosed()
@@ -301,6 +302,13 @@
         // If there is no reservation after this one, return the max date,
         // otherwise return the start date of the next reservation
         return reservationAfterThis?.StartDate.AddDays(-1) ?? DateTime.MaxValue;
+    }
+
+    private bool IsDateAvailable(DateTime date)
+    {
+        _reservationsForRooms ??= ReservationsContainingAnyOfRoomsButNotThisOne().ToList();
+
+        return !_reservationsForRooms.All(r => r.StartDate > date || r.EndDate < date);
     }
 
 }
