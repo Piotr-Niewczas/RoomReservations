@@ -16,12 +16,13 @@
                 <MudCardContent>
                     <MudText Typo="Typo.h6">@room.Name</MudText>
                     <MudText Typo="Typo.body2">@room.Description</MudText>
-                    <div style="padding-top: 1em">
-                        <MudText Align="Align.End" Typo="Typo.body2">Cena za noc: @room.PricePerNight PLN</MudText>
-                    </div>
+                    <div style="padding-top: 3em"></div>
                 </MudCardContent>
-                <MudCardActions Style="position: absolute; bottom: 0;">
+                <MudCardActions Style="position: absolute; bottom: 0; justify-content: space-between; width: 100%; padding: 1em; align-items: center">
                     <MudButton Color="Color.Primary" Variant="Variant.Filled">Zarezerwuj</MudButton>
+                    <div>
+                        <MudText Style="text-align: right" Align="Align.Right" Typo="Typo.body2">Cena za noc: @room.PricePerNight PLN</MudText>
+                    </div>
                 </MudCardActions>
             </MudCard>
         </MudItem>
