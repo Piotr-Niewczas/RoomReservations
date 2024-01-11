@@ -51,7 +51,7 @@
         <MudText>Email klienta: @_reservationToEdit.User.UserName </MudText>
 
         <div style="padding-top: 2em">
-            @if (_onlyEditEndDateForward)
+            @if (_isCloseOrInProgressLimit)
             {
                 <MudGrid>
                     <MudItem xs="6">
@@ -100,7 +100,7 @@
             </MudItem>
 
             <MudItem>
-                <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="@_isDeletedOverlayVisible" OnClick="DeleteReservation">Odwołaj rezerwację</MudButton>
+                <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="@(_isDeletedOverlayVisible || _isCloseOrInProgressLimit)" OnClick="DeleteReservation">Odwołaj rezerwację</MudButton>
             </MudItem>
 
             <MudItem>
@@ -131,7 +131,7 @@
     private bool _isTransactionCompleted; // IT IS ASSIGNED TO 
 #pragma warning restore 0649
 
-    private bool _onlyEditEndDateForward;
+    private bool _isCloseOrInProgressLimit;
     private DateTime _originalEndDate;
     private DateTime _firstAvailableDate;
     private DateTime _lastAvailableDate;
@@ -180,7 +180,7 @@
         // If user is not a receptionist and the reservation starts in less than 7 days
         if (!_isUserReceptionist && _reservationToEdit.StartDate < DateTime.Now.AddDays(7))
         {
-            _onlyEditEndDateForward = true;
+            _isCloseOrInProgressLimit = true;
             _originalEndDate = _reservationToEdit.EndDate;
         }
 
