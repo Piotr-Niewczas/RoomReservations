@@ -138,7 +138,7 @@
         [DataType(DataType.Text)]
         [Display(Name = "Imię")]
         [MinLength(2, ErrorMessage = "Imię musi zawierać przynajmniej 2 znaki")]
-        [RegularExpression(@"^[A-z\p{Lu}][a-z\p{Ll}]*$", ErrorMessage = "Imię musi zaczynać się z dużej litery i nie może zawierać cyfr i znaków specjalnych")]
+        [RegularExpression(@"^[A-Z\p{Lu}][a-z\p{Ll}]*$", ErrorMessage = "Imię musi zaczynać się z dużej litery i nie może zawierać cyfr i znaków specjalnych")]
         public string FirstName { get; set; } = "";
 
         [Required(ErrorMessage = "Nazwisko jest wymagane")]
