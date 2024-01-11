@@ -5,40 +5,28 @@
 @inject IRoomService RoomService
 
 <h3>Nasze wspaniałe pokoje</h3>
+<MudText></MudText>
 
-@if (_rooms == null)
-{
-    <p>
-        <em>Ładowanie...</em>
-    </p>
-}
-else
-{
-    <table class="table">
-        <thead>
-        <tr>
-            <th>Zdjęcie</th>
-            <th>Nazwa</th>
-            <th>Opis</th>
-            <th>Cena za noc</th>
-        </tr>
-        </thead>
-        <tbody>
-        @foreach (var room in _rooms)
-        {
-            <tr>
-                <td>
-                    <img src=@room.ImageUrl alt="Brak zdjęcia"/>
-                </td>
-                <td>@room.Name</td>
-                <td>@room.Description</td>
-                <td>@room.PricePerNight</td>
-            </tr>
-        }
-        </tbody>
-    </table>
-}
-
+<MudGrid>
+    @foreach (var room in _rooms)
+    {
+        <MudItem xs="12" md="6" lg="4" xl="3" xxl="2">
+            <MudCard Style="height: 100%; position: relative;">
+                <MudCardMedia Image="@room.ImageUrl"/>
+                <MudCardContent>
+                    <MudText Typo="Typo.h6">@room.Name</MudText>
+                    <MudText Typo="Typo.body2">@room.Description</MudText>
+                    <div style="padding-top: 1em">
+                        <MudText Align="Align.End" Typo="Typo.body2">Cena za noc: @room.PricePerNight PLN</MudText>
+                    </div>
+                </MudCardContent>
+                <MudCardActions Style="position: absolute; bottom: 0;">
+                    <MudButton Color="Color.Primary" Variant="Variant.Filled">Zarezerwuj</MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+    }
+</MudGrid>
 
 @code {
     private List<Room> _rooms = [];
