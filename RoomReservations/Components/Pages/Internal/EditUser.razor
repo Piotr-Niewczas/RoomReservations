@@ -73,7 +73,7 @@
         _userToEdit = await UserManager.FindByIdAsync(Id);
         if (_userToEdit is not null)
         {
-            Input.Email = _userToEdit.Email;
+            Input.Email = _userToEdit.Email!;
             Input.FirstName = _userToEdit.FirstName;
             Input.LastName = _userToEdit.LastName;
             Input.PhoneNumber = _userToEdit.PhoneNumber;
