@@ -62,17 +62,17 @@
                     <MudItem xs="6">
                         <MudDatePicker Label="Data zakończenia: " @bind-Date="_dateRange.End"
                                        MinDate="@_originalEndDate" MaxDate="@_lastAvailableDate"
-                                       PickerClosed="DatePickerClosed" ReadOnly="@(!_reservationToEdit.IsPaid)"
+                                       PickerClosed="DatesChanged" ReadOnly="@(!_reservationToEdit.IsPaid)"
                                        HelperText="@(_reservationToEdit.IsPaid ? "" : "Rezerwacja nie jest opłacona, więc nie możesz jej wydłużyć")"/>
                     </MudItem>
                 </MudGrid>
             }
             else
             {
-                <MudDateRangePicker Label="Zmień datę rezerwacji" @bind-DateRange="_dateRange" PickerClosed="DatePickerClosed"
-                                    MinDate="@(_isUserReceptionist ? DateTime.Now.AddDays(-1) : _firstAvailableDate)"
-                                    MaxDate="@(_isUserReceptionist ? null : _lastAvailableDate)"
-                                    IsDateDisabledFunc="@(_isUserReceptionist ? IsDateAvailable : null)"
+                <MudDateRangePicker Label="Zmień datę rezerwacji"
+                                    DateRange="_dateRange" DateRangeChanged="@(async value => { _dateRange = value; await DatesChanged(); })"
+                                    MinDate="@(_isUserReceptionist ? DateTime.Now.AddDays(-1) : DateTime.Now.AddDays(7))"
+                                    IsDateDisabledFunc="@(IsDateAvailable)"
                                     PickerVariant="PickerVariant.Static" Orientation="Orientation.Landscape"/>
             }
         </div>
@@ -197,7 +197,7 @@
         }
     }
 
-    private async void DatePickerClosed()
+    private async Task DatesChanged()
     {
         // Check if rooms are available at the given dates. Remove current reservation from the list.
         var collidingReservations = await ReservationService.ReservationsForAnyOfRoomsInDateRange(
