@@ -1,7 +1,6 @@
 ﻿@page "/internal/edit-user/{id}"
 @using RoomReservations.Models
 @using Microsoft.AspNetCore.Identity
-@using System.Text.RegularExpressions
 @using Microsoft.AspNetCore.Authorization
 @using System.ComponentModel.DataAnnotations
 @inject UserManager<ApplicationUser> UserManager
@@ -15,37 +14,35 @@
     <p>Użytkownik nie istnieje</p>
     return;
 }
-<MudForm @ref="_editUserForm" Style="position: relative">
+<EditForm EditContext="@EditContext" Style="position: relative">
+<DataAnnotationsValidator/>
     <MudOverlay Visible="_isDeletedOverlayVisible" Style="background-color: rgba(0, 0, 0, 0.5) !important"
         Absolute="true">
         <MudPaper Class="pa-16 ma-2" Elevation="3">
             <MudText Typo="Typo.h4">Użytkownik usunięty</MudText>
         </MudPaper>
     </MudOverlay>
-    <MudTextField T="string" Label="Email klienta" Required="true" RequiredError="Email jest wymagany!"
-        @bind-Value="Input.Email" />
+    <MudTextField Label="Email klienta" @bind-Value="Input.Email" />
 
     <div class="d-flex justify-space-between gap-4">
-        <MudTextField T="string" Label="Imię klienta" Required="true" RequiredError="Imię jest wymagane"
-            @bind-Value="Input.FirstName" />
+        <MudTextField Label="Imię klienta" @bind-Value="Input.FirstName" />
 
-        <MudTextField T="string" Label="Nazwisko klienta" Required="true" RequiredError="Nazwisko jest wymagane"
-            @bind-Text="Input.LastName" />
+        <MudTextField Label="Nazwisko klienta" @bind-Value="Input.LastName" />
     </div>
 
-    <MudTextField T="string" Label="Nr tel klienta" Required="false" @bind-Value="Input.PhoneNumber" />
+    <MudTextField Label="Nr tel klienta" @bind-Value="Input.PhoneNumber" />
 
-    <MudSelect T="string" Label="Rola" @bind-Value="@Input.Role">
+    <MudSelect Label="Rola" @bind-Value="@Input.Role">
         @foreach (var role in RoleNames.Roles)
         {
             <MudSelectItem T="string" Value="@role">@role</MudSelectItem>
         }
     </MudSelect>
-</MudForm>
+</EditForm>
 <MudGrid Spacing="10" Justify="Justify.Center" Style="padding-top: 1em">
     <MudItem>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary"
-            Disabled="@(_editUserForm.IsValid || _isDeletedOverlayVisible)" OnClick="SaveUser">Zapisz</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" 
+            Disabled="@(!EditContext.Validate() || _isDeletedOverlayVisible)" ButtonType="ButtonType.Submit" OnClick="SaveUser">Zapisz</MudButton>
     </MudItem>
 
     <MudItem>
@@ -62,15 +59,17 @@
 
 @code {
     [Parameter] public string Id { get; set; } = string.Empty;
-    MudForm _editUserForm = new();
+    EditContext EditContext { get; set; } = new(new InputModel());
     ApplicationUser? _userToEdit = new();
-    [SupplyParameterFromForm] private InputModel Input { get; set; } = new();
+    [SupplyParameterFromForm] private InputModel Input { get; } = new();
     Alert _alert = new();
     bool _isDeletedOverlayVisible;
 
     protected override async Task OnInitializedAsync()
     {
+        EditContext = new EditContext(Input);
         _userToEdit = await UserManager.FindByIdAsync(Id);
+
         if (_userToEdit is not null)
         {
             Input.Email = _userToEdit.Email!;
@@ -88,9 +87,9 @@
             return;
         }
 
-        if (_editUserForm.Validate().IsCompletedSuccessfully == false)
+        if (!EditContext.Validate())
         {
-            _alert.ShowAlert(Severity.Error, "Formularz zawiera błędy!");
+            _alert.ShowAlert(Severity.Error, EditContext.GetValidationMessages().First());
             return;
         }
 

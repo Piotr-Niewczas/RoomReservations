@@ -1,7 +1,6 @@
 ﻿@page "/internal/ReceptionistMakeReservation"
 @using RoomReservations.Models
 @using RoomReservations.Data
-@using System.Text.RegularExpressions
 @using Microsoft.AspNetCore.Authorization
 @using System.ComponentModel.DataAnnotations
 @inject UserService UserService
@@ -10,24 +9,20 @@
 
 <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6" @ref="_tabs" Border="true">
     <MudTabPanel Text="Nowy klient">
-        <MudForm @ref="_newUserForm" @bind-IsValid="@_success" @bind-Errors="@_errors">
-            <MudTextField T="string" Label="Email klienta" Required="true" RequiredError="Email jest wymagany!"
-                @bind-Value="Input.Email"
-                Validation="@(new EmailAddressAttribute { ErrorMessage = "Adres email jest nie poprawny!" })" />
+        <EditForm EditContext="@EditContext">
+        <DataAnnotationsValidator/>
+            <MudTextField Label="Email klienta" @bind-Value="Input.Email" />
 
             <div class="d-flex justify-space-between gap-4">
-                <MudTextField T="string" Label="Imię klienta" Required="true" RequiredError="Imię jest wymagane"
-                    @bind-Value="Input.FirstName" />
+                <MudTextField Label="Imię klienta" @bind-Value="Input.FirstName" />
 
-                <MudTextField T="string" Label="Nazwisko klienta" Required="true" RequiredError="Nazwisko jest wymagane"
-                    @bind-Value="Input.LastName" />
+                <MudTextField Label="Nazwisko klienta" @bind-Value="Input.LastName" />
             </div>
-        </MudForm>
+        </EditForm>
     </MudTabPanel>
     <MudTabPanel Text="Obecny klient">
         <MudTextField T="string" Label="Email klienta" Required="true" RequiredError="Email jest wymagany!"
-            @bind-Value="Input.Email"
-            Validation="@(new EmailAddressAttribute { ErrorMessage = "Adres email jest nie poprawny!" })" />
+            @bind-Value="Input.Email" />
         <div style="padding-top: 1em">
             <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SearchForUser">Wyszukaj</MudButton>
         </div>
@@ -54,10 +49,8 @@
 </div>
 
 @code {
-    MudForm _newUserForm = new();
-    bool _success;
-    string[] _errors = [];
-    [SupplyParameterFromForm] private InputModel Input { get; set; } = new();
+    EditContext EditContext { get; set; } = new(new InputModel());
+    [SupplyParameterFromForm] private InputModel Input { get; } = new();
     MakeReservation _makeReservation = new();
 
     MudTabs _tabs = new();
@@ -65,15 +58,20 @@
     ApplicationUser? _userToPlaceReservation;
     Alert _alert = new();
 
+    protected override void OnInitialized()
+    {
+        EditContext = new EditContext(Input);
+    }
+
     private async Task Submit()
     {
         // check what upper tab is selected
         if (_tabs.ActivePanelIndex == 0)
         {
             // new client
-            if (_newUserForm.Validate().IsCompletedSuccessfully == false)
+            if (!EditContext.Validate())
             {
-                _alert.ShowAlert(Severity.Error, "Formularz zawiera błędy!");
+                _alert.ShowAlert(Severity.Error, EditContext.GetValidationMessages().First());
                 return;
             }
 
@@ -121,24 +119,6 @@
         _userToPlaceReservation = user;
     }
 
-
-    private static string AtLeast2Len_NoDigit_FirstUpper(string arg, string fieldName)
-    {
-        if (string.IsNullOrWhiteSpace(arg))
-        {
-            return $"{fieldName} jest wymagane!";
-        }
-
-        if (arg.Length < 2)
-            return $"{fieldName} musi zawierać przynajmniej 2 znaki!";
-        if (char.IsLower(arg[0]))
-            return $"{fieldName} musi zaczynać się z dużej litery!";
-        if (Regex.IsMatch(arg, @"[\d\W]"))
-            return $"{fieldName} nie może zawierać cyfr i znaków specjalnych!";
-
-        return "";
-    }
-
     private sealed class InputModel
     {
         [Required(ErrorMessage = "Email jest wymagany")]
@@ -150,7 +130,7 @@
         [DataType(DataType.Text)]
         [Display(Name = "Imię")]
         [MinLength(2, ErrorMessage = "Imię musi zawierać przynajmniej 2 znaki")]
-        [RegularExpression(@"^[A-z\p{Lu}][a-z\p{Ll}]*$", ErrorMessage = "Imię musi zaczynać się z dużej litery i nie może zawierać cyfr i znaków specjalnych")]
+        [RegularExpression(@"^[A-Z\p{Lu}][a-z\p{Ll}]*$", ErrorMessage = "Imię musi zaczynać się z dużej litery i nie może zawierać cyfr i znaków specjalnych")]
         public string FirstName { get; set; } = "";
 
         [Required(ErrorMessage = "Nazwisko jest wymagane")]
