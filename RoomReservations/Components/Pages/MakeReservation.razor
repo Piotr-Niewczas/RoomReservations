@@ -108,7 +108,7 @@
     [Parameter] public int? StartingRoomId { get; set; }
     ApplicationUser? User { get; set; }
     [Parameter] public EventCallback HijackSubmit { get; set; }
-    [Parameter] public bool DisableSubmit { get; set; }
+    [Parameter] public bool DisableSubmit { get; set; } = true;
     [Parameter] public string RedirectUrl { get; set; } = "/list-reservations";
     Reservation _reservation = new();
     List<Room> _availableRoomsFromDb = [];
@@ -150,6 +150,7 @@
         {
             _availableRoomsFromDb.Remove(selectedRoom);
             _selectedRooms.Add(selectedRoom);
+            DisableSubmit = false;
         }
 
         // Clear the selection
@@ -162,12 +163,19 @@
         _selectedRooms.Remove(room);
         await ReloadAvailableRoomsAtDates();
         RecalculateTotalPrice();
+        if (_selectedRooms.Count == 0) DisableSubmit = true;
     }
 
     private async Task DatesChanged()
     {
         await ReloadAvailableRoomsAtDates();
         RecalculateTotalPrice();
+
+        // If the date range is invalid, disable the submit button
+        if (_dateRange.Start is null || _dateRange.End is null)
+        {
+            DisableSubmit = true;
+        }
     }
 
     private async Task ReloadAvailableRoomsAtDates()
