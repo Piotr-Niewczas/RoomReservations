@@ -149,7 +149,7 @@
         {
             _availableRoomsFromDb.Remove(selectedRoom);
             _addedRooms.Add(selectedRoom);
-            DisableSubmit = false;
+            CheckIfReservationComplete();
         }
 
         // Clear the selection
@@ -162,7 +162,7 @@
         _addedRooms.Remove(room);
         await ReloadAvailableRoomsAtDates();
         RecalculateTotalPrice();
-        if (_addedRooms.Count == 0) DisableSubmit = true;
+        CheckIfReservationComplete();
     }
 
     private async Task DatesChanged()
@@ -170,11 +170,7 @@
         await ReloadAvailableRoomsAtDates();
         RecalculateTotalPrice();
 
-        // If the date range is invalid, disable the submit button
-        if (_dateRange.Start is null || _dateRange.End is null)
-        {
-            DisableSubmit = true;
-        }
+        CheckIfReservationComplete();
     }
 
     private async Task ReloadAvailableRoomsAtDates()
@@ -263,7 +259,7 @@
     private void RecalculateTotalPrice()
     {
         _totalPrice = 0;
-        var stayLength = Math.Ceiling((_dateRange.End - _dateRange.Start)?.TotalDays ?? -1);
+        var stayLength = Math.Ceiling((_dateRange.End - _dateRange.Start)?.TotalDays ?? 0);
         foreach (var room in _addedRooms)
         {
             _totalPrice += room.PricePerNight * (decimal)stayLength;
@@ -281,6 +277,11 @@
         _currentReservationsForRooms = ReservationService.AllReservationsForAnyOfRooms(roomsToFind).ToList();
 
         return !_currentReservationsForRooms.All(r => r.StartDate > date || r.EndDate < date);
+    }
+
+    private void CheckIfReservationComplete()
+    {
+        DisableSubmit = _dateRange.Start is null || _dateRange.End is null || _addedRooms.Count == 0;
     }
 
 }
