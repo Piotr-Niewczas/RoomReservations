@@ -11,12 +11,12 @@
     <MudTabPanel Text="Nowy klient">
         <EditForm EditContext="@EditContext">
             <DataAnnotationsValidator/>
-            <MudTextField Label="Email klienta" @bind-Value="Input.Email" @bind-Value:after="checkValidity"/>
+            <MudTextField Label="Email klienta" @bind-Value="Input.Email" @bind-Value:after="CheckValidity"/>
 
             <div class="d-flex justify-space-between gap-4">
-                <MudTextField Label="Imię klienta" @bind-Value="Input.FirstName" @bind-Value:after="checkValidity"/>
+                <MudTextField Label="Imię klienta" @bind-Value="Input.FirstName" @bind-Value:after="CheckValidity"/>
 
-                <MudTextField Label="Nazwisko klienta" @bind-Value="Input.LastName" @bind-Value:after="checkValidity"/>
+                <MudTextField Label="Nazwisko klienta" @bind-Value="Input.LastName" @bind-Value:after="CheckValidity"/>
             </div>
         </EditForm>
     </MudTabPanel>
@@ -43,7 +43,7 @@
 <Alert @ref="_alert"></Alert>
 <div style="padding-top: 3em">
     <MudPaper Class="pa-6" Elevation="2">
-        <MakeReservation DisableSubmit="@localDisableSubmit" @ref="_makeReservation" HijackSubmit="Submit" RedirectUrl="/internal/ViewAllReservations">
+        <MakeReservation DisableSubmit="@DisableSubmit" @ref="_makeReservation" HijackSubmit="Submit" RedirectUrl="/internal/ViewAllReservations">
         </MakeReservation>
     </MudPaper>
 </div>
@@ -54,26 +54,26 @@
     // ReSharper disable once AutoPropertyCanBeMadeGetOnly.Local
     [SupplyParameterFromForm] private InputModel Input { get; set; } = new();
     MakeReservation _makeReservation = new();
+    bool DisableSubmit { get; set; } = true;
 
     MudTabs _tabs = new();
 
     ApplicationUser? _userToPlaceReservation;
     Alert _alert = new();
 
-    public bool localDisableSubmit { get; set; } = true;
 
     protected override void OnInitialized()
     {
         EditContext = new EditContext(Input);
-        localDisableSubmit = EditContext.Validate();
+        DisableSubmit = EditContext.Validate();
     }
 
     /// <summary>
-    /// On field changed event - disable submit button if data for user is invalid
+    ///     On field changed event - disable submit button if data for user is invalid
     /// </summary>
-    private void checkValidity()
+    private void CheckValidity()
     {
-        localDisableSubmit = !EditContext.Validate();
+        DisableSubmit = !EditContext.Validate();
         // If form is not valid, display error message
         if (EditContext.GetValidationMessages().Any())
         {
