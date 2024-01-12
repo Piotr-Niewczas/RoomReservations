@@ -35,7 +35,7 @@
 </MudOverlay>
 
 <MudGrid>
-    <MudItem xs="12" md="7">
+    <MudItem xs="12" lg="6">
         <EditForm Model="@_reservation" OnSubmit="Submit" FormName="ReservationForm">
             <MudPaper Class="pa-8 ma-2">
                 <MudDateRangePicker Label="Wybierz datę rezerwacji" DateRange="_dateRange"
@@ -65,41 +65,35 @@
             <Alert @ref="_alert"></Alert>
         </EditForm>
     </MudItem>
-    <MudItem xs="12" md="5">
-        <MudPaper Class="pa-8 ma-2">
-            <MudText>Wybrane pokoje:</MudText>
-            <MudSimpleTable Dense="true">
-                <thead>
+    <MudItem xs="12" lg="6">
+        <MudSimpleTable Dense="true">
+            <thead>
+            <tr>
+                <div style="padding: 1em">
+                    <MudText>Wybrane pokoje:</MudText>
+                </div>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var selectedRoom in _addedRooms)
+            {
                 <tr>
-                    <th>
-                        Nazwa
-                    </th>
-                    <th>
-                        Cena za noc
-                    </th>
-                    <th>
-                        Usuń
-                    </th>
+                    <td>
+                        <MudImage Height="200" Src="@selectedRoom.ImageUrl"/>
+                    </td>
+                    <td>
+                        @selectedRoom.Name
+                    </td>
+                    <td>
+                        @selectedRoom.PricePerNight zł
+                    </td>
+                    <td>
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Secondary" OnClick="@(() => RemoveSelectedRoom(selectedRoom))"/>
+                    </td>
                 </tr>
-                </thead>
-                <tbody>
-                @foreach (var selectedRoom in _addedRooms)
-                {
-                    <tr>
-                        <td>
-                            @selectedRoom.Name
-                        </td>
-                        <td>
-                            @selectedRoom.PricePerNight zł
-                        </td>
-                        <td>
-                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Secondary" OnClick="@(() => RemoveSelectedRoom(selectedRoom))"/>
-                        </td>
-                    </tr>
-                }
-                </tbody>
-            </MudSimpleTable>
-        </MudPaper>
+            }
+            </tbody>
+        </MudSimpleTable>
     </MudItem>
 </MudGrid>
 
