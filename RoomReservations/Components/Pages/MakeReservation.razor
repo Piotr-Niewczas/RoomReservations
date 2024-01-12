@@ -35,65 +35,67 @@
 </MudOverlay>
 
 <MudGrid>
-    <MudItem xs="12" lg="6">
-        <EditForm Model="@_reservation" OnSubmit="Submit" FormName="ReservationForm">
-            <MudPaper Class="pa-8 ma-2">
-                <MudDateRangePicker Label="Wybierz datę rezerwacji" DateRange="_dateRange"
-                                    MinDate="@DateTime.Now.AddDays(-1)"
-                                    DateRangeChanged="@(async value => { _dateRange = value; await DatesChanged(); })"
-                                    IsDateDisabledFunc="@(IsDateAvailable)"
-                                    PickerVariant="PickerVariant.Static" Orientation="Orientation.Landscape"/>
-                <br/>
-                <MudSelect @ref="_roomSelect" T="string" Label="Wybierz pokój" Clearable="true"
-                           ValueChanged="@(value => { _selectedRoomName = value; })">
-                    @foreach (var room in _availableRoomsFromDb)
-                    {
-                        <MudSelectItem T="string" Value="@room.Name"></MudSelectItem>
-                    }
-                </MudSelect>
+    <MudItem xs="12" lg="7">
+        <MudPaper Class="pa-8 ma-2">
+            <MudDateRangePicker Label="Wybierz datę rezerwacji" DateRange="_dateRange"
+                                MinDate="@DateTime.Now.AddDays(-1)"
+                                DateRangeChanged="@(async value => { _dateRange = value; await DatesChanged(); })"
+                                IsDateDisabledFunc="@(IsDateAvailable)"
+                                PickerVariant="PickerVariant.Static" Orientation="Orientation.Landscape"/>
+            <br/>
+            <MudSelect @ref="_roomSelect" T="string" Label="Wybierz pokój" Clearable="true"
+                       ValueChanged="@(value => { _selectedRoomName = value; })">
+                @foreach (var room in _availableRoomsFromDb)
+                {
+                    <MudSelectItem T="string" Value="@room.Name"></MudSelectItem>
+                }
+            </MudSelect>
 
-                <div style="padding-top: 2em">
-                    <MudButton Disabled="@(_selectedRoomName is null)" Variant="Variant.Filled" Color="Color.Primary" @onclick="AddSelectedRoom">Dodaj pokój</MudButton>
-                </div>
-            </MudPaper>
-            <MudPaper Class="pa-8 ma-2">
-                <MudText>Całkowita kwota rezerwacji: @_totalPrice zł</MudText>
-                <div style="padding-top: 1em">
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" ButtonType="ButtonType.Submit" Disabled="DisableSubmit">Rezerwuj</MudButton>
-                </div>
-            </MudPaper>
-            <Alert @ref="_alert"></Alert>
-        </EditForm>
+            <div style="padding-top: 2em">
+                <MudButton Disabled="@(_selectedRoomName is null)" Variant="Variant.Filled" Color="Color.Primary" @onclick="AddSelectedRoom">Dodaj pokój</MudButton>
+            </div>
+        </MudPaper>
     </MudItem>
-    <MudItem xs="12" lg="6">
-        <MudSimpleTable Dense="true">
-            <thead>
-            <tr>
-                <div style="padding: 1em">
-                    <MudText>Wybrane pokoje:</MudText>
-                </div>
-            </tr>
-            </thead>
-            <tbody>
-            @foreach (var selectedRoom in _addedRooms)
-            {
+    <MudItem xs="12" lg="5">
+        <MudPaper Class="pa-2 ma-2">
+            <MudSimpleTable Dense="true" Elevation="0">
+                <thead>
                 <tr>
-                    <td>
-                        <MudImage Height="200" Src="@selectedRoom.ImageUrl"/>
-                    </td>
-                    <td>
-                        @selectedRoom.Name
-                    </td>
-                    <td>
-                        @selectedRoom.PricePerNight zł
-                    </td>
-                    <td>
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Secondary" OnClick="@(() => RemoveSelectedRoom(selectedRoom))"/>
-                    </td>
+                    <div style="padding: 1em">
+                        <MudText>Wybrane pokoje:</MudText>
+                    </div>
                 </tr>
-            }
-            </tbody>
-        </MudSimpleTable>
+                </thead>
+                <tbody>
+                @foreach (var selectedRoom in _addedRooms)
+                {
+                    <tr>
+                        <td>
+                            <MudImage Height="200" Src="@selectedRoom.ImageUrl"/>
+                        </td>
+                        <td>
+                            @selectedRoom.Name
+                        </td>
+                        <td>
+                            @selectedRoom.PricePerNight zł
+                        </td>
+                        <td>
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Secondary" OnClick="@(() => RemoveSelectedRoom(selectedRoom))"/>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </MudSimpleTable>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12" lg="7">
+        <MudPaper Class="pa-8 ma-2">
+            <MudText>Całkowita kwota rezerwacji: @_totalPrice zł</MudText>
+            <div style="padding-top: 1em">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Submit" Disabled="DisableSubmit">Rezerwuj</MudButton>
+            </div>
+        </MudPaper>
+        <Alert @ref="_alert"></Alert>
     </MudItem>
 </MudGrid>
 
@@ -182,7 +184,7 @@
         _availableRoomsFromDb = (await AvailableRoomService.GetAvailableRoomsAsync(start, end)).Except(_addedRooms).ToList();
     }
 
-    public async void Submit(EditContext context)
+    public async void Submit()
     {
         if (HijackSubmit.HasDelegate)
         {
