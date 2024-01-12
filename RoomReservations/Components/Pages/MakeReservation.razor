@@ -1,4 +1,5 @@
-﻿@page "/make-reservation"
+﻿@page "/make-reservation/{StartingRoomId:int?}"
+@page "/make-reservation"
 @using RoomReservations.Models
 @using RoomReservations.Data
 @using Microsoft.AspNetCore.Authorization
@@ -104,6 +105,7 @@
 
 
 @code {
+    [Parameter] public int? StartingRoomId { get; set; }
     ApplicationUser? User { get; set; }
     [Parameter] public EventCallback HijackSubmit { get; set; }
     [Parameter] public bool DisableSubmit { get; set; }
@@ -111,7 +113,7 @@
     Reservation _reservation = new();
     List<Room> _availableRoomsFromDb = [];
     readonly List<Room> _selectedRooms = [];
-    private DateRange _dateRange = new(DateTime.Now.Date, DateTime.Now.AddDays(5).Date);
+    private DateRange _dateRange = new();
     private int _selectedRoomId;
 
     private Alert _alert = new();
@@ -128,6 +130,14 @@
     protected override async Task OnInitializedAsync()
     {
         await ReloadAvailableRoomsAtDates();
+        // If the room ID is provided, add it to the selected rooms
+        if (StartingRoomId is not null)
+        {
+            _dateRange.Start = null;
+            _dateRange.End = null;
+            _selectedRoomId = StartingRoomId.Value;
+            AddSelectedRoom();
+        }
     }
 
     private void AddSelectedRoom()
@@ -163,7 +173,7 @@
     private async Task ReloadAvailableRoomsAtDates()
     {
         var start = _dateRange.Start ?? DateTime.MinValue.Date;
-        var end = _dateRange.End ?? DateTime.MaxValue.Date;
+        var end = _dateRange.End ?? DateTime.MinValue.Date;
         _availableRoomsFromDb = (await AvailableRoomService.GetAvailableRoomsAsync(start, end)).Except(_selectedRooms).ToList();
     }
 
