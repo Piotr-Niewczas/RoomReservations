@@ -43,7 +43,7 @@
 <Alert @ref="_alert"></Alert>
 <div style="padding-top: 3em">
     <MudPaper Class="pa-6" Elevation="2">
-        <MakeReservation @ref="_makeReservation" HijackSubmit="Submit" RedirectUrl="/internal/ViewAllReservations">
+        <MakeReservation DisableSubmit="@localDisableSubmit" @ref="_makeReservation" HijackSubmit="Submit" RedirectUrl="/internal/ViewAllReservations">
         </MakeReservation>
     </MudPaper>
 </div>
@@ -60,10 +60,12 @@
     ApplicationUser? _userToPlaceReservation;
     Alert _alert = new();
 
+    public bool localDisableSubmit { get; set; } = true;
+
     protected override void OnInitialized()
     {
         EditContext = new EditContext(Input);
-        _makeReservation.DisableSubmit = true;
+        localDisableSubmit = EditContext.Validate();
     }
 
     /// <summary>
@@ -71,7 +73,7 @@
     /// </summary>
     private void checkValidity()
     {
-        _makeReservation.DisableSubmit = !EditContext.Validate();
+        localDisableSubmit = !EditContext.Validate();
         // If form is not valid, display error message
         if (EditContext.GetValidationMessages().Any())
         {
