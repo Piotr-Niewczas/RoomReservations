@@ -22,17 +22,17 @@
             <MudText Typo="Typo.h4">Użytkownik usunięty</MudText>
         </MudPaper>
     </MudOverlay>
-    <MudTextField Label="Email klienta" @bind-Value="Input.Email"/>
+    <MudTextField Label="Email klienta" @bind-Value="Input.Email" @bind-Value:after="DisplayValidationErrors"/>
 
     <div class="d-flex justify-space-between gap-4">
-        <MudTextField Label="Imię klienta" @bind-Value="Input.FirstName"/>
+        <MudTextField Label="Imię klienta" @bind-Value="Input.FirstName" @bind-Value:after="DisplayValidationErrors"/>
 
-        <MudTextField Label="Nazwisko klienta" @bind-Value="Input.LastName"/>
+        <MudTextField Label="Nazwisko klienta" @bind-Value="Input.LastName" @bind-Value:after="DisplayValidationErrors"/>
     </div>
 
-    <MudTextField Label="Nr tel klienta" @bind-Value="Input.PhoneNumber"/>
+    <MudTextField Label="Nr tel klienta" @bind-Value="Input.PhoneNumber" @bind-Value:after="DisplayValidationErrors"/>
 
-    <MudSelect Label="Rola" @bind-Value="@Input.Role">
+    <MudSelect Label="Rola" @bind-Value="Input.Role" @bind-Value:after="DisplayValidationErrors">
         @foreach (var role in RoleNames.Roles)
         {
             <MudSelectItem T="string" Value="@role">@role</MudSelectItem>
@@ -61,7 +61,9 @@
         </MudButton>
     </MudItem>
 </MudGrid>
+<div style="padding-top: 1em">
 <Alert @ref="_alert"></Alert>
+</div>
 
 @code {
     [Parameter] public string Id { get; set; } = string.Empty;
@@ -85,6 +87,17 @@
             Input.LastName = _userToEdit.LastName;
             Input.PhoneNumber = _userToEdit.PhoneNumber;
             Input.Role = (await UserManager.GetRolesAsync(_userToEdit)).FirstOrDefault() ?? "Brak roli";
+        }
+    }
+
+    /// <summary>
+    /// Checks if the fields are valid and displays the first error message in the alert if not.
+    /// </summary>
+    private void DisplayValidationErrors()
+    {
+        if (!EditContext.Validate())
+        {
+            _alert.ShowAlert(Severity.Error, EditContext.GetValidationMessages().First());
         }
     }
 
