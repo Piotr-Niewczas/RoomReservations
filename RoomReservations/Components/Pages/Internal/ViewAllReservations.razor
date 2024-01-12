@@ -67,7 +67,7 @@
             </MudButton>
         </MudTd>
         <MudTd DataLabel="Transactions">
-            <MudButton Variant="@(context.IsPaid ? Variant.Outlined : Variant.Filled)" Color="Color.Primary"
+            <MudButton Disabled="@(!_canEdit)" Variant="@(context.IsPaid ? Variant.Outlined : Variant.Filled)" Color="Color.Primary"
                        OnClick="@(() => NavigationManager.NavigateTo($"/pay-reservation/{context.Id}"))">
                 @(context.IsPaid ? "Historia" : "Opłać")
             </MudButton>
