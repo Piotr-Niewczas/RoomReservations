@@ -22,17 +22,17 @@
             <MudText Typo="Typo.h4">Użytkownik usunięty</MudText>
         </MudPaper>
     </MudOverlay>
-    <MudTextField Label="Email klienta" @bind-Value="Input.Email" @bind-Value:after="DisplayValidationErrors"/>
+    <MudTextField Label="Email klienta" @bind-Value="Input.Email" @bind-Value:after="DisplayValidationErrors" Immediate="true"/>
 
     <div class="d-flex justify-space-between gap-4">
-        <MudTextField Label="Imię klienta" @bind-Value="Input.FirstName" @bind-Value:after="DisplayValidationErrors"/>
+        <MudTextField Label="Imię klienta" @bind-Value="Input.FirstName" @bind-Value:after="DisplayValidationErrors" Immediate="true"/>
 
-        <MudTextField Label="Nazwisko klienta" @bind-Value="Input.LastName" @bind-Value:after="DisplayValidationErrors"/>
+        <MudTextField Label="Nazwisko klienta" @bind-Value="Input.LastName" @bind-Value:after="DisplayValidationErrors" Immediate="true"/>
     </div>
 
-    <MudTextField Label="Nr tel klienta" @bind-Value="Input.PhoneNumber" @bind-Value:after="DisplayValidationErrors"/>
+    <MudTextField Label="Nr tel klienta" @bind-Value="Input.PhoneNumber" @bind-Value:after="DisplayValidationErrors" Immediate="true"/>
 
-    <MudSelect Label="Rola" @bind-Value="Input.Role" @bind-Value:after="DisplayValidationErrors">
+    <MudSelect Label="Rola" @bind-Value="Input.Role" @bind-Value:after="DisplayValidationErrors" Immediate="true">
         @foreach (var role in RoleNames.Roles)
         {
             <MudSelectItem T="string" Value="@role">@role</MudSelectItem>
@@ -98,6 +98,8 @@
         if (!EditContext.Validate())
         {
             _alert.ShowAlert(Severity.Error, EditContext.GetValidationMessages().First());
+        } else {
+            _alert.HideAlert();
         }
     }
 
