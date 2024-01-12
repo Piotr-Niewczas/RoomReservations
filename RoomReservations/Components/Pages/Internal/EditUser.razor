@@ -1,8 +1,8 @@
 ﻿@page "/internal/edit-user/{id}"
 @using RoomReservations.Models
 @using Microsoft.AspNetCore.Identity
-@using Microsoft.AspNetCore.Authorization
 @using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Authorization
 @inject UserManager<ApplicationUser> UserManager
 @inject SharedMethodsService SharedMethodsService
 
@@ -15,22 +15,22 @@
     return;
 }
 <EditForm EditContext="@EditContext" Style="position: relative">
-<DataAnnotationsValidator/>
+    <DataAnnotationsValidator/>
     <MudOverlay Visible="_isDeletedOverlayVisible" Style="background-color: rgba(0, 0, 0, 0.5) !important"
-        Absolute="true">
+                Absolute="true">
         <MudPaper Class="pa-16 ma-2" Elevation="3">
             <MudText Typo="Typo.h4">Użytkownik usunięty</MudText>
         </MudPaper>
     </MudOverlay>
-    <MudTextField Label="Email klienta" @bind-Value="Input.Email" />
+    <MudTextField Label="Email klienta" @bind-Value="Input.Email"/>
 
     <div class="d-flex justify-space-between gap-4">
-        <MudTextField Label="Imię klienta" @bind-Value="Input.FirstName" />
+        <MudTextField Label="Imię klienta" @bind-Value="Input.FirstName"/>
 
-        <MudTextField Label="Nazwisko klienta" @bind-Value="Input.LastName" />
+        <MudTextField Label="Nazwisko klienta" @bind-Value="Input.LastName"/>
     </div>
 
-    <MudTextField Label="Nr tel klienta" @bind-Value="Input.PhoneNumber" />
+    <MudTextField Label="Nr tel klienta" @bind-Value="Input.PhoneNumber"/>
 
     <MudSelect Label="Rola" @bind-Value="@Input.Role">
         @foreach (var role in RoleNames.Roles)
@@ -41,18 +41,24 @@
 </EditForm>
 <MudGrid Spacing="10" Justify="Justify.Center" Style="padding-top: 1em">
     <MudItem>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" 
-            Disabled="@(!EditContext.Validate() || _isDeletedOverlayVisible)" ButtonType="ButtonType.Submit" OnClick="SaveUser">Zapisz</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                   Disabled="@(!EditContext.Validate() || _isDeletedOverlayVisible)" ButtonType="ButtonType.Submit" OnClick="SaveUser">
+            Zapisz
+        </MudButton>
     </MudItem>
 
     <MudItem>
         <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="@_isDeletedOverlayVisible"
-            OnClick="DeleteUser">Usuń</MudButton>
+                   OnClick="DeleteUser">
+            Usuń
+        </MudButton>
     </MudItem>
 
     <MudItem>
         <MudButton Variant="Variant.Filled" Color="@(_isDeletedOverlayVisible ? Color.Primary : Color.Default)"
-            OnClick="SharedMethodsService.GoBackAsync">Wróć</MudButton>
+                   OnClick="SharedMethodsService.GoBackAsync">
+            Wróć
+        </MudButton>
     </MudItem>
 </MudGrid>
 <Alert @ref="_alert"></Alert>
@@ -61,7 +67,9 @@
     [Parameter] public string Id { get; set; } = string.Empty;
     EditContext EditContext { get; set; } = new(new InputModel());
     ApplicationUser? _userToEdit = new();
-    [SupplyParameterFromForm] private InputModel Input { get; } = new();
+
+    // ReSharper disable once AutoPropertyCanBeMadeGetOnly.Local
+    [SupplyParameterFromForm] private InputModel Input { get; set; } = new();
     Alert _alert = new();
     bool _isDeletedOverlayVisible;
 
@@ -153,7 +161,6 @@
         [DataType(DataType.Text)]
         [Display(Name = "Rola")]
         public string Role { get; set; } = "";
-
     }
 
 }
