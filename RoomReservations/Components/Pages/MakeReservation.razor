@@ -44,16 +44,16 @@
                                     IsDateDisabledFunc="@(IsDateAvailable)"
                                     PickerVariant="PickerVariant.Static" Orientation="Orientation.Landscape"/>
                 <br/>
-                <MudSelect @ref="_roomSelect" T="int?" Label="Wybierz pokój" Clearable="true"
-                           ValueChanged="@(value => { _selectedRoomId = value ?? -1; StateHasChanged(); })">
+                <MudSelect @ref="_roomSelect" T="string" Label="Wybierz pokój" Clearable="true"
+                           ValueChanged="@(value => { _selectedRoomName = value; })">
                     @foreach (var room in _availableRoomsFromDb)
                     {
-                        <MudSelectItem T="int?" Value="@room.Id">@room.Name</MudSelectItem>
+                        <MudSelectItem T="string" Value="@room.Name"></MudSelectItem>
                     }
                 </MudSelect>
 
                 <div style="padding-top: 2em">
-                    <MudButton Disabled="@(_selectedRoomId == -1)" Variant="Variant.Filled" Color="Color.Primary" @onclick="AddSelectedRoom">Dodaj pokój</MudButton>
+                    <MudButton Disabled="@(_selectedRoomName is null)" Variant="Variant.Filled" Color="Color.Primary" @onclick="AddSelectedRoom">Dodaj pokój</MudButton>
                 </div>
             </MudPaper>
             <MudPaper Class="pa-8 ma-2">
@@ -83,7 +83,7 @@
                 </tr>
                 </thead>
                 <tbody>
-                @foreach (var selectedRoom in _selectedRooms)
+                @foreach (var selectedRoom in _addedRooms)
                 {
                     <tr>
                         <td>
@@ -112,10 +112,10 @@
     [Parameter] public string RedirectUrl { get; set; } = "/list-reservations";
     Reservation _reservation = new();
     List<Room> _availableRoomsFromDb = [];
-    readonly List<Room> _selectedRooms = [];
+    readonly List<Room> _addedRooms = [];
     private DateRange _dateRange = new();
-    private int _selectedRoomId;
-    private MudSelect<int?> _roomSelect = new();
+    private string? _selectedRoomName;
+    private MudSelect<string> _roomSelect = new();
 
     private Alert _alert = new();
 
@@ -136,21 +136,23 @@
         {
             _dateRange.Start = null;
             _dateRange.End = null;
-            _selectedRoomId = StartingRoomId.Value;
+            _selectedRoomName = _availableRoomsFromDb.FirstOrDefault(room => room.Id == StartingRoomId)?.Name ?? string.Empty;
             AddSelectedRoom();
         }
     }
 
     private void AddSelectedRoom()
     {
+        if (_selectedRoomName is null) return;
+
         // Find the selected room by its ID
-        var selectedRoom = _availableRoomsFromDb.FirstOrDefault(room => room.Id == _selectedRoomId);
+        var selectedRoom = _availableRoomsFromDb.FirstOrDefault(room => room.Name == _selectedRoomName);
 
         // Add the selected room to the reservation if it's not already added
-        if (selectedRoom != null && !_selectedRooms.Contains(selectedRoom))
+        if (selectedRoom != null && !_addedRooms.Contains(selectedRoom))
         {
             _availableRoomsFromDb.Remove(selectedRoom);
-            _selectedRooms.Add(selectedRoom);
+            _addedRooms.Add(selectedRoom);
             DisableSubmit = false;
         }
 
@@ -161,10 +163,10 @@
 
     private async Task RemoveSelectedRoom(Room room)
     {
-        _selectedRooms.Remove(room);
+        _addedRooms.Remove(room);
         await ReloadAvailableRoomsAtDates();
         RecalculateTotalPrice();
-        if (_selectedRooms.Count == 0) DisableSubmit = true;
+        if (_addedRooms.Count == 0) DisableSubmit = true;
     }
 
     private async Task DatesChanged()
@@ -183,7 +185,7 @@
     {
         var start = _dateRange.Start ?? DateTime.MinValue.Date;
         var end = _dateRange.End ?? DateTime.MinValue.Date;
-        _availableRoomsFromDb = (await AvailableRoomService.GetAvailableRoomsAsync(start, end)).Except(_selectedRooms).ToList();
+        _availableRoomsFromDb = (await AvailableRoomService.GetAvailableRoomsAsync(start, end)).Except(_addedRooms).ToList();
     }
 
     public async void Submit(EditContext context)
@@ -213,7 +215,7 @@
 
     public async Task<bool> SaveReservation(ApplicationUser user)
     {
-        if (!_selectedRooms.Any())
+        if (!_addedRooms.Any())
         {
             _alert.ShowAlert(Severity.Error, "Wybierz przynajmniej jeden pokój");
             return false;
@@ -233,7 +235,7 @@
         _reservation.User = user;
         _reservation.UserId = user.Id;
 
-        var result = await ReservationService.AddReservationAsync(_reservation, _selectedRooms);
+        var result = await ReservationService.AddReservationAsync(_reservation, _addedRooms);
         ChangeOverlayMessage(!result ? "Coś poszło nie tak" : "Pomyślnie dodano rezerwację");
 
         // create transaction to be paid if the reservation was added successfully
@@ -266,7 +268,7 @@
     {
         _totalPrice = 0;
         var stayLength = Math.Ceiling((_dateRange.End - _dateRange.Start)?.TotalDays ?? -1);
-        foreach (var room in _selectedRooms)
+        foreach (var room in _addedRooms)
         {
             _totalPrice += room.PricePerNight * (decimal)stayLength;
         }
@@ -274,9 +276,9 @@
 
     private bool IsDateAvailable(DateTime date)
     {
-        var roomsToFind = _selectedRooms.ToList();
+        var roomsToFind = _addedRooms.ToList();
 
-        var selectedRoom = _availableRoomsFromDb.FirstOrDefault(room => room.Id == _selectedRoomId);
+        var selectedRoom = _availableRoomsFromDb.FirstOrDefault(room => room.Name == _selectedRoomName);
         if (selectedRoom is not null) roomsToFind.Add(selectedRoom);
 
         // this could be optimized by using a dictionary of rooms and their reservations
