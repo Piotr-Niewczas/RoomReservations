@@ -44,16 +44,16 @@
                                     IsDateDisabledFunc="@(IsDateAvailable)"
                                     PickerVariant="PickerVariant.Static" Orientation="Orientation.Landscape"/>
                 <br/>
-                <MudSelect T="int" Label="Wybierz pokój" Clearable="true" Value="@_selectedRoomId"
-                           ValueChanged="@(value => { _selectedRoomId = value; StateHasChanged(); })">
+                <MudSelect @ref="_roomSelect" T="int?" Label="Wybierz pokój" Clearable="true"
+                           ValueChanged="@(value => { _selectedRoomId = value ?? -1; StateHasChanged(); })">
                     @foreach (var room in _availableRoomsFromDb)
                     {
-                        <MudSelectItem T="int" Value="@room.Id">@room.Name</MudSelectItem>
+                        <MudSelectItem T="int?" Value="@room.Id">@room.Name</MudSelectItem>
                     }
                 </MudSelect>
 
                 <div style="padding-top: 2em">
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="AddSelectedRoom">Dodaj pokój</MudButton>
+                    <MudButton Disabled="@(_selectedRoomId == -1)" Variant="Variant.Filled" Color="Color.Primary" @onclick="AddSelectedRoom">Dodaj pokój</MudButton>
                 </div>
             </MudPaper>
             <MudPaper Class="pa-8 ma-2">
@@ -115,6 +115,7 @@
     readonly List<Room> _selectedRooms = [];
     private DateRange _dateRange = new();
     private int _selectedRoomId;
+    private MudSelect<int?> _roomSelect = new();
 
     private Alert _alert = new();
 
@@ -154,7 +155,7 @@
         }
 
         // Clear the selection
-        _selectedRoomId = 0;
+        _roomSelect.Clear();
         RecalculateTotalPrice();
     }
 
