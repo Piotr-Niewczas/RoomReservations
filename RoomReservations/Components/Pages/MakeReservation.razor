@@ -35,7 +35,7 @@
 </MudOverlay>
 
 <MudGrid>
-    <MudItem xs="12" md="6">
+    <MudItem xs="12" md="7">
         <EditForm Model="@_reservation" OnSubmit="Submit" FormName="ReservationForm">
             <MudPaper Class="pa-8 ma-2">
                 <MudDateRangePicker Label="Wybierz datę rezerwacji" DateRange="_dateRange"
@@ -65,7 +65,7 @@
             <Alert @ref="_alert"></Alert>
         </EditForm>
     </MudItem>
-    <MudItem xs="12" md="6">
+    <MudItem xs="12" md="5">
         <MudPaper Class="pa-8 ma-2">
             <MudText>Wybrane pokoje:</MudText>
             <MudSimpleTable Dense="true">
