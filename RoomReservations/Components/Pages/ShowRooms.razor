@@ -3,6 +3,7 @@
 @using RoomReservations.Data
 @attribute [StreamRendering]
 @inject IRoomService RoomService
+@inject NavigationManager NavigationManager
 
 <h3>Nasze wspaniałe pokoje</h3>
 <MudText></MudText>
@@ -19,7 +20,7 @@
                     <div style="padding-top: 3em"></div>
                 </MudCardContent>
                 <MudCardActions Style="position: absolute; bottom: 0; justify-content: space-between; width: 100%; padding: 1em; align-items: center">
-                    <MudButton Color="Color.Primary" Variant="Variant.Filled">Zarezerwuj</MudButton>
+                    <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="@(() => NavigationManager.NavigateTo($"/make-reservation/{room.Id}"))">Zarezerwuj</MudButton>
                     <div>
                         <MudText Style="text-align: right" Align="Align.Right" Typo="Typo.body2">Cena za noc: @room.PricePerNight PLN</MudText>
                     </div>
