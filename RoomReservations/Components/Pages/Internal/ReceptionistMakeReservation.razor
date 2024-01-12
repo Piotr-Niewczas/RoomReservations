@@ -1,8 +1,8 @@
 ﻿@page "/internal/ReceptionistMakeReservation"
 @using RoomReservations.Models
 @using RoomReservations.Data
-@using Microsoft.AspNetCore.Authorization
 @using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Authorization
 @inject UserService UserService
 @attribute [Authorize(Roles = RoleNames.Receptionist)]
 <h3>Tworzenie rezerwacji dla klienta</h3>
@@ -10,19 +10,19 @@
 <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6" @ref="_tabs" Border="true">
     <MudTabPanel Text="Nowy klient">
         <EditForm EditContext="@EditContext">
-        <DataAnnotationsValidator/>
-            <MudTextField Label="Email klienta" @bind-Value="Input.Email" />
+            <DataAnnotationsValidator/>
+            <MudTextField Label="Email klienta" @bind-Value="Input.Email"/>
 
             <div class="d-flex justify-space-between gap-4">
-                <MudTextField Label="Imię klienta" @bind-Value="Input.FirstName" />
+                <MudTextField Label="Imię klienta" @bind-Value="Input.FirstName"/>
 
-                <MudTextField Label="Nazwisko klienta" @bind-Value="Input.LastName" />
+                <MudTextField Label="Nazwisko klienta" @bind-Value="Input.LastName"/>
             </div>
         </EditForm>
     </MudTabPanel>
     <MudTabPanel Text="Obecny klient">
         <MudTextField T="string" Label="Email klienta" Required="true" RequiredError="Email jest wymagany!"
-            @bind-Value="Input.Email" />
+                      @bind-Value="Input.Email"/>
         <div style="padding-top: 1em">
             <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SearchForUser">Wyszukaj</MudButton>
         </div>
@@ -50,7 +50,9 @@
 
 @code {
     EditContext EditContext { get; set; } = new(new InputModel());
-    [SupplyParameterFromForm] private InputModel Input { get; } = new();
+
+    // ReSharper disable once AutoPropertyCanBeMadeGetOnly.Local
+    [SupplyParameterFromForm] private InputModel Input { get; set; } = new();
     MakeReservation _makeReservation = new();
 
     MudTabs _tabs = new();
