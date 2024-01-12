@@ -221,6 +221,12 @@
             return false;
         }
 
+        if (_dateRange.Start == _dateRange.End)
+        {
+            _alert.ShowAlert(Severity.Error, "Rezerwacja musi trwać przynajmniej jeden pełny dzień");
+            return false;
+        }
+
         OpenOverlay();
         _reservation.StartDate = _dateRange.Start ?? DateTime.MinValue;
         _reservation.EndDate = _dateRange.End ?? DateTime.MinValue;
