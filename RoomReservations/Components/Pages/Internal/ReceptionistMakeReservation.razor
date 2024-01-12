@@ -11,12 +11,12 @@
     <MudTabPanel Text="Nowy klient">
         <EditForm EditContext="@EditContext">
             <DataAnnotationsValidator/>
-            <MudTextField Label="Email klienta" @bind-Value="Input.Email"/>
+            <MudTextField Label="Email klienta" @bind-Value="Input.Email" @bind-Value:after="checkValidity"/>
 
             <div class="d-flex justify-space-between gap-4">
-                <MudTextField Label="Imię klienta" @bind-Value="Input.FirstName"/>
+                <MudTextField Label="Imię klienta" @bind-Value="Input.FirstName" @bind-Value:after="checkValidity"/>
 
-                <MudTextField Label="Nazwisko klienta" @bind-Value="Input.LastName"/>
+                <MudTextField Label="Nazwisko klienta" @bind-Value="Input.LastName" @bind-Value:after="checkValidity"/>
             </div>
         </EditForm>
     </MudTabPanel>
@@ -63,6 +63,24 @@
     protected override void OnInitialized()
     {
         EditContext = new EditContext(Input);
+        _makeReservation.DisableSubmit = true;
+    }
+
+    /// <summary>
+    /// On field changed event - disable submit button if data for user is invalid
+    /// </summary>
+    private void checkValidity()
+    {
+        _makeReservation.DisableSubmit = !EditContext.Validate();
+        // If form is not valid, display error message
+        if (EditContext.GetValidationMessages().Any())
+        {
+            _alert.ShowAlert(Severity.Error, EditContext.GetValidationMessages().First());
+        }
+        else
+        {
+            _alert.HideAlert();
+        }
     }
 
     private async Task Submit()
