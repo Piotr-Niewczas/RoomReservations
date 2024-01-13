@@ -125,7 +125,14 @@
         }
 
         // place reservation with selected user
-        _ = await _makeReservation.SaveReservation(_userToPlaceReservation);
+        var isSuccessful = await _makeReservation.SaveReservation(_userToPlaceReservation);
+
+        // if reservation was not placed successfully, delete new user
+        if (!isSuccessful && _tabs.ActivePanelIndex == 0 && _userToPlaceReservation.Email != null)
+        {
+            await UserService.DeleteUserAsync(_userToPlaceReservation.Email);
+            _alert.ShowAlert(Severity.Warning, "Nie utworzono użytkownika ani rezerwacji!");
+        }
     }
 
     private async Task SearchForUser()
