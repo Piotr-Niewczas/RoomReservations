@@ -130,7 +130,7 @@
         // if reservation was not placed successfully, delete new user
         if (!isSuccessful && _tabs.ActivePanelIndex == 0 && _userToPlaceReservation.Email != null)
         {
-            await UserService.DeleteUserAsync(_userToPlaceReservation.Email);
+            await UserService.DeleteUserAsync(_userToPlaceReservation);
             _alert.ShowAlert(Severity.Warning, "Nie utworzono użytkownika ani rezerwacji!");
         }
     }
