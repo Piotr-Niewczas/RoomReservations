@@ -72,14 +72,10 @@ public class UserService(UserManager<ApplicationUser> userManager)
         return password.ToString();
     }
 
-    public async Task DeleteUserAsync(string email)
+    public async Task DeleteUserAsync(ApplicationUser user)
     {
-        var user = await userManager.FindByEmailAsync(email);
-        if (user == null)
-            throw new Exception($"User {email} not found");
-
         var result = await userManager.DeleteAsync(user);
         if (!result.Succeeded)
-            throw new Exception($"Failed to delete user {email}. Error: {result.Errors}");
+            throw new Exception($"Failed to delete user {user.Email}. Error: {result.Errors}");
     }
 }
