@@ -289,7 +289,7 @@
 
     private void CheckIfReservationComplete()
     {
-        _localDisableSubmit = _dateRange.Start is null || _dateRange.End is null || _addedRooms.Count == 0;
+        _localDisableSubmit = _dateRange.Start is null || _dateRange.End is null || _addedRooms.Count == 0 || _dateRange.Start == _dateRange.End;
     }
 
 }
