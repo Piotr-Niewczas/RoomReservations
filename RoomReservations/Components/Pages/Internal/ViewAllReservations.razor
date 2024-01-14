@@ -8,6 +8,9 @@
 @inject SharedMethodsService SharedMethodsService
 
 @attribute [Authorize(Roles = $"{RoleNames.Receptionist}, {RoleNames.Admin}, {RoleNames.Employee}")]
+
+<PageTitle>Wszystkie rezerwacje</PageTitle>
+
 <h3>Wszystkie rezerwacje</h3>
 
 <MudTable Items="@_reservations" Hover="true" SortLabel="Sort By">

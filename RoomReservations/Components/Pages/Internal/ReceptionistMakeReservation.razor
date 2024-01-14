@@ -5,6 +5,9 @@
 @using Microsoft.AspNetCore.Authorization
 @inject UserService UserService
 @attribute [Authorize(Roles = RoleNames.Receptionist)]
+
+<PageTitle>Utwórz rezerwację</PageTitle>
+
 <h3>Tworzenie rezerwacji dla klienta</h3>
 
 <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6" @ref="_tabs" Border="true">

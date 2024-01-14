@@ -5,12 +5,12 @@
 @using Microsoft.AspNetCore.Authorization
 @inject NavigationManager NavigationManager
 @inject SharedMethodsService SharedMethodsService
-
 @inject UserService UserService;
 @inject UserManager<ApplicationUser> UserManager;
-
-
 @attribute [Authorize(Roles = $"{RoleNames.Receptionist}, {RoleNames.Admin}, {RoleNames.Employee}")]
+
+<PageTitle>Wszyscy użytkownicy</PageTitle>
+
 <h3>Wszyscy użytkownicy</h3>
 
 <MudTable Items="@_users" Hover="true" SortLabel="Sort By">

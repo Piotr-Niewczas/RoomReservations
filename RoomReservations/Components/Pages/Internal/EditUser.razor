@@ -7,6 +7,9 @@
 @inject SharedMethodsService SharedMethodsService
 
 @attribute [Authorize(Roles = RoleNames.Admin)]
+
+<PageTitle>Edycja użytkownika</PageTitle>
+
 <h3>Edytuj dane użytkownika</h3>
 
 @if (_userToEdit is null)
@@ -62,7 +65,7 @@
     </MudItem>
 </MudGrid>
 <div style="padding-top: 1em">
-<Alert @ref="_alert"></Alert>
+    <Alert @ref="_alert"></Alert>
 </div>
 
 @code {
@@ -98,7 +101,9 @@
         if (!EditContext.Validate())
         {
             _alert.ShowAlert(Severity.Error, EditContext.GetValidationMessages().First());
-        } else {
+        }
+        else
+        {
             _alert.HideAlert();
         }
     }
